@@ -8,6 +8,7 @@ import '../../../../core/bloc/auth/auth_state.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../checkpoint/data/dummy_checkpoints.dart';
 import '../../../checkpoint/data/models/checkpoint.dart';
+import '../../logic/session_state.dart';
 
 /// Sign-in screen based on `newDesign/1._login/code.html`.
 ///
@@ -59,6 +60,9 @@ class _LoginScreenState extends State<LoginScreen> {
       if (_usernameError != null || _passwordError != null || _gateError != null) return;
 
       FocusScope.of(context).unfocus();
+      context.read<SessionState>().setStaffAndCheckpoint(
+        checkpoint: _selectedGate,
+      );
       context.read<AuthBloc>().add(
         LoginSubmitted(
           username: username,

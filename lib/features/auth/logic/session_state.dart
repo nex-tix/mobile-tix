@@ -72,6 +72,14 @@ class SessionState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setStaffAndCheckpoint({GateStaff? staff, Checkpoint? checkpoint}) {
+    _staff = staff ?? dummyStaff;
+    if (checkpoint != null) {
+      _checkpoint = checkpoint;
+    }
+    notifyListeners();
+  }
+
   /// Opened from the profile: the shell stays mounted behind the gate picker.
   void beginCheckpointSwitch() {
     _switchingCheckpoint = true;

@@ -2,6 +2,7 @@
 // Mock API adapter untuk testing tanpa backend real
 // Simulasi response dari 8 endpoint sesuai PRDMOBILE.md
 
+import 'dart:convert';
 import '../data/models/api_response_model.dart';
 
 /// Mock API Adapter untuk simulasi backend responses
@@ -18,6 +19,30 @@ class MockApiAdapter {
   // Simulasi network delay (500ms)
   // Bisa diubah untuk test kondisi slow network
   static const Duration _networkDelay = Duration(milliseconds: 500);
+
+  /// Helper untuk generate valid dummy JWT dengan expiration di masa depan (default 12 jam)
+  static String generateMockJwt({
+    String username = 'admin.gate',
+    Duration ttl = const Duration(hours: 12),
+  }) {
+    final now = DateTime.now();
+    final exp = now.add(ttl).millisecondsSinceEpoch ~/ 1000;
+    final iat = now.millisecondsSinceEpoch ~/ 1000;
+
+    final header = base64Url
+        .encode(utf8.encode(json.encode({'alg': 'HS256', 'typ': 'JWT'})))
+        .replaceAll('=', '');
+    final payload = base64Url
+        .encode(utf8.encode(json.encode({
+          'sub': username,
+          'name': 'Admin Gate',
+          'iat': iat,
+          'exp': exp,
+        })))
+        .replaceAll('=', '');
+    const signature = 'SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+    return '$header.$payload.$signature';
+  }
 
   // ==================== AUTHENTICATION ====================
 
@@ -39,24 +64,19 @@ class MockApiAdapter {
 
     // Validasi credentials (hardcoded untuk mock)
     if (username == 'admin.gate' && password == 'gate2026') {
+      final token = generateMockJwt(username: username);
       // Sukses login — return dummy token dan user data
       return ApiResponse.success(
         data: {
-          // JWT token dummy (12 jam TTL)
-          // Token real akan di-generate oleh backend dengan format JWT standard
-          'token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbi5nYXRlIiwibmFtZSI6IkFkbWluIEdhdGUiLCJpYXQiOjE1MTYyMzkwMjIsImV4cCI6MTUxNjI4MjIyMn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
-          
-          // User info
+          'token': token,
           'user': {
             'id': 1,
             'username': username,
             'name': 'Admin Gate',
-            'role': 'validator', // Role: admin, validator, supervisor
-            'checkpoint': checkpoint, // Gate yang dipilih saat login
+            'role': 'validator',
+            'checkpoint': checkpoint,
           },
-          
-          // Token metadata
-          'expires_at': DateTime.now().add(Duration(hours: 12)).toIso8601String(), // TTL 12 jam
+          'expires_at': DateTime.now().add(const Duration(hours: 12)).toIso8601String(),
         },
         message: 'Login berhasil',
       );

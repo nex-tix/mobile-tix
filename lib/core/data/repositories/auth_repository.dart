@@ -30,10 +30,11 @@ class LoginResponse {
   /// 
   /// Backend format: { "data": { "token": "...", "userId": "...", "name": "..." } }
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
+    final userMap = json['user'] is Map ? json['user'] as Map<String, dynamic> : null;
     return LoginResponse(
       token: json['token'] as String? ?? '',
-      userId: json['userId'] as String?,
-      name: json['name'] as String?,
+      userId: json['userId'] as String? ?? userMap?['id']?.toString(),
+      name: json['name'] as String? ?? userMap?['name'] as String?,
     );
   }
 

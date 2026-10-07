@@ -1,6 +1,8 @@
 // File: token_jwt_dao.dart
 // Data Access Object untuk JWT token storage dengan encryption
 
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:hive/hive.dart';
 import '../../config/env_config.dart';
 
@@ -29,8 +31,10 @@ class TokenJwtDAO {
   TokenJwtDAO._internal();
 
   // Reference ke Hive box
-  // Late init karena box dibuka di initialize()
-  late Box<String> _tokenBox;
+  Box<String>? _tokenBox;
+  bool _isInitialized = false;
+
+  bool get isInitialized => _isInitialized;
 
   /// Initialize DAO — buka Hive box dengan encryption
   /// 
@@ -38,25 +42,19 @@ class TokenJwtDAO {
   /// Throws: Exception jika gagal buka box
   Future<void> initialize() async {
     try {
-      // Generate proper Hive encryption key dari EnvConfig.secretKey
-      // EnvConfig.secretKey = 32-char string (256 bits untuk AES-256)
-      // Convert string ke List<int> (bytes) untuk Hive AES cipher
-      final keyBytes = EnvConfig.secretKey.codeUnits;
-      
-      // Pastikan key tepat 32 bytes (256 bits)
-      // Hive butuh exact 32 bytes untuk AES-256 encryption
-      if (keyBytes.length != 32) {
-        throw Exception('Hive encryption key must be exactly 32 bytes');
+      final keyString = EnvConfig.secretKey;
+      final keyBytes = utf8.encode(keyString);
+      final validKeyBytes = Uint8List(32);
+      for (int i = 0; i < 32; i++) {
+        validKeyBytes[i] = i < keyBytes.length ? keyBytes[i] : 0;
       }
       
       // Buka box 'token_box' dengan encryption key
-      // Box akan auto-encrypt semua value yang disimpan
       _tokenBox = await Hive.openBox<String>(
         _boxName,
-        // Encryption cipher menggunakan AES-256
-        // Setiap value di-encrypt sebelum disimpan ke disk
-        encryptionCipher: HiveAesCipher(keyBytes),
+        encryptionCipher: HiveAesCipher(validKeyBytes),
       );
+      _isInitialized = true;
     } catch (e) {
       throw Exception('Failed to initialize TokenJwtDAO: $e');
     }
@@ -68,10 +66,10 @@ class TokenJwtDAO {
   /// Throws: Exception jika gagal simpan
   Future<void> saveToken(String token) async {
     try {
-      // Put = insert or update di Hive
-      // Key = _tokenKey, Value = token string
-      // Hive otomatis encrypt sebelum simpan ke disk
-      await _tokenBox.put(_tokenKey, token);
+      if (_tokenBox == null) {
+        throw Exception('TokenJwtDAO not initialized. Call initialize() first.');
+      }
+      await _tokenBox!.put(_tokenKey, token);
     } catch (e) {
       throw Exception('Failed to save token: $e');
     }
@@ -83,12 +81,9 @@ class TokenJwtDAO {
   /// Hive otomatis decrypt sebelum return ke app
   String? getToken() {
     try {
-      // Get = retrieve value berdasarkan key
-      // Return null jika key tidak ada di box
-      // Hive otomatis decrypt value sebelum return
-      return _tokenBox.get(_tokenKey);
+      if (_tokenBox == null) return null;
+      return _tokenBox!.get(_tokenKey);
     } catch (e) {
-      // Error handling — return null jika error
       print('Error getting token: $e');
       return null;
     }
@@ -98,9 +93,8 @@ class TokenJwtDAO {
   /// 
   /// Returns: true jika token ada, false jika tidak
   bool hasToken() {
-    // ContainsKey = check apakah key ada di box
-    // Lebih efficient daripada getToken() != null
-    return _tokenBox.containsKey(_tokenKey);
+    if (_tokenBox == null) return false;
+    return _tokenBox!.containsKey(_tokenKey);
   }
 
   /// Hapus token dari Hive
@@ -109,8 +103,8 @@ class TokenJwtDAO {
   /// Throws: Exception jika gagal hapus
   Future<void> deleteToken() async {
     try {
-      // Delete = remove value berdasarkan key dari box
-      await _tokenBox.delete(_tokenKey);
+      if (_tokenBox == null) return;
+      await _tokenBox!.delete(_tokenKey);
     } catch (e) {
       throw Exception('Failed to delete token: $e');
     }
@@ -122,8 +116,8 @@ class TokenJwtDAO {
   /// Useful untuk testing atau reset state
   Future<void> clear() async {
     try {
-      // Clear = delete semua entries di box
-      await _tokenBox.clear();
+      if (_tokenBox == null) return;
+      await _tokenBox!.clear();
     } catch (e) {
       throw Exception('Failed to clear token box: $e');
     }
@@ -134,9 +128,10 @@ class TokenJwtDAO {
   /// Panggil saat app shutdown atau saat logout
   Future<void> close() async {
     try {
-      // Close = release resources, tutup akses ke box
-      // Setelah close, box tidak bisa diakses sampai initialize() lagi
-      await _tokenBox.close();
+      if (_tokenBox == null) return;
+      await _tokenBox!.close();
+      _tokenBox = null;
+      _isInitialized = false;
     } catch (e) {
       print('Error closing token box: $e');
     }

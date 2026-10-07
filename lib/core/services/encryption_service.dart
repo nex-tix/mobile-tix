@@ -1,27 +1,41 @@
 // File: encryption_service.dart
 // AES-CBC encryption/decryption service
-import 'package:encrypt/encrypt.dart' as encryptLib;
+import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:math';
+import 'package:encrypt/encrypt.dart' as encryptLib;
 import '../config/env_config.dart';
 
 class EncryptionService {
   const EncryptionService._();
 
-  static late final encryptLib.Key _key;
-  static late final encryptLib.Encrypter _encrypter;
+  static encryptLib.Key? _key;
+  static encryptLib.Encrypter? _encrypter;
   static final Random _random = Random.secure();
 
+  /// Initialize EncryptionService. Can be called at app startup or lazily.
   static void initialize() {
     try {
-      // Initialize key dari EnvConfig (32 chars = 256 bits)
-      _key = encryptLib.Key.fromUtf8(EnvConfig.secretKey);
-      
-      // Encrypter untuk AES-CBC mode
-      _encrypter = encryptLib.Encrypter(encryptLib.AES(_key, mode: encryptLib.AESMode.cbc));
+      final keyString = EnvConfig.secretKey;
+      final keyBytes = utf8.encode(keyString);
+      final validKeyBytes = Uint8List(32);
+      for (int i = 0; i < 32; i++) {
+        validKeyBytes[i] = i < keyBytes.length ? keyBytes[i] : 0;
+      }
+      _key = encryptLib.Key(validKeyBytes);
+      _encrypter = encryptLib.Encrypter(
+        encryptLib.AES(_key!, mode: encryptLib.AESMode.cbc),
+      );
     } catch (e) {
       throw Exception('Failed to initialize EncryptionService: $e');
     }
+  }
+
+  static encryptLib.Encrypter get _activeEncrypter {
+    if (_encrypter == null) {
+      initialize();
+    }
+    return _encrypter!;
   }
 
   /// Encrypt plaintext dengan random IV per-request
@@ -41,7 +55,7 @@ class EncryptionService {
       final iv = encryptLib.IV(ivBytes);
 
       // Encrypt plaintext dengan IV yang baru di-generate
-      final encrypted = _encrypter.encrypt(plainText, iv: iv);
+      final encrypted = _activeEncrypter.encrypt(plainText, iv: iv);
       
       // Gabungkan IV + ciphertext, lalu Base64 encode
       // Format: [16 bytes IV][N bytes ciphertext]
@@ -68,6 +82,9 @@ class EncryptionService {
 
       // Decode Base64 → bytes
       final combined = encryptLib.Encrypted.fromBase64(cipherText).bytes;
+      if (combined.length <= 16) {
+        throw Exception('Ciphertext too short (must be > 16 bytes for IV + ciphertext)');
+      }
       
       // Extract IV dari 16 bytes pertama
       // IV selalu 16 bytes (128 bits) untuk AES
@@ -79,7 +96,7 @@ class EncryptionService {
       final encrypted = encryptLib.Encrypted(Uint8List.fromList(encryptedBytes));
       
       // Decrypt dengan IV yang di-extract
-      final decrypted = _encrypter.decrypt(encrypted, iv: iv);
+      final decrypted = _activeEncrypter.decrypt(encrypted, iv: iv);
       return decrypted;
     } catch (e) {
       throw Exception('Decryption failed: $e');

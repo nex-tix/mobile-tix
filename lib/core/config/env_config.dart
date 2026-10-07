@@ -24,12 +24,18 @@ class EnvConfig {
 
   static const String secretKey = String.fromEnvironment(
     'SECRET_KEY',
-    defaultValue: 'your-32-char-secret-key-here-1234567890ab',
+    defaultValue: 'your-32-char-secret-key-12345678',
   );
 
   static const String iv = String.fromEnvironment(
     'IV',
-    defaultValue: 'your-16-char-iv-12345678',
+    defaultValue: '1234567890123456',
+  );
+
+  // Mock API Flag
+  static const bool useMockApi = bool.fromEnvironment(
+    'USE_MOCK_API',
+    defaultValue: true,
   );
 
   // Request Signature

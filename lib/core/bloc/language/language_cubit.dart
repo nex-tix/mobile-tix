@@ -125,12 +125,14 @@ class LanguageCubit extends Cubit<Locale> {
   /// Close Hive box — cleanup resources
   /// 
   /// Panggil saat app shutdown
+  @override
   Future<void> close() async {
     try {
       await _preferencesBox.close();
     } catch (e) {
-      print('Error closing preferences box: $e');
+      // ignore
     }
+    return super.close();
   }
 }
 
