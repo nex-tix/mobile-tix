@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 import 'core/connectivity/demo_connectivity.dart';
 import 'core/theme/app_theme.dart';
-import 'features/auth/logic/session_state.dart';
+import 'core/bloc/auth/auth_bloc.dart';
+import 'core/bloc/auth/auth_state.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/auth/presentation/screens/splash_screen.dart';
 import 'features/dashboard/logic/dashboard_state.dart';
@@ -36,22 +38,21 @@ class _MobileTixAppState extends State<MobileTixApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => SessionState()),
         ChangeNotifierProvider(create: (_) => DemoConnectivity()),
         ChangeNotifierProvider(create: (_) => ScannerState()),
         ChangeNotifierProvider(create: (_) => HistoryState()),
         ChangeNotifierProvider(create: (_) => DashboardState()),
         ChangeNotifierProvider(create: (_) => ShellController()),
       ],
-      child: Consumer<SessionState>(
-        builder: (context, session, _) {
-          final (key, phase) = _phase(session);
+      child: BlocBuilder<AuthBloc, AuthState>(
+        builder: (context, authState) {
+          final (key, phase) = _phase(authState);
           return MaterialApp(
             title: 'Mobile Ticket Validator',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.light(),
             darkTheme: AppTheme.dark(),
-            themeMode: session.themeMode,
+            themeMode: ThemeMode.dark,
             onGenerateRoute: onGenerateRoute,
             home: AnimatedSwitcher(
               duration: const Duration(milliseconds: 260),
@@ -65,14 +66,14 @@ class _MobileTixAppState extends State<MobileTixApp> {
     );
   }
 
-  (String, Widget) _phase(SessionState session) {
+  (String, Widget) _phase(AuthState state) {
     if (!_splashDone) {
       return (
         'splash',
         SplashScreen(onDone: () => setState(() => _splashDone = true)),
       );
     }
-    if (!session.signedIn) return ('login', const LoginScreen());
+    if (state is! AuthAuthenticated) return ('login', const LoginScreen());
     return ('shell', const HomeShell());
   }
 }

@@ -1,11 +1,13 @@
 import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/bloc/auth/auth_bloc.dart';
+import '../../../../core/bloc/auth/auth_event.dart';
+import '../../../../core/bloc/auth/auth_state.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../checkpoint/data/dummy_checkpoints.dart';
 import '../../../checkpoint/data/models/checkpoint.dart';
-import '../../logic/session_state.dart';
 
 /// Sign-in screen based on `newDesign/1._login/code.html`.
 ///
@@ -46,32 +48,46 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _submit() async {
-    final username = _username.text.trim();
-    final password = _password.text;
-    setState(() {
-      _usernameError = username.isEmpty ? 'Username wajib diisi' : null;
-      _passwordError = password.isEmpty ? 'Password wajib diisi' : null;
-      _gateError = _selectedGate == null ? 'Pilih gate terlebih dahulu' : null;
-    });
-    if (_usernameError != null || _passwordError != null || _gateError != null) return;
+  void _submit() {
+      final username = _username.text.trim();
+      final password = _password.text;
+      setState(() {
+        _usernameError = username.isEmpty ? 'Username wajib diisi' : null;
+        _passwordError = password.isEmpty ? 'Password wajib diisi' : null;
+        _gateError = _selectedGate == null ? 'Pilih gate terlebih dahulu' : null;
+      });
+      if (_usernameError != null || _passwordError != null || _gateError != null) return;
 
-    FocusScope.of(context).unfocus();
-    await context.read<SessionState>().signIn(
-      username: username,
-      password: password,
-      checkpoint: _selectedGate!,
-    );
-  }
+      FocusScope.of(context).unfocus();
+      context.read<AuthBloc>().add(
+        LoginSubmitted(
+          username: username,
+          password: password,
+        ),
+      );
+    }
 
   @override
-  Widget build(BuildContext context) {
-    final session = context.watch<SessionState>();
-    final screenHeight = MediaQuery.sizeOf(context).height;
-    // Approximately 44% of the screen height to extend up comfortably below the login button
-    final bgHeight = (screenHeight * 0.44).clamp(340.0, 520.0);
+    Widget build(BuildContext context) {
+      final screenHeight = MediaQuery.sizeOf(context).height;
+      // Approximately 44% of the screen height to extend up comfortably below the login button
+      final bgHeight = (screenHeight * 0.44).clamp(340.0, 520.0);
 
-    return Scaffold(
+      return BlocConsumer<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthFailure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: const Color(0xFFCF4647),
+              ),
+            );
+          }
+        },
+        builder: (context, state) {
+          final isLoading = state is AuthLoading;
+
+          return Scaffold(
       backgroundColor: const Color(0xFF2A363B),
       body: Stack(
         children: [
@@ -233,9 +249,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   color: Colors.transparent,
                                   child: InkWell(
                                     borderRadius: BorderRadius.circular(14),
-                                    onTap: session.signingIn ? null : _submit,
+                                    onTap: isLoading ? null : _submit,
                                     child: Center(
-                                      child: session.signingIn
+                                      child: isLoading
                                           ? const SizedBox(
                                               width: 20,
                                               height: 20,
@@ -282,6 +298,8 @@ class _LoginScreenState extends State<LoginScreen> {
         ],
       ),
     );
+        },
+      );
   }
 
   Widget _buildInputField({
