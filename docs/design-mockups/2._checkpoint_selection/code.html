@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gate Validator - Select Checkpoint</title>
+<!-- Tailwind CSS CDN with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            app: {
+              bg: '#0B1118',
+              card: '#131B26',
+              cardHover: '#182230',
+              border: '#1C2939',
+              amber: '#E5A95C',
+              amberMuted: 'rgba(229, 169, 92, 0.15)',
+              textMuted: '#7E8B9B',
+              textSubtle: '#4B5565',
+              radioBorder: '#2E3D52',
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+<!-- Custom styles for iOS status elements and subtleties -->
+<style data-purpose="custom-styling">
+    body {
+      background-color: #05080c;
+    }
+    /* Subtle touch active state animation */
+    .checkpoint-option {
+      transition: all 0.2s ease-in-out;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-0 sm:p-6 text-white antialiased font-sans select-none">
+<!-- BEGIN: MobileContainer -->
+<!-- Mimics an iPhone display container -->
+<main class="w-full max-w-[393px] h-[852px] bg-[#0B1118] sm:rounded-[48px] overflow-hidden shadow-2xl relative flex flex-col justify-between border-0 sm:border-[8px] sm:border-[#1A232F]">
+<!-- BEGIN: TopSection -->
+<div class="w-full flex flex-col">
+<!-- BEGIN: StatusBar -->
+<!-- Standard iOS Status Bar -->
+<div class="w-full pt-3 px-8 flex justify-between items-center text-sm font-semibold tracking-tight text-white z-20" data-purpose="status-bar">
+<!-- Time -->
+<span class="text-[15px] font-semibold tracking-normal pl-1">9:41</span>
+<!-- Dynamic Island / Speaker Notch Indicator Space -->
+<div class="w-24 h-4 rounded-full bg-transparent"></div>
+<!-- System Icons: Cellular, Wi-Fi, Battery -->
+<div class="flex items-center space-x-2 text-white">
+<!-- Cellular Signal -->
+<svg class="w-4 h-3.5 fill-current" viewbox="0 0 17 12">
+<rect height="3" rx="0.7" width="2.5" x="0" y="9"></rect>
+<rect height="5.5" rx="0.7" width="2.5" x="4.5" y="6.5"></rect>
+<rect height="8.5" rx="0.7" width="2.5" x="9" y="3.5"></rect>
+<rect height="11.5" rx="0.7" width="2.5" x="13.5" y="0.5"></rect>
+</svg>
+<!-- Wi-Fi -->
+<svg class="w-4 h-3.5 fill-current" viewbox="0 0 16 12">
+<path d="M8 2.6c2.5 0 4.8 1 6.5 2.6.4.4 1 .4 1.4 0 .4-.4.4-1 0-1.4C13.6 1.7 10.9.5 8 .5 5.1.5 2.4 1.7.1 3.8c-.4.4-.4 1 0 1.4.4.4 1 .4 1.4 0C3.2 3.6 5.5 2.6 8 2.6zm0 3.7c1.7 0 3.2.7 4.3 1.8.4.4 1 .4 1.4 0 .4-.4.4-1 0-1.4-1.5-1.5-3.5-2.4-5.7-2.4-2.2 0-4.2.9-5.7 2.4-.4.4-.4 1 0 1.4.4.4 1 .4 1.4 0 1.1-1.1 2.6-1.8 4.3-1.8zm0 3.7c-.9 0-1.7.4-2.3 1-.3.3-.3.8 0 1.1.3.3.8.3 1.1 0 .3-.3.7-.5 1.2-.5.5 0 .9.2 1.2.5.3.3.8.3 1.1 0 .3-.3.3-.8 0-1.1-.6-.6-1.4-1-2.3-1z"></path>
+</svg>
+<!-- Battery -->
+<div class="flex items-center">
+<div class="w-5 h-[11px] border border-white rounded-[3px] p-[1px] flex items-center">
+<div class="h-full w-full bg-white rounded-[1.5px]"></div>
+</div>
+<div class="w-[1.5px] h-1 bg-white rounded-r-sm"></div>
+</div>
+</div>
+</div>
+<!-- END: StatusBar -->
+<!-- BEGIN: NavigationBar -->
+<nav class="px-6 pt-5 pb-2" data-purpose="navigation-header">
+<button aria-label="Go back" class="p-1 -ml-1 text-slate-200 hover:text-white transition-colors duration-150 inline-flex items-center" type="button">
+<!-- Back Chevron -->
+<svg class="w-6 h-6 stroke-[2.2] stroke-current" fill="none" viewbox="0 0 24 24">
+<path d="M15.75 19.5L8.25 12l7.5-7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</nav>
+<!-- END: NavigationBar -->
+<!-- BEGIN: ContentHeader -->
+<header class="px-6 pt-5 pb-7">
+<h1 class="text-2xl font-bold tracking-tight text-white">Select checkpoint</h1>
+<p class="text-sm font-normal text-app-textMuted mt-1.5 tracking-tight">Choose your active checkpoint</p>
+</header>
+<!-- END: ContentHeader -->
+<!-- BEGIN: CheckpointSelectionList -->
+<section aria-label="Checkpoint options" class="px-6 space-y-3.5" data-purpose="checkpoint-selector-group" role="radiogroup">
+<!-- Checkpoint Option 1: Selected (Gate 1) -->
+<label class="checkpoint-option relative flex items-center justify-between px-5 py-4 rounded-2xl bg-app-card border border-app-amber shadow-[0_0_12px_rgba(229,169,92,0.12)] cursor-pointer" data-purpose="checkpoint-item">
+<input checked="" class="sr-only" name="checkpoint" type="radio" value="gate_1"/>
+<!-- Leading Lock Icon & Checkpoint Name -->
+<div class="flex items-center space-x-3.5">
+<span class="text-app-textMuted flex items-center justify-center">
+<!-- Lock Icon -->
+<svg class="w-[18px] h-[18px]" fill="currentColor" viewbox="0 0 24 24">
+<path clip-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" fill-rule="evenodd"></path>
+</svg>
+</span>
+<span class="text-base font-medium text-white tracking-wide">Gate 1</span>
+</div>
+<!-- Radio Indicator (Active - Amber Glow) -->
+<div class="w-5 h-5 rounded-full border border-app-amber flex items-center justify-center bg-transparent">
+<div class="w-2.5 h-2.5 rounded-full bg-app-amber"></div>
+</div>
+</label>
+<!-- Checkpoint Option 2: Gate 2 -->
+<label class="checkpoint-option relative flex items-center justify-between px-5 py-4 rounded-2xl bg-app-card border border-transparent hover:border-slate-700/60 active:bg-app-cardHover transition-colors cursor-pointer" data-purpose="checkpoint-item">
+<input class="sr-only" name="checkpoint" type="radio" value="gate_2"/>
+<!-- Leading Lock Icon & Checkpoint Name -->
+<div class="flex items-center space-x-3.5">
+<span class="text-app-textMuted flex items-center justify-center">
+<!-- Lock Icon -->
+<svg class="w-[18px] h-[18px]" fill="currentColor" viewbox="0 0 24 24">
+<path clip-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" fill-rule="evenodd"></path>
+</svg>
+</span>
+<span class="text-base font-medium text-white tracking-wide">Gate 2</span>
+</div>
+<!-- Radio Indicator (Unselected) -->
+<div class="w-5 h-5 rounded-full border-[1.5px] border-app-radioBorder bg-transparent"></div>
+</label>
+<!-- Checkpoint Option 3: Gate 3 -->
+<label class="checkpoint-option relative flex items-center justify-between px-5 py-4 rounded-2xl bg-app-card border border-transparent hover:border-slate-700/60 active:bg-app-cardHover transition-colors cursor-pointer" data-purpose="checkpoint-item">
+<input class="sr-only" name="checkpoint" type="radio" value="gate_3"/>
+<!-- Leading Lock Icon & Checkpoint Name -->
+<div class="flex items-center space-x-3.5">
+<span class="text-app-textMuted flex items-center justify-center">
+<!-- Lock Icon -->
+<svg class="w-[18px] h-[18px]" fill="currentColor" viewbox="0 0 24 24">
+<path clip-rule="evenodd" d="M12 1.5a5.25 5.25 0 00-5.25 5.25v3a3 3 0 00-3 3v6.75a3 3 0 003 3h10.5a3 3 0 003-3v-6.75a3 3 0 00-3-3v-3c0-2.9-2.35-5.25-5.25-5.25zm3.75 8.25v-3a3.75 3.75 0 10-7.5 0v3h7.5z" fill-rule="evenodd"></path>
+</svg>
+</span>
+<span class="text-base font-medium text-white tracking-wide">Gate 3</span>
+</div>
+<!-- Radio Indicator (Unselected) -->
+<div class="w-5 h-5 rounded-full border-[1.5px] border-app-radioBorder bg-transparent"></div>
+</label>
+</section>
+<!-- END: CheckpointSelectionList -->
+</div>
+<!-- END: TopSection -->
+<!-- BEGIN: HomeIndicator -->
+<!-- iOS standard bottom home indicator bar -->
+<div class="w-full pb-3 flex justify-center items-end" data-purpose="home-indicator">
+<div class="w-36 h-1 bg-white/20 rounded-full"></div>
+</div>
+<!-- END: HomeIndicator -->
+</main>
+<!-- END: MobileContainer -->
+<!-- BEGIN: InteractiveHandlers -->
+<script data-purpose="radio-selection-handler">
+    document.addEventListener('DOMContentLoaded', () => {
+      const labels = document.querySelectorAll('[data-purpose="checkpoint-item"]');
+
+      labels.forEach(label => {
+        label.addEventListener('click', () => {
+          labels.forEach(item => {
+            // Reset styles for all items
+            item.classList.remove('border-app-amber', 'shadow-[0_0_12px_rgba(229,169,92,0.12)]');
+            item.classList.add('border-transparent');
+            
+            const radioCircle = item.querySelector('div:last-child');
+            if (radioCircle) {
+              radioCircle.className = 'w-5 h-5 rounded-full border-[1.5px] border-app-radioBorder bg-transparent';
+              radioCircle.innerHTML = '';
+            }
+          });
+
+          // Set active style for clicked item
+          label.classList.remove('border-transparent');
+          label.classList.add('border-app-amber', 'shadow-[0_0_12px_rgba(229,169,92,0.12)]');
+
+          const activeRadio = label.querySelector('div:last-child');
+          if (activeRadio) {
+            activeRadio.className = 'w-5 h-5 rounded-full border border-app-amber flex items-center justify-center bg-transparent';
+            activeRadio.innerHTML = '<div class="w-2.5 h-2.5 rounded-full bg-app-amber"></div>';
+          }
+        });
+      });
+    });
+  </script>
+<!-- END: InteractiveHandlers -->
+</body></html>

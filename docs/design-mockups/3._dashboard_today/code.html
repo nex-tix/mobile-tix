@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Gate Validator - Dashboard (Today)</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            app: {
+              bg: '#0B1118',
+              card: '#151D28',
+              surface: '#111923',
+              amber: '#E5A93C',
+              'amber-dark': '#C98C28',
+              green: '#22C55E',
+              red: '#EF4444',
+              muted: '#7E8B9B',
+              border: '#1E293B'
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"Segoe UI"', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scroll-and-app-frame">
+    /* iOS specific styling tweaks */
+    body {
+      background-color: #05080C;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .status-bar-notch {
+      padding-top: env(safe-area-inset-top, 44px);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-0 md:p-6 text-slate-100 font-sans antialiased">
+<!-- BEGIN: PhoneContainer -->
+<!-- Mimics mobile iOS viewport as depicted in Screen 3 -->
+<div class="relative w-full max-w-[400px] h-screen md:h-[844px] bg-[#0B1118] md:rounded-[44px] overflow-hidden flex flex-col justify-between shadow-2xl md:ring-1 md:ring-slate-800">
+<!-- BEGIN: StatusBar -->
+<div class="status-bar-notch pt-3 px-7 flex justify-between items-center text-xs font-semibold text-white tracking-tight z-20">
+<!-- Time -->
+<span>9:41</span>
+<!-- iOS Status Icons -->
+<div class="flex items-center space-x-2 text-[11px]">
+<!-- Cellular Bars -->
+<svg class="w-4 h-3.5 fill-current" viewbox="0 0 17 12">
+<rect height="4" rx="0.5" width="2.5" x="0" y="8"></rect>
+<rect height="6" rx="0.5" width="2.5" x="4" y="6"></rect>
+<rect height="9" rx="0.5" width="2.5" x="8" y="3"></rect>
+<rect height="11.5" rx="0.5" width="2.5" x="12" y="0.5"></rect>
+</svg>
+<!-- Wifi -->
+<svg class="w-3.5 h-3 fill-current" viewbox="0 0 16 12">
+<path d="M8 2.8c2.9 0 5.6 1.2 7.5 3.1l1.5-1.5C14.7 2 11.5.5 8 .5 4.5.5 1.3 2 .1 4.4L1.6 6C3.4 4 6.1 2.8 8 2.8zm0 4c1.8 0 3.5.7 4.7 2l1.5-1.5C12.7 5.7 10.5 4.8 8 4.8s-4.7.9-6.2 2.5L3.3 8.8C4.5 7.5 6.2 6.8 8 6.8zm0 4a2 2 0 100-4 2 2 0 000 4z"></path>
+</svg>
+<!-- Battery -->
+<div class="flex items-center">
+<div class="w-5 h-2.5 border border-white/80 rounded-[3px] p-[1px] flex items-center">
+<div class="h-full w-full bg-white rounded-[1.5px]"></div>
+</div>
+<div class="w-[1.5px] h-1 bg-white/80 rounded-r-sm"></div>
+</div>
+</div>
+</div>
+<!-- END: StatusBar -->
+<!-- BEGIN: MainContent -->
+<main class="flex-1 flex flex-col px-6 pt-3 pb-24 overflow-y-auto">
+<!-- BEGIN: HeaderSection -->
+<!-- Profile & Status Header -->
+<header class="flex items-center justify-between mt-2" data-purpose="user-status-header">
+<div class="flex items-center space-x-3">
+<!-- Profile Avatar -->
+<div class="relative w-11 h-11 rounded-full overflow-hidden ring-2 ring-slate-800 bg-slate-700">
+<img alt="Raya avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsiPkYQKona3QUAt-Aqpr4pLRfn7qQ8seG0S_Xe1JmhvkQPdI7lQrQZP1nkBWii41IPtDH2XOXQLDLR5SBhYmqqWU-CryuX8ZHy-JPWs8RJ3uIGgjIkwPDhA4GmICmGzKZ2GWRq4kcCp_ibsiMdXqcibgnVOPxAw4OGyGX6rc2ueZEHkYtvcNrSIizFDwr95vhkC77QE9VU_vEza8oUXof2KATIDPDH5O4hGVN_U4HHSb5SPDQpmvz2g"/>
+</div>
+<!-- User & Gate Info -->
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-white tracking-wide leading-tight">Raya</span>
+<span class="text-xs text-[#7E8B9B] font-medium leading-tight">Gate 1</span>
+</div>
+</div>
+<!-- Online Badge -->
+<div class="flex items-center space-x-1.5 bg-[#121E24]/60 px-2.5 py-1 rounded-full border border-emerald-950/60">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="text-[11px] font-medium text-emerald-400">Online</span>
+</div>
+</header>
+<!-- END: HeaderSection -->
+<!-- BEGIN: GreetingSection -->
+<section class="mt-6" data-purpose="greeting-block">
+<p class="text-[13px] text-[#7E8B9B] font-normal leading-none">Good afternoon</p>
+<h1 class="text-2xl font-bold text-white tracking-tight mt-1">Raya</h1>
+</section>
+<!-- END: GreetingSection -->
+<!-- BEGIN: PeriodSwitchControl -->
+<!-- Segmented pill control: Today vs This Month -->
+<div class="mt-5 p-1 bg-[#131B24] rounded-2xl flex items-center justify-between border border-white/[0.04]" data-purpose="timeframe-selector">
+<button class="flex-1 py-2 rounded-xl text-xs font-semibold bg-[#E5A93C] text-black shadow-md transition-all text-center" type="button">
+          Today
+        </button>
+<button class="flex-1 py-2 rounded-xl text-xs font-medium text-[#7E8B9B] hover:text-white transition-all text-center" type="button">
+          This Month
+        </button>
+</div>
+<!-- END: PeriodSwitchControl -->
+<!-- BEGIN: PrimaryStatCard -->
+<!-- Visitors total counter -->
+<section class="mt-5" data-purpose="primary-stat-card">
+<div class="bg-[#141C26] border border-white/[0.05] rounded-3xl p-6 relative overflow-hidden flex flex-col justify-between shadow-lg">
+<!-- Visitors Icon -->
+<div class="w-10 h-10 rounded-xl bg-white/[0.04] flex items-center justify-center text-slate-300">
+<svg class="w-6 h-6 stroke-current" fill="none" stroke-width="2" viewbox="0 0 24 24">
+<path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<!-- Total Count & Label -->
+<div class="mt-4">
+<div class="text-4xl font-extrabold text-white tracking-tight">248</div>
+<div class="text-xs text-[#7E8B9B] font-normal mt-0.5">Visitors</div>
+</div>
+</div>
+</section>
+<!-- END: PrimaryStatCard -->
+<!-- BEGIN: SecondaryStatCards -->
+<!-- Grid for Valid and Rejected counters -->
+<section class="mt-4 grid grid-cols-2 gap-3.5" data-purpose="secondary-stats-grid">
+<!-- Valid Stat Card -->
+<div class="bg-[#141C26] border border-white/[0.05] rounded-3xl p-5 flex flex-col justify-between shadow-lg">
+<!-- Green checkmark circle badge -->
+<div class="w-7 h-7 rounded-full bg-emerald-500/15 flex items-center justify-center border border-emerald-500/20">
+<svg class="w-3.5 h-3.5 text-emerald-400 stroke-current" fill="none" stroke-width="3" viewbox="0 0 24 24">
+<path d="M4.5 12.75l6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<!-- Stat info -->
+<div class="mt-4">
+<div class="text-3xl font-extrabold text-white tracking-tight">86</div>
+<div class="text-xs text-[#7E8B9B] font-normal mt-0.5">Valid</div>
+</div>
+</div>
+<!-- Rejected Stat Card -->
+<div class="bg-[#141C26] border border-white/[0.05] rounded-3xl p-5 flex flex-col justify-between shadow-lg">
+<!-- Red cross circle badge -->
+<div class="w-7 h-7 rounded-full bg-rose-500/15 flex items-center justify-center border border-rose-500/20">
+<svg class="w-3.5 h-3.5 text-rose-400 stroke-current" fill="none" stroke-width="3" viewbox="0 0 24 24">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<!-- Stat info -->
+<div class="mt-4">
+<div class="text-3xl font-extrabold text-white tracking-tight">12</div>
+<div class="text-xs text-[#7E8B9B] font-normal mt-0.5">Rejected</div>
+</div>
+</div>
+</section>
+<!-- END: SecondaryStatCards -->
+</main>
+<!-- END: MainContent -->
+<!-- BEGIN: BottomNavigation -->
+<!-- Floating dark navigation bar at the bottom with 3 tabs -->
+<nav class="absolute bottom-5 inset-x-5 h-16 bg-[#131B24]/95 backdrop-blur-md rounded-full border border-white/[0.08] flex items-center justify-around px-2 shadow-2xl z-30" data-purpose="mobile-tab-bar">
+<!-- Tab 1: Dashboard (Active) -->
+<a aria-current="page" class="flex flex-col items-center justify-center text-[#E5A93C] flex-1 py-1" href="#">
+<svg class="w-5 h-5 fill-current" viewbox="0 0 20 20">
+<path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+</svg>
+<span class="text-[10px] font-semibold mt-1">Dashboard</span>
+</a>
+<!-- Tab 2: Scan -->
+<a class="flex flex-col items-center justify-center text-[#7E8B9B] hover:text-slate-300 transition-colors flex-1 py-1" href="#">
+<svg class="w-5 h-5 stroke-current fill-none" stroke-width="2" viewbox="0 0 24 24">
+<path d="M7 3H5a2 2 0 00-2 2v2m14-4h2a2 2 0 012 2v2m-18 10v2a2 2 0 002 2h2m10 0h2a2 2 0 002-2v-2" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[10px] font-medium mt-1">Scan</span>
+</a>
+<!-- Tab 3: History -->
+<a class="flex flex-col items-center justify-center text-[#7E8B9B] hover:text-slate-300 transition-colors flex-1 py-1" href="#">
+<svg class="w-5 h-5 stroke-current fill-none" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[10px] font-medium mt-1">History</span>
+</a>
+</nav>
+<!-- END: BottomNavigation -->
+<!-- BEGIN: HomeIndicator -->
+<div class="absolute bottom-1 inset-x-0 flex justify-center pointer-events-none pb-1 z-30">
+<div class="w-32 h-1 bg-white/20 rounded-full"></div>
+</div>
+<!-- END: HomeIndicator -->
+</div>
+<!-- END: PhoneContainer -->
+</body></html>

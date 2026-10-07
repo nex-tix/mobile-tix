@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Gate Validator - Result Already Used</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            appDark: '#0d131a',
+            dangerRed: '#ff4d4f',
+            dangerGlow: 'rgba(255, 77, 79, 0.28)',
+            dangerDeep: '#e84144',
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"Segoe UI"', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Styling for Specific Visual Effects -->
+<style data-purpose="glow-and-atmosphere">
+    body {
+      background-color: #0b0f15;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    /* Subtle background ambient radial gradient for warning context */
+    .bg-danger-radial {
+      background: radial-gradient(circle at 50% 28%, rgba(235, 68, 70, 0.16) 0%, rgba(13, 19, 26, 0) 70%);
+    }
+    /* Pulsing glow behind the rejected indicator */
+    .red-glow-badge {
+      box-shadow: 0 0 65px 12px rgba(255, 77, 79, 0.42), 0 0 20px 2px rgba(255, 77, 79, 0.6);
+    }
+    /* Primary action button shadow */
+    .action-btn-shadow {
+      box-shadow: 0 8px 24px -4px rgba(255, 77, 79, 0.45);
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-0 sm:p-4 text-white">
+<!-- BEGIN: PhoneContainer -->
+<!-- Outer viewport shell simulating an iOS mobile device screen -->
+<main class="relative w-full max-w-[390px] h-[844px] bg-appDark overflow-hidden sm:rounded-[44px] shadow-2xl border-0 sm:border-8 sm:border-slate-800/80 flex flex-col justify-between">
+<!-- Ambient Radial Glow Overlay -->
+<div class="absolute inset-0 bg-danger-radial pointer-events-none z-0"></div>
+<!-- Background Atmospheric Floating Particles -->
+<div class="absolute top-[22%] left-[18%] w-1.5 h-1.5 rounded-full bg-red-400/40 blur-[0.5px]"></div>
+<div class="absolute top-[17%] right-[22%] w-2 h-2 rounded-full bg-red-500/30 blur-[1px]"></div>
+<div class="absolute top-[32%] right-[16%] w-1.5 h-1.5 rounded-full bg-red-400/40 blur-[0.5px]"></div>
+<div class="absolute top-[35%] left-[20%] w-2.5 h-2.5 rounded-full bg-red-500/25 blur-[1px]"></div>
+<!-- BEGIN: StatusBar -->
+<!-- Standard iOS dynamic status bar -->
+<header class="relative z-10 pt-3.5 px-7 flex justify-between items-center text-sm font-semibold tracking-tight text-white select-none">
+<!-- Time Display -->
+<span class="text-[15px] font-medium tracking-tight">9:41</span>
+<!-- Right Status Icons: Signal, Wi-Fi, Battery -->
+<div class="flex items-center space-x-2">
+<!-- Cellular Signal Icon -->
+<svg class="w-4 h-3.5 fill-current" viewbox="0 0 17 12">
+<rect height="3" rx="0.75" width="3" x="0" y="9"></rect>
+<rect height="6" rx="0.75" width="3" x="4.5" y="6"></rect>
+<rect height="9" rx="0.75" width="3" x="9" y="3"></rect>
+<rect height="12" rx="0.75" width="3" x="13.5" y="0"></rect>
+</svg>
+<!-- Wi-Fi Icon -->
+<svg class="w-4 h-3.5 fill-current" viewbox="0 0 16 12">
+<path d="M8 9.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3z"></path>
+<path clip-rule="evenodd" d="M3.2 5.8a6.8 6.8 0 019.6 0 .8.8 0 001.1-1.1 8.4 8.4 0 00-11.8 0 .8.8 0 001.1 1.1z" fill-rule="evenodd"></path>
+<path clip-rule="evenodd" d="M.4 2.9a10.8 10.8 0 0115.2 0 .8.8 0 001.1-1.1 12.4 12.4 0 00-17.4 0 .8.8 0 001.1 1.1z" fill-rule="evenodd"></path>
+</svg>
+<!-- Battery Icon with Level -->
+<div class="flex items-center">
+<div class="w-5 h-2.5 border border-white/90 rounded-[4px] p-0.5 flex items-center">
+<div class="h-full w-full bg-white rounded-[1.5px]"></div>
+</div>
+<div class="w-0.5 h-1 bg-white/70 rounded-r-[1px] ml-[1px]"></div>
+</div>
+</div>
+</header>
+<!-- END: StatusBar -->
+<!-- BEGIN: ResultContent -->
+<!-- Main content showing rejection icon, status, and scan record details -->
+<div class="relative z-10 flex-1 flex flex-col items-center justify-center px-6 -mt-8">
+<!-- Big Glowing Circle with 'X' Icon -->
+<div class="relative flex items-center justify-center mb-8" data-purpose="rejection-icon">
+<div class="w-24 h-24 rounded-full bg-dangerRed flex items-center justify-center red-glow-badge transition-transform duration-300 transform active:scale-95">
+<!-- Cross 'X' SVG -->
+<svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" viewbox="0 0 24 24">
+<line x1="18" x2="6" y1="6" y2="18"></line>
+<line x1="6" x2="18" y1="6" y2="18"></line>
+</svg>
+</div>
+</div>
+<!-- Result Heading -->
+<h1 class="text-[26px] font-bold text-dangerRed tracking-wider uppercase mb-7 font-sans">
+        ALREADY USED
+      </h1>
+<!-- Verification Info Card / Details List -->
+<div class="flex flex-col items-center space-y-3.5 text-center" data-purpose="verification-details">
+<!-- Timestamp Row -->
+<div class="flex items-center text-slate-300 font-medium text-[15px]">
+<!-- Clock Icon -->
+<svg class="w-4 h-4 mr-2.5 text-slate-400 stroke-current" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="10"></circle>
+<polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+<span class="tracking-wide">14:21:03</span>
+</div>
+<!-- Location Gate Row -->
+<div class="flex items-center text-slate-300 font-medium text-[15px]">
+<!-- Map Pin Icon -->
+<svg class="w-4 h-4 mr-2.5 text-slate-400 stroke-current" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+<circle cx="12" cy="10" r="3"></circle>
+</svg>
+<span class="tracking-wide">Gate 1</span>
+</div>
+<!-- Operator Subtitle Label -->
+<div class="pt-1.5">
+<span class="text-sm font-normal text-red-400/90 tracking-normal">
+            Used by: <span class="font-medium text-red-300">Officer</span>
+</span>
+</div>
+</div>
+</div>
+<!-- END: ResultContent -->
+<!-- BEGIN: ActionFooter -->
+<!-- Primary CTA button to scan next attendee -->
+<footer class="relative z-10 px-6 pb-9 pt-4 flex flex-col items-center">
+<button class="w-full h-14 bg-dangerRed hover:bg-dangerDeep active:brightness-90 text-white font-medium text-[17px] rounded-2xl flex items-center justify-center tracking-wide action-btn-shadow transition duration-150 ease-in-out cursor-pointer" data-purpose="scan-next-btn" onclick="void(0)" type="button">
+        Scan Next
+      </button>
+<!-- iOS Home Indicator Bar -->
+<div class="w-36 h-1 bg-white/20 rounded-full mt-6"></div>
+</footer>
+<!-- END: ActionFooter -->
+</main>
+<!-- END: PhoneContainer -->
+</body></html>

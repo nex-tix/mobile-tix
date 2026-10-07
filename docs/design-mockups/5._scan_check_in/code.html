@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Scan - Check-in | Gate Validator</title>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            app: {
+              bg: '#0B1117',
+              surface: '#151D26',
+              card: '#19222E',
+              border: '#222E3C',
+              amber: '#E5A93C',
+              'amber-dark': '#C98F29',
+              'amber-light': '#FCD37B',
+              online: '#10B981',
+              muted: '#7E8B9B',
+              input: '#1C2735'
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Text', 'SF Pro Display', 'Segoe UI', 'Roboto', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-viewfinder">
+    /* Camera Viewfinder Reticle Corners */
+    .reticle-corner {
+      width: 32px;
+      height: 32px;
+      border-color: #E5A93C;
+      position: absolute;
+    }
+    .reticle-tl {
+      top: 0;
+      left: 0;
+      border-top-width: 4px;
+      border-left-width: 4px;
+      border-top-left-radius: 12px;
+    }
+    .reticle-tr {
+      top: 0;
+      right: 0;
+      border-top-width: 4px;
+      border-right-width: 4px;
+      border-top-right-radius: 12px;
+    }
+    .reticle-bl {
+      bottom: 0;
+      left: 0;
+      border-bottom-width: 4px;
+      border-left-width: 4px;
+      border-bottom-left-radius: 12px;
+    }
+    .reticle-br {
+      bottom: 0;
+      right: 0;
+      border-bottom-width: 4px;
+      border-right-width: 4px;
+      border-bottom-right-radius: 12px;
+    }
+    /* Subtle camera vignette */
+    .camera-feed {
+      background: radial-gradient(circle at center, rgba(16, 26, 38, 0.4) 0%, rgba(7, 12, 17, 0.95) 90%), 
+                  linear-gradient(180deg, rgba(8, 14, 21, 0.6) 0%, rgba(8, 14, 21, 0.85) 100%),
+                  #111923;
+    }
+  </style>
+</head>
+<body class="bg-black text-white flex justify-center items-center min-h-screen font-sans antialiased p-0 sm:p-4 select-none">
+<!-- BEGIN: MobileDeviceFrame -->
+<main class="w-full max-w-[390px] h-[844px] max-h-screen bg-[#0B1117] flex flex-col justify-between relative overflow-hidden shadow-2xl sm:rounded-[44px] border border-[#1F2937]">
+<!-- BEGIN: TopBarAndHeader -->
+<header class="w-full pt-3 px-6 z-20 shrink-0">
+<!-- iOS Status Bar -->
+<div class="flex justify-between items-center text-xs font-semibold text-white tracking-tight pb-3">
+<span class="text-sm font-semibold tracking-normal pl-1">9:41</span>
+<div class="flex items-center space-x-1.5 pr-1">
+<!-- Signal Icon -->
+<svg class="w-4 h-3 fill-current" viewbox="0 0 16 12">
+<rect height="4" rx="0.5" width="2.5" x="0" y="8"></rect>
+<rect height="6" rx="0.5" width="2.5" x="4" y="6"></rect>
+<rect height="8.5" rx="0.5" width="2.5" x="8" y="3.5"></rect>
+<rect height="11" rx="0.5" width="2.5" x="12" y="1"></rect>
+</svg>
+<!-- Wifi Icon -->
+<svg class="w-4 h-3 fill-current" viewbox="0 0 16 12">
+<path d="M8 2.5C5.2 2.5 2.7 3.6 0.8 5.4l1.2 1.3C3.5 5.2 5.6 4.3 8 4.3c2.4 0 4.5 0.9 6 2.4l1.2-1.3C13.3 3.6 10.8 2.5 8 2.5zM8 6.5c-1.6 0-3.1 0.7-4.1 1.8l1.2 1.3C5.8 8.9 6.8 8.3 8 8.3s2.2 0.6 2.9 1.3l1.2-1.3C11.1 7.2 9.6 6.5 8 6.5zM8 10.5a1.2 1.2 0 100 2.4 1.2 1.2 0 000-2.4z"></path>
+</svg>
+<!-- Battery Icon -->
+<div class="flex items-center">
+<div class="w-5 h-2.5 border border-white/80 rounded-sm p-0.5 flex items-center">
+<div class="w-full h-full bg-white rounded-2xs"></div>
+</div>
+<div class="w-0.5 h-1 bg-white/80 rounded-r-xs ml-0.5"></div>
+</div>
+</div>
+</div>
+<!-- App Header Bar -->
+<div class="flex justify-between items-start mt-2">
+<div>
+<h1 class="text-xl font-bold text-white tracking-wide">Scan Ticket</h1>
+<p class="text-xs text-app-muted font-medium mt-0.5">Gate 1</p>
+</div>
+<div class="flex items-center space-x-1.5 pt-1" data-purpose="status-badge">
+<span class="w-2 h-2 rounded-full bg-[#10B981] inline-block shadow-[0_0_8px_#10B981]"></span>
+<span class="text-xs font-semibold text-[#10B981]">Online</span>
+</div>
+</div>
+<!-- Segmented Mode Switch: Check-in / Check -->
+<div class="mt-4 p-1 bg-[#131B24] rounded-full flex border border-[#1E2936]" data-purpose="mode-toggle">
+<button class="w-1/2 py-2 text-xs font-semibold text-[#111822] bg-gradient-to-b from-[#E7AA3B] to-[#D59A2F] rounded-full shadow-sm text-center transition-all duration-150" type="button">
+          Check-in
+        </button>
+<button class="w-1/2 py-2 text-xs font-medium text-app-muted rounded-full text-center hover:text-white transition-all duration-150" type="button">
+          Check
+        </button>
+</div>
+</header>
+<!-- END: TopBarAndHeader -->
+<!-- BEGIN: MainCameraViewportArea -->
+<section class="flex-1 px-5 pt-3 pb-2 flex flex-col justify-between items-center" data-purpose="scanner-container">
+<!-- Camera Viewport Card -->
+<div class="w-full flex-1 camera-feed rounded-2xl relative flex flex-col items-center justify-center overflow-hidden border border-[#1C2633] shadow-inner max-h-[460px]">
+<!-- Background Simulated Camera Horizon Silhouette -->
+<div class="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-[#1f3044] via-transparent to-transparent"></div>
+<div class="absolute bottom-0 w-full h-24 bg-gradient-to-t from-[#090E14] to-transparent pointer-events-none"></div>
+<!-- Scanner Central Target Reticle Frame -->
+<div class="w-56 h-56 relative flex items-center justify-center my-auto" data-purpose="viewfinder-reticle">
+<!-- 4 Corner Brackets -->
+<div class="reticle-corner reticle-tl"></div>
+<div class="reticle-corner reticle-tr"></div>
+<div class="reticle-corner reticle-bl"></div>
+<div class="reticle-corner reticle-br"></div>
+<!-- Central QR Framing Crosshair Icon -->
+<div class="w-12 h-12 relative flex items-center justify-center opacity-85">
+<!-- Central dashed/bracketed mini focus target -->
+<svg class="w-10 h-10 text-[#E5A93C]" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.5" viewbox="0 0 40 40">
+<path d="M7 14V10C7 8.34315 8.34315 7 10 7H14"></path>
+<path d="M26 7H30C31.6569 7 33 8.34315 33 10V14"></path>
+<path d="M7 26V30C7 31.6569 8.34315 33 10 33H14"></path>
+<path d="M33 26V30C33 31.6569 31.6569 33 30 33H26"></path>
+</svg>
+</div>
+</div>
+<!-- Helper Instruction Text Under Viewfinder -->
+<div class="absolute bottom-4 left-0 right-0 text-center">
+<p class="text-xs text-slate-300 font-medium tracking-wide drop-shadow-md">Scan QR ticket</p>
+</div>
+</div>
+<!-- Manual Code Entry Button -->
+<div class="w-full mt-3">
+<button class="w-full py-3.5 px-4 bg-[#141E2A] hover:bg-[#1A2635] border border-[#233142] active:scale-[0.99] transition-all rounded-xl flex items-center justify-center space-x-2.5 text-gray-200" type="button">
+<svg class="w-4 h-4 text-slate-400 stroke-current" fill="none" stroke-width="1.8" viewbox="0 0 24 24">
+<rect height="14" rx="3" stroke-width="1.8" width="18" x="3" y="5"></rect>
+<path d="M7 10h.01M10 10h.01M13 10h.01M17 10h.01M7 14h.01M17 14h.01M10 14h4" stroke-linecap="round"></path>
+</svg>
+<span class="text-xs font-medium tracking-normal text-slate-300">Enter code manually</span>
+</button>
+</div>
+</section>
+<!-- END: MainCameraViewportArea -->
+<!-- BEGIN: BottomNavigationBar -->
+<nav class="w-full bg-[#0D131B] border-t border-[#192330] px-6 pt-2 pb-5 z-20 shrink-0" data-purpose="bottom-navigation">
+<div class="flex justify-around items-center relative">
+<!-- Tab 1: Dashboard -->
+<button class="flex flex-col items-center justify-center w-16 group" type="button">
+<svg class="w-5 h-5 text-app-muted group-hover:text-slate-300 transition-colors stroke-current fill-none" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M3 9.75L12 3l9 6.75V20.25A1.5 1.5 0 0119.5 21.75H4.5A1.5 1.5 0 013 20.25V9.75z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[10px] text-app-muted mt-1 font-medium group-hover:text-slate-300 transition-colors">Dashboard</span>
+</button>
+<!-- Tab 2: Scan (Active Highlighted Amber Circle) -->
+<button class="flex flex-col items-center justify-center -mt-2 group" type="button">
+<div class="w-11 h-11 rounded-full bg-[#182330] border border-[#2A3B4D] flex items-center justify-center shadow-lg group-active:scale-95 transition-transform">
+<div class="w-8 h-8 rounded-full bg-gradient-to-b from-[#E7AA3B] to-[#D59A2F] flex items-center justify-center text-[#0E151E]">
+<!-- Viewfinder Focus / QR Mini Icon -->
+<svg class="w-4 h-4 stroke-current fill-none stroke-[2.2]" viewbox="0 0 24 24">
+<path d="M3.75 4.5v3m0-3h3m-3 0l3 3m13.5-3v3m0-3h-3m3 0l-3 3M3.75 19.5v-3m0 3h3m-3 0l3-3m13.5 3v-3m0 3h-3m3 0l-3-3" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<span class="text-[10px] text-[#E5A93C] font-semibold mt-0.5">Scan</span>
+</button>
+<!-- Tab 3: History -->
+<button class="flex flex-col items-center justify-center w-16 group" type="button">
+<svg class="w-5 h-5 text-app-muted group-hover:text-slate-300 transition-colors stroke-current fill-none" stroke-width="1.8" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="9"></circle>
+<path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[10px] text-app-muted mt-1 font-medium group-hover:text-slate-300 transition-colors">History</span>
+</button>
+</div>
+</nav>
+<!-- END: BottomNavigationBar -->
+</main>
+<!-- END: MobileDeviceFrame -->
+</body></html>

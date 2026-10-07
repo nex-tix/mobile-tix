@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Gate Validator - Login</title>
+<!-- Tailwind CSS CDN with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              gold: '#e09b43',
+              goldLight: '#e6a855',
+              dark: '#0c1117',
+              inputBg: '#18202c',
+              inputBorder: '#273444',
+              muted: '#768597',
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+<!-- BEGIN: Custom Styles for Layout & Visual Effects -->
+<style data-purpose="custom-styling">
+    /* Remove default outline styles and customize autofill colors */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus {
+      -webkit-text-fill-color: #ffffff;
+      -webkit-box-shadow: 0 0 0px 1000px #18202c inset;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+    /* Bottom landscape silhouette effect */
+    .mountain-fog {
+      background: linear-gradient(180deg, rgba(12, 17, 23, 0) 0%, rgba(12, 17, 23, 0.75) 45%, #0c1117 100%);
+    }
+  </style>
+<!-- END: Custom Styles for Layout & Visual Effects -->
+</head>
+<body class="bg-[#05080c] min-h-screen flex items-center justify-center p-0 sm:p-4 text-white font-sans antialiased select-none">
+<!-- BEGIN: Phone Frame / Main Screen Container -->
+<main class="relative w-full max-w-[390px] h-[844px] bg-[#0c1117] overflow-hidden flex flex-col justify-between shadow-2xl sm:rounded-[48px] border border-[#1b2533]" data-purpose="mobile-viewport">
+<!-- BEGIN: iOS Status Bar -->
+<header class="w-full pt-3 px-8 flex justify-between items-center z-20 text-[15px] font-semibold tracking-tight text-white/90" data-purpose="ios-status-bar">
+<!-- Current Time -->
+<span class="pl-1">9:41</span>
+<!-- System Indicators: Cellular, Wi-Fi, Battery -->
+<div class="flex items-center space-x-2">
+<!-- Cellular Signal Icon -->
+<svg class="w-4 h-3.5 fill-current" fill="none" viewbox="0 0 17 11" xmlns="http://www.w3.org/2000/svg">
+<rect height="3.5" rx="0.75" width="2.5" y="7.5"></rect>
+<rect height="6" rx="0.75" width="2.5" x="4.5" y="5"></rect>
+<rect height="8.5" rx="0.75" width="2.5" x="9" y="2.5"></rect>
+<rect height="11" rx="0.75" width="2.5" x="13.5"></rect>
+</svg>
+<!-- Wi-Fi Icon -->
+<svg class="w-4 h-3.5 fill-current" fill="none" viewbox="0 0 16 12" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M8 2.6c2.4 0 4.6.9 6.2 2.5.3.3.8.3 1.1 0 .3-.3.3-.8 0-1.1C13.4 2.1 10.8 1.1 8 1.1S2.6 2.1.7 4c-.3.3-.3.8 0 1.1.3.3.8.3 1.1 0C3.4 3.5 5.6 2.6 8 2.6zm0 3.7c1.4 0 2.8.6 3.7 1.5.3.3.8.3 1.1 0 .3-.3.3-.8 0-1.1-1.2-1.2-2.9-2-4.8-2s-3.6.8-4.8 2c-.3.3-.3.8 0 1.1.3.3.8.3 1.1 0 .9-.9 2.3-1.5 3.7-1.5zm0 3.8a1.6 1.6 0 100 3.2 1.6 1.6 0 000-3.2z" fill-rule="evenodd"></path>
+</svg>
+<!-- Battery Icon -->
+<div class="flex items-center">
+<div class="w-[22px] h-[11px] border border-white/80 rounded-[3px] p-[1px] flex items-center">
+<div class="h-full w-full bg-white rounded-[1.5px]"></div>
+</div>
+<div class="w-[1px] h-[4px] bg-white/80 rounded-r-sm ml-[1px]"></div>
+</div>
+</div>
+</header>
+<!-- END: iOS Status Bar -->
+<!-- BEGIN: Main Login Content Section -->
+<section class="flex-1 flex flex-col items-center justify-center px-6 z-10 -mt-10" data-purpose="login-form-wrapper">
+<!-- Brand Logo & App Identity -->
+<div class="flex flex-col items-center mb-8" data-purpose="branding">
+<!-- Dual Shield Curved Amber Logo -->
+<div aria-label="Gate Validator Logo" class="w-16 h-16 mb-4 flex items-center justify-center">
+<svg class="w-14 h-14" fill="none" viewbox="0 0 54 54" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<lineargradient id="goldGradient" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#f0b65b"></stop>
+<stop offset="100%" stop-color="#d99136"></stop>
+</lineargradient>
+</defs>
+<!-- Left curved shield bar -->
+<path d="M15 11C15 8.79086 16.7909 7 19 7C21.2091 7 23 8.79086 23 11V31.5C23 35.6421 19.6421 39 15.5 39H15V11Z" fill="url(#goldGradient)"></path>
+<!-- Right curved shield bar -->
+<path d="M39 11C39 8.79086 37.2091 7 35 7C32.7909 7 31 8.79086 31 11V31.5C31 35.6421 34.3579 39 38.5 39H39V11Z" fill="url(#goldGradient)"></path>
+<!-- Bottom joining curve contour -->
+<path d="M23 27C23 33.6274 28.3726 39 35 39V43C25.0589 43 17 34.9411 17 25V27H23Z" fill="url(#goldGradient)" opacity="0.9"></path>
+</svg>
+</div>
+<!-- App Title -->
+<h1 class="text-[21px] font-bold text-white tracking-wide text-center">
+          Gate Validator
+        </h1>
+</div>
+<!-- Authentication Form -->
+<form class="w-full space-y-3.5" data-purpose="credentials-form" onsubmit="event.preventDefault();">
+<!-- Username Field -->
+<div class="relative flex items-center" data-purpose="username-input-container">
+<span class="absolute left-4 text-brand-muted pointer-events-none flex items-center justify-center">
+<!-- User Outline Icon -->
+<svg class="w-5 h-5 text-[#8696a7]" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</span>
+<input aria-label="Username" class="w-full h-[52px] bg-brand-inputBg/90 text-white placeholder-[#7d8c9e] text-[15px] font-normal pl-12 pr-4 rounded-xl border border-transparent focus:border-brand-gold/60 focus:bg-brand-inputBg focus:outline-none focus:ring-1 focus:ring-brand-gold/60 transition-all duration-200" placeholder="Username" type="text"/>
+</div>
+<!-- Password Field -->
+<div class="relative flex items-center" data-purpose="password-input-container">
+<!-- Lock Icon -->
+<span class="absolute left-4 text-brand-muted pointer-events-none flex items-center justify-center">
+<svg class="w-5 h-5 text-[#8696a7]" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</span>
+<input aria-label="Password" class="w-full h-[52px] bg-brand-inputBg/90 text-white placeholder-[#7d8c9e] text-[15px] font-normal pl-12 pr-12 rounded-xl border border-transparent focus:border-brand-gold/60 focus:bg-brand-inputBg focus:outline-none focus:ring-1 focus:ring-brand-gold/60 transition-all duration-200" placeholder="Password" type="password"/>
+<!-- Password Visibility Toggle Button -->
+<button aria-label="Toggle password visibility" class="absolute right-4 text-[#8696a7] hover:text-white transition-colors focus:outline-none flex items-center justify-center" type="button">
+<!-- Eye Off / Visibility Toggle Icon -->
+<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+<!-- Login Primary Action Button -->
+<div class="pt-2">
+<button class="w-full h-[50px] bg-gradient-to-r from-[#e5a953] to-[#dc933a] hover:from-[#eab05e] hover:to-[#e49c43] active:scale-[0.99] text-[#131b26] font-semibold text-[15.5px] rounded-xl shadow-lg shadow-black/30 flex items-center justify-center transition-all duration-150 cursor-pointer" data-purpose="submit-login-button" type="submit">
+            Login
+          </button>
+</div>
+</form>
+</section>
+<!-- END: Main Login Content Section -->
+<!-- BEGIN: Atmospheric Bottom Landscape Illustration -->
+<div class="relative w-full h-44 overflow-hidden pointer-events-none" data-purpose="bottom-landscape-illustration">
+<!-- Dark mountain/cliff silhouette vector graphic -->
+<svg class="absolute bottom-0 w-full h-full object-cover" fill="none" preserveaspectratio="none" viewbox="0 0 390 180" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<lineargradient id="cliffGrad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#141c27" stop-opacity="0.2"></stop>
+<stop offset="60%" stop-color="#0e151e" stop-opacity="0.8"></stop>
+<stop offset="100%" stop-color="#080c12" stop-opacity="1"></stop>
+</lineargradient>
+<lineargradient id="templeGrad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#1a2533" stop-opacity="0.4"></stop>
+<stop offset="100%" stop-color="#0a0f16" stop-opacity="0.95"></stop>
+</lineargradient>
+</defs>
+<!-- Far background subtle mountains & mist -->
+<path d="M0 130 C70 120 140 135 210 115 C280 95 330 110 390 100 L390 180 L0 180 Z" fill="#111923" opacity="0.6"></path>
+<!-- Sea / Coastline gradient plane -->
+<path d="M0 145 C90 142 180 152 270 140 C330 132 360 138 390 134 L390 180 L0 180 Z" fill="#0b1118" opacity="0.9"></path>
+<!-- Left Coast Cliff and Tanah Lot style temple silhouette -->
+<!-- Temple multi-tiered roof details -->
+<rect fill="#141d27" height="3" rx="1.5" width="18" x="36" y="94"></rect>
+<rect fill="#141d27" height="3" rx="1" width="12" x="39" y="88"></rect>
+<rect fill="#141d27" height="3" rx="0.5" width="6" x="42" y="82"></rect>
+<path d="M30 115 L60 115 L52 97 L38 97 Z" fill="#131d28"></path>
+<!-- Cliff Base Outcropping -->
+<path d="M-20 180 L-10 130 C15 125 35 115 50 122 C68 130 75 142 95 146 C115 150 135 162 165 170 C185 175 220 178 240 180 Z" fill="url(#cliffGrad)"></path>
+<!-- Distant right headland cliff -->
+<path d="M280 180 C310 168 340 155 365 150 C380 147 385 148 400 145 L400 180 Z" fill="#0e1620" opacity="0.85"></path>
+</svg>
+<!-- Soft top fade into main background -->
+<div class="absolute inset-0 bg-gradient-to-b from-[#0c1117] via-transparent to-transparent h-16"></div>
+<!-- iOS Home Indicator -->
+<div class="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/30 rounded-full" data-purpose="home-indicator"></div>
+</div>
+<!-- END: Atmospheric Bottom Landscape Illustration -->
+</main>
+<!-- END: Phone Frame / Main Screen Container -->
+</body></html>

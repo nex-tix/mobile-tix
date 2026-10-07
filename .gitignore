@@ -49,3 +49,29 @@ app.*.map.json
 
 # FVM Version Cache
 .fvm/
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+*.env
+secrets/
+credentials/
+*.jks
+*.keystore
+key.properties
+
+# Hermes Agent (planning & skills - internal)
+.hermes/
+
+# IDE & Tools
+.impeccable/
+.vscode/launch.json
+
+# Coverage & Test
+coverage/
+.test_coverage.dart
+
+# Build artifacts
+build/
+.fvmr

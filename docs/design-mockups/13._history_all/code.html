@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Gate Validator - History</title>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              bg: '#0c1219',
+              card: '#161f2c',
+              cardBorder: '#222f42',
+              amber: '#e5a952',
+              amberDark: '#b87c28',
+              green: '#2ecc71',
+              red: '#eb4d4b',
+              subtext: '#8a99ad',
+              tabInactive: '#627285'
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom styles for iOS mobile viewport matching -->
+<style data-purpose="custom-scroll-and-layout">
+    body {
+      background-color: #05080c;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* Hide scrollbar for a native mobile feel */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="flex justify-center items-center min-h-screen p-0 sm:p-4">
+<!-- BEGIN: MobileContainer -->
+<!-- Mimics iOS mobile device screen frame -->
+<div class="w-full max-w-[390px] h-[844px] bg-[#0c1219] text-white flex flex-col justify-between relative overflow-hidden sm:rounded-[44px] sm:border-[8px] sm:border-[#1e293b] shadow-2xl">
+<!-- Top Content Area -->
+<div class="flex flex-col flex-1 overflow-hidden">
+<!-- BEGIN: StatusBar -->
+<!-- iOS Status Bar -->
+<header class="pt-3 px-7 flex justify-between items-center z-10" data-purpose="ios-status-bar">
+<!-- Time -->
+<span class="text-sm font-semibold tracking-tight text-white">9:41</span>
+<!-- Status Icons -->
+<div class="flex items-center space-x-2 text-white">
+<!-- Cellular Signal -->
+<svg class="w-4 h-3.5 fill-current" viewbox="0 0 17 12">
+<rect height="4" rx="0.8" width="3" x="0" y="8"></rect>
+<rect height="6.5" rx="0.8" width="3" x="4.5" y="5.5"></rect>
+<rect height="9" rx="0.8" width="3" x="9" y="3"></rect>
+<rect height="12" rx="0.8" width="3" x="13.5" y="0"></rect>
+</svg>
+<!-- Wi-Fi -->
+<svg class="w-4 h-3.5 fill-current" viewbox="0 0 16 12">
+<path d="M8 2.8C5.2 2.8 2.7 3.9 0.8 5.7L0 4.8C2.2 2.7 5 1.5 8 1.5c3 0 5.8 1.2 8 3.3l-.8.9C13.3 3.9 10.8 2.8 8 2.8zm0 3.8c-1.8 0-3.4.7-4.7 1.9l-.8-.8c1.5-1.4 3.5-2.2 5.5-2.2s4 .8 5.5 2.2l-.8.8C11.4 7.3 9.8 6.6 8 6.6zm0 3.7c-.9 0-1.8.4-2.4 1l-.8-.8C5.7 9.6 6.8 9 8 9s2.3.6 3.2 1.5l-.8.8c-.6-.6-1.5-1-2.4-1z"></path>
+<circle cx="8" cy="11.5" r="1.1"></circle>
+</svg>
+<!-- Battery -->
+<div class="w-6 h-3 border border-white/80 rounded-sm p-0.5 flex items-center">
+<div class="bg-white h-full w-4 rounded-2xs"></div>
+</div>
+</div>
+</header>
+<!-- END: StatusBar -->
+<!-- BEGIN: NavigationTitle -->
+<section class="px-6 pt-5 pb-4" data-purpose="screen-title">
+<h1 class="text-2xl font-bold tracking-normal text-white">History</h1>
+</section>
+<!-- END: NavigationTitle -->
+<!-- BEGIN: FilterTabs -->
+<!-- Segmented filter control (All, Valid, Rejected) -->
+<nav aria-label="History Filters" class="px-6 pb-4" data-purpose="filter-tabs">
+<div class="bg-[#151d28] p-1 rounded-2xl flex items-center justify-between border border-[#1e2b3c]">
+<!-- All Tab (Active) -->
+<button class="flex-1 py-2 px-3 text-xs font-semibold rounded-xl bg-[#e5a952] text-[#0c1219] shadow-sm text-center transition-all duration-150" type="button">
+            All
+          </button>
+<!-- Valid Tab -->
+<button class="flex-1 py-2 px-3 text-xs font-semibold rounded-xl text-[#7f8fa4] hover:text-white text-center transition-all duration-150" type="button">
+            Valid
+          </button>
+<!-- Rejected Tab -->
+<button class="flex-1 py-2 px-3 text-xs font-semibold rounded-xl text-[#7f8fa4] hover:text-white text-center transition-all duration-150" type="button">
+            Rejected
+          </button>
+</div>
+</nav>
+<!-- END: FilterTabs -->
+<!-- BEGIN: HistoryList -->
+<!-- Scrollable list of scanned validation records -->
+<main class="flex-1 overflow-y-auto px-6 space-y-3 pb-24 no-scrollbar" data-purpose="history-item-list">
+<!-- History Item 1: TKT-7K3M (Valid) -->
+<article class="bg-[#151f2d] border border-[#212f42] rounded-2xl p-4 flex items-center justify-between" data-purpose="history-ticket-card">
+<div class="flex items-center space-x-3.5">
+<!-- Status Icon Badge: Green Checkmark -->
+<div class="w-10 h-10 rounded-full bg-[#1e7e4e]/20 flex items-center justify-center shrink-0 border border-[#2ecc71]/20">
+<div class="w-6 h-6 rounded-full bg-[#2ecc71] flex items-center justify-center text-white">
+<svg class="w-3.5 h-3.5 stroke-current stroke-[2.5] fill-none" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<!-- Ticket Info -->
+<div class="flex flex-col">
+<span class="text-sm font-semibold tracking-wide text-white">TKT-7K3M</span>
+<span class="text-xs text-[#7d8ea5] mt-0.5">14:32:08</span>
+</div>
+</div>
+<!-- Meta Details -->
+<div class="flex flex-col items-end">
+<span class="text-xs text-[#a9b7c8] font-medium">1 visitor</span>
+<span class="text-xs text-[#637489] mt-0.5">Gate 1</span>
+</div>
+</article>
+<!-- History Item 2: GRP-6K2P (Valid) -->
+<article class="bg-[#151f2d] border border-[#212f42] rounded-2xl p-4 flex items-center justify-between" data-purpose="history-ticket-card">
+<div class="flex items-center space-x-3.5">
+<!-- Status Icon Badge: Green Checkmark -->
+<div class="w-10 h-10 rounded-full bg-[#1e7e4e]/20 flex items-center justify-center shrink-0 border border-[#2ecc71]/20">
+<div class="w-6 h-6 rounded-full bg-[#2ecc71] flex items-center justify-center text-white">
+<svg class="w-3.5 h-3.5 stroke-current stroke-[2.5] fill-none" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<!-- Ticket Info -->
+<div class="flex flex-col">
+<span class="text-sm font-semibold tracking-wide text-white">GRP-6K2P</span>
+<span class="text-xs text-[#7d8ea5] mt-0.5">14:20:12</span>
+</div>
+</div>
+<!-- Meta Details -->
+<div class="flex flex-col items-end">
+<span class="text-xs text-[#a9b7c8] font-medium">6 visitors</span>
+<span class="text-xs text-[#637489] mt-0.5">Gate 1</span>
+</div>
+</article>
+<!-- History Item 3: TKT-92XA (Rejected / Already Used) -->
+<article class="bg-[#151f2d] border border-[#212f42] rounded-2xl p-4 flex items-center justify-between" data-purpose="history-ticket-card">
+<div class="flex items-center space-x-3.5">
+<!-- Status Icon Badge: Red Crossmark -->
+<div class="w-10 h-10 rounded-full bg-[#8c2e2e]/20 flex items-center justify-center shrink-0 border border-[#eb4d4b]/20">
+<div class="w-6 h-6 rounded-full bg-[#eb4d4b] flex items-center justify-center text-white">
+<svg class="w-3.5 h-3.5 stroke-current stroke-[2.5] fill-none" viewbox="0 0 24 24">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<!-- Ticket Info -->
+<div class="flex flex-col">
+<span class="text-sm font-semibold tracking-wide text-white">TKT-92XA</span>
+<span class="text-xs text-[#7d8ea5] mt-0.5">14:28:41</span>
+</div>
+</div>
+<!-- Meta Details -->
+<div class="flex flex-col items-end">
+<span class="text-xs text-[#eb4d4b] font-medium">Already used</span>
+<span class="text-xs text-[#637489] mt-0.5">Gate 1</span>
+</div>
+</article>
+<!-- History Item 4: TKT-5J7Q (Valid) -->
+<article class="bg-[#151f2d] border border-[#212f42] rounded-2xl p-4 flex items-center justify-between" data-purpose="history-ticket-card">
+<div class="flex items-center space-x-3.5">
+<!-- Status Icon Badge: Green Checkmark -->
+<div class="w-10 h-10 rounded-full bg-[#1e7e4e]/20 flex items-center justify-center shrink-0 border border-[#2ecc71]/20">
+<div class="w-6 h-6 rounded-full bg-[#2ecc71] flex items-center justify-center text-white">
+<svg class="w-3.5 h-3.5 stroke-current stroke-[2.5] fill-none" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+</div>
+<!-- Ticket Info -->
+<div class="flex flex-col">
+<span class="text-sm font-semibold tracking-wide text-white">TKT-5J7Q</span>
+<span class="text-xs text-[#7d8ea5] mt-0.5">14:15:03</span>
+</div>
+</div>
+<!-- Meta Details -->
+<div class="flex flex-col items-end">
+<span class="text-xs text-[#a9b7c8] font-medium">2 visitors</span>
+<span class="text-xs text-[#637489] mt-0.5">Gate 1</span>
+</div>
+</article>
+</main>
+<!-- END: HistoryList -->
+</div>
+<!-- BEGIN: BottomTabBar -->
+<!-- Floating Bottom Navigation Dock -->
+<footer class="absolute bottom-5 inset-x-6 z-20" data-purpose="floating-bottom-navigation">
+<nav aria-label="Bottom Bar" class="bg-[#16212e]/95 backdrop-blur-md border border-[#233246] rounded-full py-2.5 px-6 flex items-center justify-between shadow-lg">
+<!-- Dashboard Button -->
+<button class="flex flex-col items-center justify-center text-[#64748b] hover:text-[#94a3b8] transition-colors w-16" type="button">
+<svg class="w-5 h-5 fill-current" viewbox="0 0 24 24">
+<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
+</svg>
+<span class="text-[10px] mt-1 font-medium tracking-tight">Dashboard</span>
+</button>
+<!-- Scan Button -->
+<button class="flex flex-col items-center justify-center text-[#64748b] hover:text-[#94a3b8] transition-colors w-16" type="button">
+<svg class="w-5 h-5 stroke-current fill-none stroke-2" viewbox="0 0 24 24">
+<path d="M3 7V5a2 2 0 012-2h2m10 0h2a2 2 0 012 2v2m0 10v2a2 2 0 01-2 2h-2m-10 0H5a2 2 0 01-2-2v-2" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[10px] mt-1 font-medium tracking-tight">Scan</span>
+</button>
+<!-- History Button (Active) -->
+<button class="flex flex-col items-center justify-center text-[#e5a952] transition-colors w-16" type="button">
+<div class="relative">
+<svg class="w-5 h-5 stroke-current fill-none stroke-2" viewbox="0 0 24 24">
+<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-[10px] mt-1 font-medium tracking-tight">History</span>
+</button>
+</nav>
+</footer>
+<!-- END: BottomTabBar -->
+<!-- iOS Home Indicator -->
+<div class="absolute bottom-1 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/20 rounded-full pointer-events-none"></div>
+</div>
+<!-- END: MobileContainer -->
+</body></html>
