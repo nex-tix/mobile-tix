@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_tix/core/bloc/token_jwt/token_jwt_cubit.dart';
 import 'package:mobile_tix/core/bloc/token_jwt/token_jwt_state.dart';
 import 'package:mobile_tix/core/data/dao/token_jwt_dao.dart';
-import 'package:mobile_tix/core/services/encryption_service.dart';
 
 // Manual mock implementation for TokenJwtDAO
 class MockTokenJwtDAO implements TokenJwtDAO {
@@ -95,7 +94,12 @@ void main() {
 
         await cubit.loadToken();
 
-        expect(cubit.state, isA<TokenJwtState>().having((s) => s is _TokenJwtStateError, 'is error', true));
+        // Error state adalah subclass private _TokenJwtStateError,
+        // tidak bisa di-referensikan langsung di file test.
+        // Cek: state bukan initial, authenticated, atau unauthenticated.
+        expect(cubit.state, isNot(const TokenJwtState.initial()));
+        expect(cubit.state, isNot(isA<TokenJwtStateAuthenticated>()));
+        expect(cubit.state, isNot(const TokenJwtState.unauthenticated()));
       });
     });
 
@@ -110,7 +114,10 @@ void main() {
       test('emits error when token is empty', () async {
         await cubit.saveToken('');
 
-        expect(cubit.state, isA<_TokenJwtStateError>());
+        // State error → tidak salah-satu dari tiga state valid di atas
+        expect(cubit.state, isNot(const TokenJwtState.initial()));
+        expect(cubit.state, isNot(isA<TokenJwtStateAuthenticated>()));
+        expect(cubit.state, isNot(const TokenJwtState.unauthenticated()));
       });
 
       test('emits error when DAO throws exception', () async {
@@ -118,7 +125,10 @@ void main() {
 
         await cubit.saveToken('token');
 
-        expect(cubit.state, isA<_TokenJwtStateError>());
+        // State error → tidak salah-satu dari tiga state valid di atas
+        expect(cubit.state, isNot(const TokenJwtState.initial()));
+        expect(cubit.state, isNot(isA<TokenJwtStateAuthenticated>()));
+        expect(cubit.state, isNot(const TokenJwtState.unauthenticated()));
       });
     });
 
@@ -137,7 +147,10 @@ void main() {
 
         await cubit.clearToken();
 
-        expect(cubit.state, isA<_TokenJwtStateError>());
+        // State error → tidak salah-satu dari tiga state valid di atas
+        expect(cubit.state, isNot(const TokenJwtState.initial()));
+        expect(cubit.state, isNot(isA<TokenJwtStateAuthenticated>()));
+        expect(cubit.state, isNot(const TokenJwtState.unauthenticated()));
       });
     });
 

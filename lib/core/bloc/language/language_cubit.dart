@@ -59,10 +59,17 @@ class LanguageCubit extends Cubit<Locale> {
         defaultValue: _defaultLanguage, // Default ke 'id' jika tidak ada
       );
 
-      // Emit Locale dengan language code yang di-load
+      // Validasi: hanya 'id' dan 'en' yang didukung.
+      // Nilai korup / tidak dikenal di storage fallback ke default,
+      // supaya locale tidak pernah berisi kode bahasa asing.
+      final code = languageCode as String;
+      final safeCode =
+          (code == 'id' || code == 'en') ? code : _defaultLanguage;
+
+      // Emit Locale dengan language code yang di-load & sudah tervalidasi
       // Locale('id') = Indonesian, Locale('en') = English
       // Ini akan trigger MaterialApp rebuild dengan locale baru
-      emit(Locale(languageCode as String));
+      emit(Locale(safeCode));
     } catch (e) {
       // Error saat load preference — fallback ke default
       print('Error loading language: $e');
