@@ -1,5 +1,7 @@
 /// App config for the UI prototype stage. Dummy values only — nothing here talks
 /// to a backend; the Dio layer is untouched and unused by these screens.
+import 'package:mobile_tix/core/config/env_config.dart';
+
 class AppConfig {
   const AppConfig._();
 
@@ -17,4 +19,8 @@ class AppConfig {
 
   /// The prototype answers every outcome from local dummy data.
   static const bool uiOnly = true;
+
+  // New getters from env config (optional)
+  static String get baseUrl => EnvConfig.baseUrl;
+  static bool get needEncrypt => EnvConfig.isNeedEncrypt;
 }
