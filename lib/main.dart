@@ -6,6 +6,7 @@ import 'core/services/encryption_service.dart';
 import 'core/bloc/theme/theme_cubit.dart';
 import 'core/bloc/language/language_cubit.dart';
 import 'core/data/dao/offline_queue_dao.dart';
+import 'core/data/dao/checkpoint_dao.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,9 +18,11 @@ void main() async {
   //    QueuedScanAdapter dipakai box antrean scan offline.
   OfflineQueueDAO.registerAdapters();
 
-  // 3. Inisialisasi Security Encryption & Token DAO
+  // 3. Inisialisasi Security Encryption & DAOs
   EncryptionService.initialize();
   await authTokenDao.initialize();
+  await CheckpointDAO().initialize();
+  await OfflineQueueDAO().initialize();
 
   // 4. Inisialisasi Global Cubits (Theme & Language)
   final themeCubit = ThemeCubit();

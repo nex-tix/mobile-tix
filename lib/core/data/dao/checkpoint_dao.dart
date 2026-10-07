@@ -31,15 +31,24 @@ class CheckpointDAO {
   factory CheckpointDAO() => _instance;
   CheckpointDAO._internal();
 
-  // Reference ke Hive box
-  late Box<dynamic> _checkpointBox;
+  // Reference ke Hive box (lazy / nullable)
+  Box<dynamic>? _checkpointBox;
+
+  bool get isInitialized => _checkpointBox?.isOpen ?? false;
+
+  /// Helper untuk memastikan box sudah terbuka
+  Future<Box<dynamic>> _getBox() async {
+    if (_checkpointBox != null && _checkpointBox!.isOpen) {
+      return _checkpointBox!;
+    }
+    _checkpointBox = await Hive.openBox(_boxName);
+    return _checkpointBox!;
+  }
 
   /// Initialize DAO — buka Hive box
   Future<void> initialize() async {
     try {
-      // Buka box untuk checkpoint cache
-      // Tipe dynamic karena menyimpan mixed data (List dan DateTime)
-      _checkpointBox = await Hive.openBox(_boxName);
+      await _getBox();
     } catch (e) {
       throw Exception('Failed to initialize CheckpointDAO: $e');
     }
@@ -51,19 +60,9 @@ class CheckpointDAO {
   /// Otomatis update timestamp last_update saat disimpan
   Future<void> saveCheckpoints(List<Map<String, dynamic>> checkpoints) async {
     try {
-      // Simpan array checkpoint sebagai JSON string
-      // Hive box<dynamic> bisa simpan berbagai tipe termasuk List
-      await _checkpointBox.put(
-        _checkpointsKey,
-        checkpoints, // Hive auto-serialize List ke JSON format
-      );
-      
-      // Update timestamp kapan checkpoint di-save
-      // Ini untuk tracking cache age
-      await _checkpointBox.put(
-        _lastUpdateKey,
-        DateTime.now().toIso8601String(),
-      );
+      final box = await _getBox();
+      await box.put(_checkpointsKey, checkpoints);
+      await box.put(_lastUpdateKey, DateTime.now().toIso8601String());
     } catch (e) {
       throw Exception('Failed to save checkpoints: $e');
     }
@@ -72,21 +71,17 @@ class CheckpointDAO {
   /// Ambil checkpoint list dari cache
   /// 
   /// Returns: List<Map> checkpoint cache, null jika tidak ada
-  /// Hive auto-deserialize JSON kembali ke List
   List<Map<String, dynamic>>? getCheckpoints() {
     try {
-      // Get value — return null jika key tidak ada
-      final data = _checkpointBox.get(_checkpointsKey);
-      
-      // Type casting — convert dari dynamic ke typed List
+      final box = _checkpointBox;
+      if (box == null || !box.isOpen) return null;
+
+      final data = box.get(_checkpointsKey);
       if (data is List) {
-        // Cast List ke List<Map<String, dynamic>>
         return List<Map<String, dynamic>>.from(data);
       }
-      
       return null;
     } catch (e) {
-      print('Error getting checkpoints: $e');
       return null;
     }
   }
@@ -94,27 +89,20 @@ class CheckpointDAO {
   /// Check apakah cache checkpoint masih fresh (belum expired)
   /// 
   /// Returns: true jika cache masih valid, false jika sudah expired
-  /// Cache invalidate otomatis setelah 12 jam
   bool isCacheValid() {
     try {
-      // Get last update timestamp dari box
-      final lastUpdateStr = _checkpointBox.get(_lastUpdateKey) as String?;
-      
-      // Jika tidak ada timestamp, cache tidak valid
+      final box = _checkpointBox;
+      if (box == null || !box.isOpen) return false;
+
+      final lastUpdateStr = box.get(_lastUpdateKey) as String?;
       if (lastUpdateStr == null) return false;
-      
-      // Parse timestamp ke DateTime
+
       final lastUpdate = DateTime.parse(lastUpdateStr);
-      
-      // Hitung berapa lama cache sudah disimpan
       final now = DateTime.now();
       final cacheAge = now.difference(lastUpdate);
-      
-      // Check apakah cache age <= TTL (12 jam)
-      // Jika lebih dari 12 jam, cache expired
+
       return cacheAge <= _cacheTtl;
     } catch (e) {
-      print('Error checking cache validity: $e');
       return false;
     }
   }
@@ -124,9 +112,9 @@ class CheckpointDAO {
   /// Digunakan untuk force-refresh data dari API
   Future<void> clear() async {
     try {
-      // Delete kedua keys (checkpoint dan last_update)
-      await _checkpointBox.delete(_checkpointsKey);
-      await _checkpointBox.delete(_lastUpdateKey);
+      final box = await _getBox();
+      await box.delete(_checkpointsKey);
+      await box.delete(_lastUpdateKey);
     } catch (e) {
       throw Exception('Failed to clear checkpoint cache: $e');
     }
@@ -137,13 +125,10 @@ class CheckpointDAO {
   /// Simpan checkpoint/gate yang aktif dipilih petugas
   /// 
   /// [checkpoint]: data gate aktif dalam bentuk Map (hasil toJson())
-  /// 
-  /// Disimpan di key terpisah dari cache list supaya pilihan petugas tetap
-  /// bertahan walau cache checkpoint di-refresh. Dipanggil saat petugas
-  /// memilih gate di halaman checkpoint picker.
   Future<void> saveCheckpoint(Map<String, dynamic> checkpoint) async {
     try {
-      await _checkpointBox.put(_activeKey, checkpoint);
+      final box = await _getBox();
+      await box.put(_activeKey, checkpoint);
     } catch (e) {
       throw Exception('Failed to save active checkpoint: $e');
     }
@@ -152,21 +137,17 @@ class CheckpointDAO {
   /// Ambil checkpoint aktif yang tersimpan
   /// 
   /// Returns: Map checkpoint aktif, atau null jika petugas belum memilih gate
-  /// 
-  /// Dipakai saat app restart — kalau ada nilai, app langsung masuk mode scan
-  /// tanpa meminta petugas memilih gate lagi.
   Map<String, dynamic>? getActiveCheckpoint() {
     try {
-      final data = _checkpointBox.get(_activeKey);
+      final box = _checkpointBox;
+      if (box == null || !box.isOpen) return null;
 
-      // Type casting — Hive menyimpan Map sebagai dynamic
+      final data = box.get(_activeKey);
       if (data is Map) {
         return Map<String, dynamic>.from(data);
       }
-
       return null;
     } catch (e) {
-      print('Error getting active checkpoint: $e');
       return null;
     }
   }
@@ -176,7 +157,9 @@ class CheckpointDAO {
   /// Returns: true jika petugas sudah punya gate aktif di storage
   bool hasActiveCheckpoint() {
     try {
-      return _checkpointBox.containsKey(_activeKey);
+      final box = _checkpointBox;
+      if (box == null || !box.isOpen) return false;
+      return box.containsKey(_activeKey);
     } catch (e) {
       return false;
     }
@@ -188,7 +171,8 @@ class CheckpointDAO {
   /// sesi petugas berikutnya di perangkat yang sama.
   Future<void> clearActiveCheckpoint() async {
     try {
-      await _checkpointBox.delete(_activeKey);
+      final box = await _getBox();
+      await box.delete(_activeKey);
     } catch (e) {
       throw Exception('Failed to clear active checkpoint: $e');
     }
@@ -197,9 +181,13 @@ class CheckpointDAO {
   /// Close Hive box
   Future<void> close() async {
     try {
-      await _checkpointBox.close();
+      final box = _checkpointBox;
+      if (box != null && box.isOpen) {
+        await box.close();
+      }
+      _checkpointBox = null;
     } catch (e) {
-      print('Error closing checkpoint box: $e');
+      // ignore
     }
   }
 }

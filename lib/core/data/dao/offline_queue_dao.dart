@@ -41,14 +41,22 @@ class OfflineQueueDAO {
     }
   }
 
+  /// Helper untuk memastikan box sudah terbuka
+  Future<Box<QueuedScan>> _getBox() async {
+    if (_queueBox != null && _queueBox!.isOpen) {
+      return _queueBox!;
+    }
+    registerAdapters();
+    _queueBox = await Hive.openBox<QueuedScan>(_boxName);
+    return _queueBox!;
+  }
+
   /// Initialize DAO — buka Hive box untuk antrean offline
   ///
   /// Throws: Exception jika gagal buka box
   Future<void> initialize() async {
     try {
-      // Adapter wajib terdaftar sebelum openBox bertipe custom
-      registerAdapters();
-      _queueBox = await Hive.openBox<QueuedScan>(_boxName);
+      await _getBox();
     } catch (e) {
       throw Exception('Failed to initialize OfflineQueueDAO: $e');
     }
@@ -66,7 +74,7 @@ class OfflineQueueDAO {
     String mode = 'checkIn',
   }) async {
     try {
-      final box = _requireBox();
+      final box = await _getBox();
 
       // Waktu scan (UTC) — dipakai sebagai urutan FIFO dan dasar TTL
       final now = DateTime.now().toUtc();
@@ -91,7 +99,8 @@ class OfflineQueueDAO {
   /// Berguna untuk restore dari backup atau pengujian.
   Future<void> save(QueuedScan scan) async {
     try {
-      await _requireBox().put(scan.id, scan);
+      final box = await _getBox();
+      await box.put(scan.id, scan);
     } catch (e) {
       throw Exception('Failed to save queued scan: $e');
     }
@@ -134,7 +143,6 @@ class OfflineQueueDAO {
       valid.sort((a, b) => a.queuedAt.compareTo(b.queuedAt));
       return valid;
     } catch (e) {
-      print('Error getting offline queue: $e');
       return [];
     }
   }
@@ -148,7 +156,8 @@ class OfflineQueueDAO {
   /// Hapus satu item antrean setelah berhasil dikirim ke server.
   Future<void> remove(String id) async {
     try {
-      await _requireBox().delete(id);
+      final box = await _getBox();
+      await box.delete(id);
     } catch (e) {
       throw Exception('Failed to remove queued scan: $e');
     }
@@ -160,7 +169,7 @@ class OfflineQueueDAO {
   /// atau dilewati pada percobaan berikutnya.
   Future<void> incrementRetry(String id) async {
     try {
-      final box = _requireBox();
+      final box = await _getBox();
       final scan = box.get(id);
       if (scan == null) return;
 
@@ -175,7 +184,8 @@ class OfflineQueueDAO {
   /// Hapus seluruh isi antrean (dipakai saat logout / reset perangkat).
   Future<void> clear() async {
     try {
-      await _requireBox().clear();
+      final box = await _getBox();
+      await box.clear();
     } catch (e) {
       throw Exception('Failed to clear offline queue: $e');
     }
@@ -195,20 +205,7 @@ class OfflineQueueDAO {
       await box.close();
       _queueBox = null;
     } catch (e) {
-      print('Error closing offline queue box: $e');
+      // ignore
     }
-  }
-
-  // ==================== PRIVATE HELPERS ====================
-
-  /// Pastikan box sudah terinisialisasi sebelum dipakai.
-  Box<QueuedScan> _requireBox() {
-    final box = _queueBox;
-    if (box == null || !box.isOpen) {
-      throw StateError(
-        'OfflineQueueDAO not initialized. Call initialize() first.',
-      );
-    }
-    return box;
   }
 }

@@ -11,9 +11,9 @@ Dokumen ini memecah seluruh fase migrasi arsitektur dari `.hermes/plans/architec
 | **Fase 0** | Persiapan & Setup Dependencies | 30m | ✅ Selesai | 1 Commit |
 | **Fase 1** | Core Services Foundation (Security, API, Session) | 3h | ✅ Selesai | 1 Commit (`e4812d1`) |
 | **Fase 2** | Global State Management (BLoC/Cubit) | 2h | ✅ Selesai | 4 Commit |
-| **Fase 3** | Data Access Objects (DAO & Offline Storage) | 1h | ⏳ Menunggu | 3 Commit |
-| **Fase 4** | Core UI Widgets (Snackbar Top, Copyable, Confirm Dialog) | 1.5h | ⏳ Menunggu | 4 Commit |
-| **Fase 5** | Internationalization (i18n EasyLocalization id/en) | 2h | ⏳ Menunggu | 3 Commit |
+| **Fase 3** | Data Access Objects (DAO & Offline Storage) | 1h | ✅ Selesai | 3 Commit (`79a80a5`) |
+| **Fase 4** | Core UI Widgets (Snackbar Top, Copyable, Confirm Dialog) | 1.5h | ✅ Selesai | 4 Commit |
+| **Fase 5** | Internationalization (i18n EasyLocalization id/en) | 2h | ⏳ SIAP DIKERJAKAN | 3 Commit |
 | **Fase 6** | Feature BLoC Migration (Scanner, Dashboard, History) | 3h | ⏳ Menunggu | 5 Commit |
 | **Fase 7** | Full 8 Endpoints API Integration | 2h | ⏳ Menunggu | 3 Commit |
 | **Fase 8** | Polish, Audio Feedback, Shimmer, & Production Readiness | 2h | ⏳ Menunggu | 3 Commit |
@@ -101,11 +101,11 @@ Dokumen ini memecah seluruh fase migrasi arsitektur dari `.hermes/plans/architec
 ---
 
 ## 📋 FASE 3: Data Access Objects (DAO & Offline Storage)
-> **Status:** ⏳ SIAP DIKERJAKAN  
+> **Status:** ✅ SELESAI (`commit 79a80a5`)  
 > **Goal:** Standarisasi akses storage lokal menggunakan DAO pattern yang terenkripsi dan terstruktur.
 
 ### 📌 Commit 3.1: Implementasi CheckpointDao
-- **Pesan Commit:** `feat(dao): implement CheckpointDao for active gate persistence`
+- [x] **Pesan Commit:** `feat(dao): implement CheckpointDao for active gate persistence`
 - **Files:**
   - `lib/core/data/dao/checkpoint_dao.dart`
   - `test/core/data/checkpoint_dao_test.dart`
@@ -114,7 +114,7 @@ Dokumen ini memecah seluruh fase migrasi arsitektur dari `.hermes/plans/architec
   - Metode `getActiveCheckpoint()`, `saveCheckpoint()`, `clear()`.
 
 ### 📌 Commit 3.2: Implementasi OfflineQueueDao dengan Hive Adapter
-- **Pesan Commit:** `feat(dao): implement OfflineQueueDao for offline ticket scan caching`
+- [x] **Pesan Commit:** `feat(dao): implement OfflineQueueDao for offline ticket scan caching`
 - **Files:**
   - `lib/core/data/dao/offline_queue_dao.dart`
   - `lib/features/scanner/data/models/queued_scan.dart`
@@ -125,7 +125,7 @@ Dokumen ini memecah seluruh fase migrasi arsitektur dari `.hermes/plans/architec
   - Generate adapter menggunakan `build_runner`.
 
 ### 📌 Commit 3.3: Unit Tests untuk Lapisan DAO
-- **Pesan Commit:** `test(dao): add unit tests for TokenJwtDao, CheckpointDao, and OfflineQueueDao`
+- [x] **Pesan Commit:** `test(dao): add unit tests for TokenJwtDao, CheckpointDao, and OfflineQueueDao`
 - **Files:**
   - `test/core/data/token_jwt_dao_test.dart`
   - `test/core/data/offline_queue_dao_test.dart`
@@ -135,11 +135,11 @@ Dokumen ini memecah seluruh fase migrasi arsitektur dari `.hermes/plans/architec
 ---
 
 ## 📋 FASE 4: Core UI Widgets
-> **Status:** ⏳ MENUNGGU FASE 3  
+> **Status:** ✅ SELESAI  
 > **Goal:** Membuat komponen visual reusable standar aplikasi (Snackbar atas, Text Copyable, Dialog Konfirmasi).
 
 ### 📌 Commit 4.1: Top Floating Snackbar
-- **Pesan Commit:** `feat(ui): implement top floating snackbar using OverlayEntry`
+- [x] **Pesan Commit:** `feat(ui): implement top floating snackbar using OverlayEntry`
 - **Files:**
   - `lib/core/ui/widgets/snackbar_top.dart`
   - `lib/core/ui/widgets/app_snackbar.dart`
@@ -149,7 +149,7 @@ Dokumen ini memecah seluruh fase migrasi arsitektur dari `.hermes/plans/architec
   - Varian warna: Success (Hijau), Warning (Amber), Danger (Merah).
 
 ### 📌 Commit 4.2: TextCopyable Widget
-- **Pesan Commit:** `feat(ui): implement TextCopyable widget with masked text option`
+- [x] **Pesan Commit:** `feat(ui): implement TextCopyable widget with masked text option`
 - **Files:**
   - `lib/core/ui/widgets/text_copyable.dart`
 - **Cakupan Tugas:**
@@ -158,7 +158,7 @@ Dokumen ini memecah seluruh fase migrasi arsitektur dari `.hermes/plans/architec
   - Mendukung masking `hidden: true` (tampil bintang `*****` tapi menyalin nilai asli).
 
 ### 📌 Commit 4.3: Standard Confirm Dialog
-- **Pesan Commit:** `feat(ui): implement reusable ConfirmDialog widget`
+- [x] **Pesan Commit:** `feat(ui): implement reusable ConfirmDialog widget`
 - **Files:**
   - `lib/core/ui/widgets/confirm_dialog.dart`
 - **Cakupan Tugas:**
@@ -166,7 +166,7 @@ Dokumen ini memecah seluruh fase migrasi arsitektur dari `.hermes/plans/architec
   - Pilihan tombol Cancel & Confirm dengan kustomisasi warna aksi.
 
 ### 📌 Commit 4.4: Widget Tests Core UI
-- **Pesan Commit:** `test(ui): add widget tests for snackbar_top, text_copyable, and confirm_dialog`
+- [x] **Pesan Commit:** `test(ui): add widget tests for snackbar_top, text_copyable, and confirm_dialog`
 - **Files:**
   - `test/core/ui/snackbar_top_test.dart`
   - `test/core/ui/text_copyable_test.dart`
@@ -177,7 +177,7 @@ Dokumen ini memecah seluruh fase migrasi arsitektur dari `.hermes/plans/architec
 ---
 
 ## 📋 FASE 5: Internationalization (i18n)
-> **Status:** ⏳ MENUNGGU FASE 4  
+> **Status:** ⏳ SIAP DIKERJAKAN  
 > **Goal:** Dukungan multi-bahasa (Bahasa Indonesia & English) tanpa hardcoded string.
 
 ### 📌 Commit 5.1: Konfigurasi EasyLocalization

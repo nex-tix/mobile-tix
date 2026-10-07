@@ -31,6 +31,13 @@ class AppIcons {
   static const IconData errorOutline = Iconsax.danger;
   static const IconData block = Iconsax.close_circle;
 
+  // Feedback & Clipboard (Fase 4 — core UI widgets)
+  static const IconData info = Iconsax.info_circle;
+  static const IconData warning = Iconsax.warning_2;
+  static const IconData clipboard = Iconsax.clipboard_text;
+  static const IconData clipboardDone = Iconsax.clipboard_tick;
+  static const IconData done = Iconsax.tick_circle;
+
   // Scanner & Camera
   static const IconData qrScanner = Iconsax.scan_barcode;
   static const IconData camera = Iconsax.camera;
