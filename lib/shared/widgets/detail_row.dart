@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_tix/core/constants/app_icons.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
@@ -149,7 +150,7 @@ class ActionRow extends StatelessWidget {
                 const SizedBox(width: AppSpacing.sm),
                 trailing ??
                     Icon(
-                      Icons.chevron_right_rounded,
+                      AppIcons.chevronRight,
                       size: 20,
                       color: c.inkFaint,
                     ),

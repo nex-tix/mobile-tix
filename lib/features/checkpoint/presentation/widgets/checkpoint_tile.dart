@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_tix/core/constants/app_icons.dart';
 
 import '../../data/models/checkpoint.dart';
 
@@ -45,7 +46,7 @@ class CheckpointTile extends StatelessWidget {
               children: [
                 // Leading Lock Icon
                 const Icon(
-                  Icons.lock_rounded,
+                  AppIcons.lock,
                   size: 18,
                   color: Color(0xFFA3B1B7),
                 ),
@@ -62,7 +63,7 @@ class CheckpointTile extends StatelessWidget {
                           Text(
                             checkpoint.gate,
                             style: const TextStyle(
-                              fontFamily: 'Barlow',
+                              fontFamily: 'DMSans',
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Color(0xFFF8F6F6),
@@ -97,7 +98,7 @@ class CheckpointTile extends StatelessWidget {
                         Text(
                           checkpoint.name,
                           style: const TextStyle(
-                            fontFamily: 'Barlow',
+                            fontFamily: 'DMSans',
                             fontSize: 12.5,
                             color: Color(0xFFA3B1B7),
                           ),

@@ -1,3 +1,4 @@
+import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -42,7 +43,7 @@ class OfflineBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.wifi_off_rounded, size: 18, color: c.onSecondaryTint),
+          Icon(AppIcons.wifiOff, size: 18, color: c.onSecondaryTint),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(

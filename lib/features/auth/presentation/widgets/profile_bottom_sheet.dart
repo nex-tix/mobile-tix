@@ -1,3 +1,4 @@
+import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -88,7 +89,7 @@ class ProfileBottomSheet extends StatelessWidget {
                       Text(
                         staff?.name ?? 'Raya',
                         style: const TextStyle(
-                          fontFamily: 'Barlow',
+                          fontFamily: 'DMSans',
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFFF8F6F6),
@@ -128,7 +129,7 @@ class ProfileBottomSheet extends StatelessWidget {
                       children: [
                         Row(
                           children: const [
-                            Icon(Icons.meeting_room_outlined, size: 20, color: Color(0xFFA3B1B7)),
+                            Icon(AppIcons.meetingRoom, size: 20, color: Color(0xFFA3B1B7)),
                             SizedBox(width: 12),
                             Text(
                               'Checkpoint',
@@ -160,7 +161,7 @@ class ProfileBottomSheet extends StatelessWidget {
                       children: [
                         Row(
                           children: const [
-                            Icon(Icons.wifi_rounded, size: 20, color: Color(0xFFA3B1B7)),
+                            Icon(AppIcons.wifi, size: 20, color: Color(0xFFA3B1B7)),
                             SizedBox(width: 12),
                             Text(
                               'Connection',
@@ -230,12 +231,12 @@ class ProfileBottomSheet extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    Icon(Icons.logout_rounded, size: 18, color: Color(0xFFCF4647)),
+                    Icon(AppIcons.logout, size: 18, color: Color(0xFFCF4647)),
                     SizedBox(width: 8),
                     Text(
                       'Logout',
                       style: TextStyle(
-                        fontFamily: 'Barlow',
+                        fontFamily: 'DMSans',
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFFCF4647),

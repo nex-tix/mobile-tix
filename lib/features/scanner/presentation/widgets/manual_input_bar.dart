@@ -1,3 +1,4 @@
+import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -39,7 +40,7 @@ class ManualInputBar extends StatelessWidget {
           hint: 'TKT-2026-001245',
           controller: controller,
           enabled: enabled,
-          prefixIcon: Icons.keyboard_alt_outlined,
+          prefixIcon: AppIcons.keyboard,
           textCapitalization: TextCapitalization.characters,
           textInputAction: TextInputAction.done,
           inputFormatters: [
@@ -54,7 +55,7 @@ class ManualInputBar extends StatelessWidget {
 
         final button = AppButton(
           label: mode.label,
-          icon: Icons.qr_code_scanner_rounded,
+          icon: AppIcons.qrScanner,
           loading: processing,
           expanded: false,
           onPressed: enabled && !processing
@@ -70,7 +71,7 @@ class ManualInputBar extends StatelessWidget {
               const SizedBox(height: AppSpacing.sm),
               AppButton(
                 label: mode.label,
-                icon: Icons.qr_code_scanner_rounded,
+                icon: AppIcons.qrScanner,
                 loading: processing,
                 onPressed: enabled && !processing
                     ? () => onSubmit(controller.text)

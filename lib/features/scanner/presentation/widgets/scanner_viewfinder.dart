@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_tix/core/constants/app_icons.dart';
 
 
 /// Camera Viewfinder card based on Screen 5 (`5._scan_check_in/code.html`).
@@ -142,7 +143,7 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: const Icon(
-                                Icons.qr_code_2_rounded,
+                                AppIcons.qrScanner,
                                 size: 36,
                                 color: Color(0xFFCF4647),
                               ),
@@ -187,7 +188,7 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
               child: Text(
                 widget.processing ? 'Memverifikasi tiket…' : 'Scan QR ticket',
                 style: const TextStyle(
-                  fontFamily: 'Barlow',
+                  fontFamily: 'DMSans',
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFFF8F6F6),

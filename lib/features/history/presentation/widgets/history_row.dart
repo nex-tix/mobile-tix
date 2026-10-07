@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_tix/core/constants/app_icons.dart';
 
 import '../../../../core/constants/ticket_status.dart';
 import '../../../../core/utils/formatters.dart';
@@ -20,7 +21,7 @@ class HistoryRow extends StatelessWidget {
     final badgeInnerColor = isValid
         ? const Color(0xFF2ECC71)
         : const Color(0xFFCF4647);
-    final badgeIcon = isValid ? Icons.check_rounded : Icons.close_rounded;
+    final badgeIcon = isValid ? AppIcons.check : AppIcons.close;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -79,7 +80,7 @@ class HistoryRow extends StatelessWidget {
                         Text(
                           entry.code,
                           style: const TextStyle(
-                            fontFamily: 'Barlow',
+                            fontFamily: 'DMSans',
                             fontSize: 14.5,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFFF8F6F6),
@@ -90,7 +91,7 @@ class HistoryRow extends StatelessWidget {
                         Text(
                           Fmt.clockSeconds(entry.at),
                           style: const TextStyle(
-                            fontFamily: 'Barlow',
+                            fontFamily: 'DMSans',
                             fontSize: 12,
                             color: Color(0xFFA3B1B7),
                           ),
@@ -107,7 +108,7 @@ class HistoryRow extends StatelessWidget {
                     Text(
                       '${entry.tickets} visitor',
                       style: const TextStyle(
-                        fontFamily: 'Barlow',
+                        fontFamily: 'DMSans',
                         fontSize: 12.5,
                         fontWeight: FontWeight.w500,
                         color: Color(0xFFF8F6F6),
@@ -117,7 +118,7 @@ class HistoryRow extends StatelessWidget {
                     Text(
                       entry.gate,
                       style: const TextStyle(
-                        fontFamily: 'Barlow',
+                        fontFamily: 'DMSans',
                         fontSize: 12,
                         color: Color(0xFFA3B1B7),
                       ),
@@ -165,7 +166,7 @@ class HistoryRow extends StatelessWidget {
                 Text(
                   'Detail Tiket ${entry.code}',
                   style: const TextStyle(
-                    fontFamily: 'Barlow',
+                    fontFamily: 'DMSans',
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFFF8F6F6),

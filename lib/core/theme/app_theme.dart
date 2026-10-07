@@ -27,7 +27,7 @@ class AppTheme {
       useMaterial3: true,
       brightness: brightness,
       colorScheme: scheme,
-      fontFamily: 'Barlow',
+      fontFamily: 'DMSans',
       scaffoldBackgroundColor: c.ground,
       canvasColor: c.ground,
       textTheme: text,

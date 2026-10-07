@@ -4,8 +4,8 @@ import '../theme/app_colors.dart';
 
 /// The app's own type vocabulary, bound to the active palette.
 ///
-/// Two faces, one system: **Barlow** for everything a person reads, and
-/// **Barlow Condensed** for numbers, counters, and stamped verdicts — the two roles
+/// Menggunakan **DM Sans** untuk seluruh aplikasi — font geometric sans serif
+/// yang bersih dan modern untuk readability optimal.
 /// a gate actually needs in a hurry. Numerals are tabular everywhere, so a column of
 /// times or tallies lines up like a printed log sheet instead of wobbling.
 class AppText {
@@ -19,7 +19,7 @@ class AppText {
 
   /// 26/600 — one per screen.
   TextStyle get screenTitle => TextStyle(
-    fontFamily: 'Barlow',
+    fontFamily: 'DMSans',
     fontSize: 26,
     height: 1.15,
     fontWeight: FontWeight.w600,
@@ -29,7 +29,7 @@ class AppText {
 
   /// 22/600 — sheet and dialog titles.
   TextStyle get sheetTitle => TextStyle(
-    fontFamily: 'Barlow',
+    fontFamily: 'DMSans',
     fontSize: 22,
     height: 1.2,
     fontWeight: FontWeight.w600,
@@ -39,7 +39,7 @@ class AppText {
 
   /// 17/600 — a section inside a screen.
   TextStyle get section => TextStyle(
-    fontFamily: 'Barlow',
+    fontFamily: 'DMSans',
     fontSize: 17,
     height: 1.25,
     fontWeight: FontWeight.w600,
@@ -50,7 +50,7 @@ class AppText {
   /// 12/600, tracked, uppercase — a data label ("MASUK", "CHECKPOINT"), never a
   /// decorative eyebrow above a heading.
   TextStyle get label => TextStyle(
-    fontFamily: 'Barlow',
+    fontFamily: 'DMSans',
     fontSize: 11.5,
     height: 1.2,
     fontWeight: FontWeight.w600,
@@ -59,12 +59,12 @@ class AppText {
   );
 
   TextStyle get body =>
-      TextStyle(fontFamily: 'Barlow', fontSize: 15, height: 1.4, color: c.ink);
+      TextStyle(fontFamily: 'DMSans', fontSize: 15, height: 1.4, color: c.ink);
 
   TextStyle get bodyStrong => body.copyWith(fontWeight: FontWeight.w600);
 
   TextStyle get supporting => TextStyle(
-    fontFamily: 'Barlow',
+    fontFamily: 'DMSans',
     fontSize: 13.5,
     height: 1.4,
     color: c.inkMuted,
@@ -72,7 +72,7 @@ class AppText {
 
   /// 15/600 tracked, tabular — ticket serials.
   TextStyle get code => TextStyle(
-    fontFamily: 'Barlow',
+    fontFamily: 'DMSans',
     fontSize: 15,
     height: 1.2,
     fontWeight: FontWeight.w600,
@@ -82,7 +82,7 @@ class AppText {
   );
 
   TextStyle get button => const TextStyle(
-    fontFamily: 'Barlow',
+    fontFamily: 'DMSans',
     fontSize: 15.5,
     height: 1.1,
     fontWeight: FontWeight.w600,
@@ -90,7 +90,7 @@ class AppText {
   );
 
   TextStyle get navLabel => const TextStyle(
-    fontFamily: 'Barlow',
+    fontFamily: 'DMSans',
     fontSize: 11.5,
     height: 1.1,
     fontWeight: FontWeight.w500,
@@ -99,7 +99,7 @@ class AppText {
 
   /// Counters and tallies — condensed, tabular, tight.
   TextStyle get tally => TextStyle(
-    fontFamily: 'BarlowCondensed',
+    fontFamily: 'DMSans',
     fontSize: 34,
     height: 1,
     fontWeight: FontWeight.w800,
@@ -111,7 +111,7 @@ class AppText {
 
   /// The stamped verdict. Slight positive tracking so the word reads as set type.
   TextStyle get stamp => const TextStyle(
-    fontFamily: 'BarlowCondensed',
+    fontFamily: 'DMSans',
     fontSize: 34,
     height: 1,
     fontWeight: FontWeight.w800,
@@ -121,7 +121,7 @@ class AppText {
 
   /// The line under a stamp word: gate, date, mode.
   TextStyle get stampSub => const TextStyle(
-    fontFamily: 'BarlowCondensed',
+    fontFamily: 'DMSans',
     fontSize: 14,
     height: 1.1,
     fontWeight: FontWeight.w600,
@@ -131,7 +131,7 @@ class AppText {
 
   /// 20/700 tracked, tabular — the active checkpoint, code chips.
   TextStyle get chip => const TextStyle(
-    fontFamily: 'Barlow',
+    fontFamily: 'DMSans',
     fontSize: 13,
     height: 1.1,
     fontWeight: FontWeight.w600,

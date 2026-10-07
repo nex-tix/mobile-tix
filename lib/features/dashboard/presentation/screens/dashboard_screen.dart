@@ -1,3 +1,4 @@
+import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -86,7 +87,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               Text(
                                 staff?.name ?? 'Raya',
                                 style: const TextStyle(
-                                  fontFamily: 'Barlow',
+                                  fontFamily: 'DMSans',
                                   fontSize: 14.5,
                                   fontWeight: FontWeight.w700,
                                   color: Color(0xFFF8F6F6),
@@ -154,7 +155,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   const Text(
                     'Good afternoon',
                     style: TextStyle(
-                      fontFamily: 'Barlow',
+                      fontFamily: 'DMSans',
                       fontSize: 13,
                       color: Color(0xFFA3B1B7),
                     ),
@@ -163,7 +164,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Text(
                     staff?.name ?? 'Raya',
                     style: const TextStyle(
-                      fontFamily: 'Barlow',
+                      fontFamily: 'DMSans',
                       fontSize: 26,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFFF8F6F6),
@@ -200,7 +201,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             'Today',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontFamily: 'Barlow',
+                              fontFamily: 'DMSans',
                               fontSize: 12.5,
                               fontWeight: FontWeight.w700,
                               color: dashboard.period == StatsPeriod.today
@@ -227,7 +228,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             'This Month',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontFamily: 'Barlow',
+                              fontFamily: 'DMSans',
                               fontSize: 12.5,
                               fontWeight: FontWeight.w700,
                               color: dashboard.period == StatsPeriod.month
@@ -269,7 +270,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
-                        Icons.group_outlined,
+                        AppIcons.group,
                         color: Color(0xFFF8F6F6),
                         size: 22,
                       ),
@@ -278,7 +279,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Text(
                       '${stats.entered}',
                       style: const TextStyle(
-                        fontFamily: 'BarlowCondensed',
+                        fontFamily: 'DMSans',
                         fontSize: 42,
                         fontWeight: FontWeight.w800,
                         color: Color(0xFFF8F6F6),
@@ -328,7 +329,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               border: Border.all(color: const Color(0x4D10B981)),
                             ),
                             child: const Icon(
-                              Icons.check_rounded,
+                              AppIcons.check,
                               size: 16,
                               color: Color(0xFF34D399),
                             ),
@@ -337,7 +338,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           Text(
                             '${stats.valid}',
                             style: const TextStyle(
-                              fontFamily: 'BarlowCondensed',
+                              fontFamily: 'DMSans',
                               fontSize: 32,
                               fontWeight: FontWeight.w800,
                               color: Color(0xFFF8F6F6),
@@ -384,7 +385,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               border: Border.all(color: const Color(0x4DCF4647)),
                             ),
                             child: const Icon(
-                              Icons.close_rounded,
+                              AppIcons.close,
                               size: 16,
                               color: Color(0xFFCF4647),
                             ),
@@ -393,7 +394,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           Text(
                             '${stats.refused}',
                             style: const TextStyle(
-                              fontFamily: 'BarlowCondensed',
+                              fontFamily: 'DMSans',
                               fontSize: 32,
                               fontWeight: FontWeight.w800,
                               color: Color(0xFFF8F6F6),

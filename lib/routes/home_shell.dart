@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -76,7 +77,7 @@ class HomeShell extends StatelessWidget {
                               // Tab 1: Dashboard
                               Expanded(
                                 child: _NavTab(
-                                  icon: Icons.dashboard_rounded,
+                                  icon: AppIcons.dashboard,
                                   label: 'Dashboard',
                                   selected: shell.index == 0,
                                   onTap: () => shell.goIndex(0),
@@ -89,7 +90,7 @@ class HomeShell extends StatelessWidget {
                               // Tab 3: History
                               Expanded(
                                 child: _NavTab(
-                                  icon: Icons.history_rounded,
+                                  icon: AppIcons.history,
                                   label: 'History',
                                   selected: shell.index == 2,
                                   onTap: () => shell.goIndex(2),
@@ -151,7 +152,7 @@ class _NavTab extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontFamily: 'Barlow',
+                fontFamily: 'DMSans',
                 fontSize: 10.5,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                 color: color,
@@ -209,7 +210,7 @@ class _ScanNavButton extends StatelessWidget {
             ),
             child: const Center(
               child: Icon(
-                Icons.qr_code_scanner_rounded,
+   AppIcons.qrScanner,
                 size: 28,
                 color: Color(0xFFF8F6F6),
               ),
@@ -219,7 +220,7 @@ class _ScanNavButton extends StatelessWidget {
           Text(
             'Scan',
             style: TextStyle(
-              fontFamily: 'Barlow',
+              fontFamily: 'DMSans',
               fontSize: 10.5,
               fontWeight: FontWeight.w700,
               color: selected ? const Color(0xFFF5D061) : const Color(0xFFCF4647),

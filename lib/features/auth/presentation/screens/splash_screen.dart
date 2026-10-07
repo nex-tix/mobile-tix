@@ -55,7 +55,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     const Text(
                       'Gate Validator',
                       style: TextStyle(
-                        fontFamily: 'Barlow',
+                        fontFamily: 'DMSans',
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFFF8F6F6),
@@ -66,7 +66,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     const Text(
                       'Uluwatu Kecak Gate Validator',
                       style: TextStyle(
-                        fontFamily: 'Barlow',
+                        fontFamily: 'DMSans',
                         fontSize: 13,
                         color: Color(0xFFA3B1B7),
                       ),

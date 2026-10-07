@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_tix/core/constants/app_icons.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
@@ -117,7 +118,7 @@ class CheckpointChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.sensor_door_rounded, size: 15, color: c.onPrimaryTint),
+          Icon(AppIcons.sensorDoor, size: 15, color: c.onPrimaryTint),
           const SizedBox(width: 6),
           Text(
             name,
@@ -127,7 +128,7 @@ class CheckpointChip extends StatelessWidget {
           ),
           if (onTap != null) ...[
             const SizedBox(width: 4),
-            Icon(Icons.unfold_more_rounded, size: 15, color: c.onPrimaryTint),
+            Icon(AppIcons.unfoldMore, size: 15, color: c.onPrimaryTint),
           ],
         ],
       ),

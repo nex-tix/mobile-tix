@@ -1,3 +1,4 @@
+import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/ticket_status.dart';
@@ -86,28 +87,28 @@ class _ScanResultSheetState extends State<ScanResultSheet>
       btnBgColor = const Color(0xFF2ECC71);
       btnTextColor = const Color(0xFF2A363B);
       statusTitle = 'VALID';
-      statusIcon = Icons.check_rounded;
+      statusIcon = AppIcons.check;
     } else if (isUsed) {
       badgeColor = const Color(0xFFCF4647);
       textColor = const Color(0xFFCF4647);
       btnBgColor = const Color(0xFFCF4647);
       btnTextColor = const Color(0xFFF8F6F6);
       statusTitle = 'ALREADY USED';
-      statusIcon = Icons.close_rounded;
+      statusIcon = AppIcons.close;
     } else if (isExpired) {
       badgeColor = const Color(0xFFF5D061);
       textColor = const Color(0xFFF5D061);
       btnBgColor = const Color(0xFFF5D061);
       btnTextColor = const Color(0xFF2A363B);
       statusTitle = 'EXPIRED';
-      statusIcon = Icons.schedule_rounded;
+      statusIcon = AppIcons.schedule;
     } else {
       badgeColor = const Color(0xFFCF4647);
       textColor = const Color(0xFFCF4647);
       btnBgColor = const Color(0xFFCF4647);
       btnTextColor = const Color(0xFFF8F6F6);
       statusTitle = status == TicketStatus.notFound ? 'INVALID TICKET' : 'CANCELLED';
-      statusIcon = Icons.error_outline_rounded;
+      statusIcon = AppIcons.errorOutline;
     }
 
     final screenHeight = MediaQuery.sizeOf(context).height;
@@ -186,7 +187,7 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                       Text(
                         statusTitle,
                         style: TextStyle(
-                          fontFamily: 'Barlow',
+                          fontFamily: 'DMSans',
                           fontSize: 28,
                           fontWeight: FontWeight.w800,
                           color: textColor,
@@ -205,7 +206,7 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 const Icon(
-                                  Icons.people_outline_rounded,
+                                  AppIcons.people,
                                   size: 19,
                                   color: Color(0xFFA3B1B7),
                                 ),
@@ -213,7 +214,7 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                                 Text(
                                   '${outcome.category ?? "Adult"} · ${outcome.tickets} Visitor',
                                   style: const TextStyle(
-                                    fontFamily: 'Barlow',
+                                    fontFamily: 'DMSans',
                                     fontSize: 15.5,
                                     color: Color(0xFFF8F6F6),
                                   ),
@@ -227,7 +228,7 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 const Icon(
-                                  Icons.access_time_rounded,
+                                  AppIcons.accessTime,
                                   size: 19,
                                   color: Color(0xFFA3B1B7),
                                 ),
@@ -235,7 +236,7 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                                 Text(
                                   Fmt.clockSeconds(outcome.at),
                                   style: const TextStyle(
-                                    fontFamily: 'Barlow',
+                                    fontFamily: 'DMSans',
                                     fontSize: 15.5,
                                     color: Color(0xFFF8F6F6),
                                     letterSpacing: 0.5,
@@ -250,7 +251,7 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 const Icon(
-                                  Icons.location_on_outlined,
+                                  AppIcons.location,
                                   size: 19,
                                   color: Color(0xFFA3B1B7),
                                 ),
@@ -258,7 +259,7 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                                 Text(
                                   outcome.gate ?? 'Gate 1',
                                   style: const TextStyle(
-                                    fontFamily: 'Barlow',
+                                    fontFamily: 'DMSans',
                                     fontSize: 15.5,
                                     color: Color(0xFFF8F6F6),
                                   ),
@@ -310,7 +311,7 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                           child: Text(
                             'Scan Next',
                             style: TextStyle(
-                              fontFamily: 'Barlow',
+                              fontFamily: 'DMSans',
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                               color: btnTextColor,

@@ -1,3 +1,4 @@
+import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -167,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             const Text(
                               'Gate Validator',
                               style: TextStyle(
-                                fontFamily: 'Barlow',
+                                fontFamily: 'DMSans',
                                 fontSize: 22,
                                 fontWeight: FontWeight.w700,
                                 color: Color(0xFFF8F6F6),
@@ -181,7 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               controller: _username,
                               focusNode: _usernameFocus,
                               hint: 'Username',
-                              icon: Icons.person_outline_rounded,
+                              icon: AppIcons.person,
                               obscure: false,
                               error: _usernameError,
                             ),
@@ -192,14 +193,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               controller: _password,
                               focusNode: _passwordFocus,
                               hint: 'Password',
-                              icon: Icons.lock_outline_rounded,
+                              icon: AppIcons.lock,
                               obscure: _obscured,
                               error: _passwordError,
                               trailing: IconButton(
                                 icon: Icon(
                                   _obscured
-                                      ? Icons.visibility_off_outlined
-                                      : Icons.visibility_outlined,
+                                      ? AppIcons.visibilityOff
+                                      : AppIcons.visibility,
                                   color: const Color(0xFFA3B1B7),
                                   size: 20,
                                 ),
@@ -246,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           : const Text(
                                               'Login',
                                               style: TextStyle(
-                                                fontFamily: 'Barlow',
+                                                fontFamily: 'DMSans',
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w700,
                                                 color: Color(0xFFF8F6F6),
@@ -325,14 +326,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   focusNode: focusNode,
                   obscureText: obscure,
                   style: const TextStyle(
-                    fontFamily: 'Barlow',
+                    fontFamily: 'DMSans',
                     fontSize: 15,
                     color: Color(0xFFF8F6F6),
                   ),
                   decoration: InputDecoration(
                     hintText: hint,
                     hintStyle: const TextStyle(
-                      fontFamily: 'Barlow',
+                      fontFamily: 'DMSans',
                       fontSize: 15,
                       color: Color(0xFF8B9FA8),
                     ),
@@ -344,7 +345,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              ?trailing,
+              if (trailing != null) trailing,
             ],
           ),
         ),
@@ -387,7 +388,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Padding(
                 padding: const EdgeInsets.only(left: 14, right: 10),
                 child: Icon(
-                  Icons.door_front_door_outlined,
+                  AppIcons.door,
                   size: 20,
                   color: const Color(0xFFA3B1B7),
                 ),
@@ -400,7 +401,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     hint: const Text(
                       'Pilih Gate',
                       style: TextStyle(
-                        fontFamily: 'Barlow',
+                        fontFamily: 'DMSans',
                         fontSize: 15,
                         color: Color(0xFF8B9FA8),
                       ),
@@ -411,7 +412,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Text(
                           checkpoint.label,
                           style: const TextStyle(
-                            fontFamily: 'Barlow',
+                            fontFamily: 'DMSans',
                             fontSize: 15,
                             color: Color(0xFFF8F6F6),
                           ),
@@ -426,7 +427,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     },
                     dropdownColor: const Color(0xFF212B2F),
                     icon: const Icon(
-                      Icons.arrow_drop_down,
+                      AppIcons.arrowDropDown,
                       color: Color(0xFFA3B1B7),
                     ),
                   ),

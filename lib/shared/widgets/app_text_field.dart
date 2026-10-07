@@ -1,3 +1,4 @@
+import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -69,7 +70,7 @@ class AppTextField extends StatelessWidget {
           Row(
             children: [
               Expanded(child: Text(label!.toUpperCase(), style: text.label)),
-              ?labelTrailing,
+              if (labelTrailing != null) labelTrailing!,
             ],
           ),
           const SizedBox(height: AppSpacing.xs),

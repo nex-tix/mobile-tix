@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_tix/core/constants/app_icons.dart';
 
 import '../../../../core/constants/ticket_status.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -32,7 +33,7 @@ class DemoControls extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(Icons.science_outlined, size: 15, color: c.inkFaint),
+            Icon(AppIcons.science, size: 15, color: c.inkFaint),
             const SizedBox(width: 6),
             Text('UJI TAMPILAN', style: text.label),
           ],
@@ -52,8 +53,8 @@ class DemoControls extends StatelessWidget {
             _DemoChip(
               label: 'IZIN KAMERA',
               icon: cameraBlocked
-                  ? Icons.no_photography_outlined
-                  : Icons.photo_camera_outlined,
+                  ? AppIcons.noCamera
+                  : AppIcons.camera,
               color: cameraBlocked ? c.used : c.inkMuted,
               active: cameraBlocked,
               onTap: onToggleCamera,

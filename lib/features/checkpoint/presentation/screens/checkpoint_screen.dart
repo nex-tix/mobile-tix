@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../shared/widgets/confirm_dialog.dart';
@@ -63,7 +64,7 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
                 children: [
                   if (widget.isSwitch)
                     IconButton(
-                      icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFFF8F6F6)),
+                      icon: const Icon(AppIcons.arrowBack, color: Color(0xFFF8F6F6)),
                       onPressed: () => Navigator.of(context).maybePop(),
                       tooltip: 'Kembali',
                     )
@@ -71,7 +72,7 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
                     const SizedBox(width: 48),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(Icons.logout_rounded, color: Color(0xFFA3B1B7), size: 20),
+                    icon: const Icon(AppIcons.logout, color: Color(0xFFA3B1B7), size: 20),
                     onPressed: _signOut,
                     tooltip: 'Logout',
                   ),
@@ -90,7 +91,7 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
                     Text(
                       'Select checkpoint',
                       style: TextStyle(
-                        fontFamily: 'Barlow',
+                        fontFamily: 'DMSans',
                         fontSize: 26,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFFF8F6F6),
@@ -101,7 +102,7 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
                     Text(
                       'Choose your active checkpoint',
                       style: TextStyle(
-                        fontFamily: 'Barlow',
+                        fontFamily: 'DMSans',
                         fontSize: 14,
                         color: Color(0xFFA3B1B7),
                       ),
@@ -156,7 +157,7 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
                             child: Text(
                               'Masuk ke Gate',
                               style: TextStyle(
-                                fontFamily: 'Barlow',
+                                fontFamily: 'DMSans',
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                                 color: Color(0xFFF8F6F6),

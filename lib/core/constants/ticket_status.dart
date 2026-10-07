@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_tix/core/constants/app_icons.dart';
 
 import '../theme/app_colors.dart';
 
@@ -80,10 +81,10 @@ enum TicketStatus {
   bool get stampIsInk => this != TicketStatus.expired;
 
   IconData get icon => switch (this) {
-    TicketStatus.valid => Icons.check_rounded,
-    TicketStatus.alreadyUsed => Icons.replay_rounded,
-    TicketStatus.expired => Icons.schedule_rounded,
-    TicketStatus.notFound => Icons.search_off_rounded,
-    TicketStatus.cancelled => Icons.block_rounded,
+    TicketStatus.valid => AppIcons.check,
+    TicketStatus.alreadyUsed => AppIcons.replay,
+    TicketStatus.expired => AppIcons.schedule,
+    TicketStatus.notFound => AppIcons.searchOff,
+    TicketStatus.cancelled => AppIcons.block,
   };
 }

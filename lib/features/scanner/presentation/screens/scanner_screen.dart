@@ -1,3 +1,4 @@
+import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -116,7 +117,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                       const Text(
                         'Scan Ticket',
                         style: TextStyle(
-                          fontFamily: 'Barlow',
+                          fontFamily: 'DMSans',
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFFF8F6F6),
@@ -212,7 +213,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                             'Check-in',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontFamily: 'Barlow',
+                              fontFamily: 'DMSans',
                               fontSize: 12.5,
                               fontWeight: FontWeight.w700,
                               color: scanner.mode == ScanMode.checkIn
@@ -248,7 +249,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                             'Check',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontFamily: 'Barlow',
+                              fontFamily: 'DMSans',
                               fontSize: 12.5,
                               fontWeight: FontWeight.w700,
                               color: scanner.mode == ScanMode.check
@@ -292,7 +293,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: const [
                         Icon(
-                          Icons.keyboard_alt_outlined,
+                          AppIcons.keyboard,
                           size: 18,
                           color: Color(0xFFA3B1B7),
                         ),
@@ -300,7 +301,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                         Text(
                           'Enter code manually',
                           style: TextStyle(
-                            fontFamily: 'Barlow',
+                            fontFamily: 'DMSans',
                             fontSize: 13.5,
                             fontWeight: FontWeight.w600,
                             color: Color(0xFFF8F6F6),
@@ -326,7 +327,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                           controller: _codeController,
                           autofocus: true,
                           style: const TextStyle(
-                            fontFamily: 'Barlow',
+                            fontFamily: 'DMSans',
                             fontSize: 14.5,
                             color: Color(0xFFF8F6F6),
                           ),
@@ -347,11 +348,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.arrow_forward_rounded, color: Color(0xFFF5D061)),
+                        icon: const Icon(AppIcons.arrowForward, color: Color(0xFFF5D061)),
                         onPressed: () => _run(_codeController.text),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded, color: Color(0xFFA3B1B7), size: 18),
+                        icon: const Icon(AppIcons.close, color: Color(0xFFA3B1B7), size: 18),
                         onPressed: () => setState(() => _showManualInput = false),
                       ),
                     ],

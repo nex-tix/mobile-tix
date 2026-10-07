@@ -1,3 +1,4 @@
+import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -56,7 +57,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   const Text(
                     'History',
                     style: TextStyle(
-                      fontFamily: 'Barlow',
+                      fontFamily: 'DMSans',
                       fontSize: 26,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFFF8F6F6),
@@ -123,7 +124,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: const [
                             Icon(
-                              Icons.history_toggle_off_rounded,
+                              AppIcons.historyToggleOff,
                               size: 48,
                               color: Color(0xFF4B5E66),
                             ),
@@ -131,7 +132,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             Text(
                               'Tidak ada data tiket',
                               style: TextStyle(
-                                fontFamily: 'Barlow',
+                                fontFamily: 'DMSans',
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: Color(0xFFA3B1B7),
@@ -176,7 +177,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontFamily: 'Barlow',
+              fontFamily: 'DMSans',
               fontSize: 12.5,
               fontWeight: FontWeight.w700,
               color: isSelected ? const Color(0xFFF8F6F6) : const Color(0xFFA3B1B7),
