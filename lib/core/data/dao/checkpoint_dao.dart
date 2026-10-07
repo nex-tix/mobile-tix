@@ -18,7 +18,11 @@ class CheckpointDAO {
   
   // Key untuk menyimpan last update timestamp
   static const String _lastUpdateKey = 'last_update';
-  
+
+  // Key untuk checkpoint yang sedang aktif dipilih petugas
+  // Dipisah dari cache list supaya clear cache tidak menghapus pilihan gate
+  static const String _activeKey = 'active_checkpoint';
+
   // Cache TTL = 12 jam (43200 detik)
   static const Duration _cacheTtl = Duration(hours: 12);
 
@@ -125,6 +129,68 @@ class CheckpointDAO {
       await _checkpointBox.delete(_lastUpdateKey);
     } catch (e) {
       throw Exception('Failed to clear checkpoint cache: $e');
+    }
+  }
+
+  // ==================== ACTIVE CHECKPOINT (Fase 3) ====================
+
+  /// Simpan checkpoint/gate yang aktif dipilih petugas
+  /// 
+  /// [checkpoint]: data gate aktif dalam bentuk Map (hasil toJson())
+  /// 
+  /// Disimpan di key terpisah dari cache list supaya pilihan petugas tetap
+  /// bertahan walau cache checkpoint di-refresh. Dipanggil saat petugas
+  /// memilih gate di halaman checkpoint picker.
+  Future<void> saveCheckpoint(Map<String, dynamic> checkpoint) async {
+    try {
+      await _checkpointBox.put(_activeKey, checkpoint);
+    } catch (e) {
+      throw Exception('Failed to save active checkpoint: $e');
+    }
+  }
+
+  /// Ambil checkpoint aktif yang tersimpan
+  /// 
+  /// Returns: Map checkpoint aktif, atau null jika petugas belum memilih gate
+  /// 
+  /// Dipakai saat app restart — kalau ada nilai, app langsung masuk mode scan
+  /// tanpa meminta petugas memilih gate lagi.
+  Map<String, dynamic>? getActiveCheckpoint() {
+    try {
+      final data = _checkpointBox.get(_activeKey);
+
+      // Type casting — Hive menyimpan Map sebagai dynamic
+      if (data is Map) {
+        return Map<String, dynamic>.from(data);
+      }
+
+      return null;
+    } catch (e) {
+      print('Error getting active checkpoint: $e');
+      return null;
+    }
+  }
+
+  /// Check apakah ada checkpoint aktif tersimpan
+  /// 
+  /// Returns: true jika petugas sudah punya gate aktif di storage
+  bool hasActiveCheckpoint() {
+    try {
+      return _checkpointBox.containsKey(_activeKey);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Hapus checkpoint aktif dari storage
+  /// 
+  /// Dipakai saat logout — gate pilihan tidak boleh tertinggal untuk
+  /// sesi petugas berikutnya di perangkat yang sama.
+  Future<void> clearActiveCheckpoint() async {
+    try {
+      await _checkpointBox.delete(_activeKey);
+    } catch (e) {
+      throw Exception('Failed to clear active checkpoint: $e');
     }
   }
 
