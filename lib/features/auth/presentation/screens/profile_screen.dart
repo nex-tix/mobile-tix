@@ -1,6 +1,10 @@
+import 'package:mobile_tix/core/bloc/auth/auth_bloc.dart';
+import 'package:mobile_tix/core/bloc/auth/auth_event.dart';
+import 'package:mobile_tix/core/bloc/language/language_cubit.dart';
+import 'package:mobile_tix/core/bloc/theme/theme_cubit.dart';
 import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/connectivity/demo_connectivity.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
@@ -11,11 +15,11 @@ class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final session = context.watch<SessionState>();
-    final connectivity = context.watch<DemoConnectivity>();
-    final staff = session.staff;
-    final checkpoint = session.checkpoint;
+    Widget build(BuildContext context) {
+      final session = context.watch<SessionState>();
+      final connectivity = context.watch<DemoConnectivity>();
+      final staff = session.staff;
+      final checkpoint = session.checkpoint;
 
     return Scaffold(
       backgroundColor: const Color(0xFF2A363B),
@@ -99,7 +103,95 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              // Operational details card
+                            // Settings Card: Theme & Language
+                            Container(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF212B2F),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: const Color(0xFF3E4E55)),
+                              ),
+                              child: Column(
+                                children: [
+                                  // Theme Row
+                                  ListTile(
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                                    leading: Icon(AppIcons.sun, size: 22, color: const Color(0xFFA3B1B7)),
+                                    title: const Text(
+                                      'Tema',
+                                      style: TextStyle(fontSize: 14, color: Color(0xFFA3B1B7)),
+                                    ),
+                                    trailing: BlocBuilder<ThemeCubit, ThemeMode>(
+                                      builder: (context, themeMode) {
+                                        String label;
+                                        switch (themeMode) {
+                                          case ThemeMode.light:
+                                            label = 'Terang';
+                                            break;
+                                          case ThemeMode.dark:
+                                            label = 'Gelap';
+                                            break;
+                                          case ThemeMode.system:
+                                            label = 'Sistem';
+                                            break;
+                                        }
+                                        return Text(
+                                          label,
+                                          style: const TextStyle(
+                                            fontSize: 13.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFFF8F6F6),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    onTap: () async {
+                                      final cubit = context.read<ThemeCubit>();
+                                      if (cubit.state == ThemeMode.light) {
+                                        await cubit.setThemeMode(ThemeMode.dark);
+                                      } else if (cubit.state == ThemeMode.dark) {
+                                        await cubit.setThemeMode(ThemeMode.system);
+                                      } else {
+                                        await cubit.setThemeMode(ThemeMode.light);
+                                      }
+                                    },
+                                  ),
+                                  const Divider(height: 1, thickness: 1, color: Color(0xFF334147)),
+
+                                  // Language Row
+                                  ListTile(
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                                    leading: Icon(AppIcons.language, size: 22, color: const Color(0xFFA3B1B7)),
+                                    title: const Text(
+                                      'Bahasa',
+                                      style: TextStyle(fontSize: 14, color: Color(0xFFA3B1B7)),
+                                    ),
+                                    trailing: BlocBuilder<LanguageCubit, Locale>(
+                                      builder: (context, state) {
+                                        return Text(
+                                          state.languageCode == 'en' ? 'English' : 'Indonesia',
+                                          style: const TextStyle(
+                                            fontSize: 13.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFFF8F6F6),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    onTap: () async {
+                                      final cubit = context.read<LanguageCubit>();
+                                      if (cubit.state.languageCode == 'id') {
+                                        await cubit.changeLanguage('en');
+                                      } else {
+                                        await cubit.changeLanguage('id');
+                                      }
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+              // Operational Details Card
               Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFF212B2F),
@@ -108,6 +200,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
+                    // Checkpoint Row
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                       child: Row(
@@ -138,6 +231,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                     const Divider(height: 1, thickness: 1, color: Color(0xFF334147)),
+                    // Connection Row
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                       child: Row(
@@ -189,7 +283,8 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 28),
 
-              // Logout Button
+              // Logout Button — dispatch AuthBloc LogoutRequested agar root
+              // MaterialApp berpindah kembali ke LoginScreen (AuthUnauthenticated).
               SizedBox(
                 height: 52,
                 child: OutlinedButton(
@@ -207,9 +302,15 @@ class ProfileScreen extends StatelessWidget {
                       message: 'Sesi saat ini akan diakhiri.',
                       confirmLabel: 'LOGOUT',
                     );
-                    if (ok && context.mounted) {
-                      context.read<SessionState>().signOut();
+                    if (!ok || !context.mounted) return;
+                    // Pop profile screen dari navigator stack agar tidak stuck
+                    if (Navigator.of(context).canPop()) {
+                      Navigator.of(context).pop();
                     }
+                    // 1) Bersihkan sesi lokal (staff, checkpoint, mode).
+                    context.read<SessionState>().signOut();
+                    // 2) Hapus token + emit AuthUnauthenticated → kembali ke login.
+                    context.read<AuthBloc>().add(const LogoutRequested());
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,

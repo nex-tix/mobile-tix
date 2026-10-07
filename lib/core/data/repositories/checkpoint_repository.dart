@@ -212,6 +212,9 @@ class CheckpointRepository {
   // OfflineQueueDAO untuk queue check-in offline
   final OfflineQueueDAO _offlineQueueDAO;
 
+  /// Getter untuk akses OfflineQueueDAO
+  OfflineQueueDAO get offlineQueueDAO => _offlineQueueDAO;
+
   /// Constructor dengan dependency injection
   CheckpointRepository(
     this._apiService,
@@ -274,7 +277,7 @@ class CheckpointRepository {
 
       // Simpan ke cache (overwrite cache lama)
       // Cast data ke List<Map<String, dynamic>> untuk DAO
-      final dataForDao = (data as List)
+      final dataForDao = data
           .map((item) => item as Map<String, dynamic>)
           .toList();
       await _checkpointDAO.saveCheckpoints(dataForDao);

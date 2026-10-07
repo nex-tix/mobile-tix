@@ -2,6 +2,24 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_tix/core/bloc/token_jwt/token_jwt_cubit.dart';
 import 'package:mobile_tix/core/bloc/token_jwt/token_jwt_state.dart';
 import 'package:mobile_tix/core/data/dao/token_jwt_dao.dart';
+import 'package:mobile_tix/core/services/token_refresh_service.dart';
+
+// Manual mock implementation for TokenRefreshService
+class MockTokenRefreshService extends TokenRefreshService {
+  String? lastScheduledToken;
+  bool cancelCalled = false;
+
+  @override
+  void scheduleNextRefresh(String token, {Duration? leadTime}) {
+    lastScheduledToken = token;
+  }
+
+  @override
+  void cancel() {
+    cancelCalled = true;
+    super.cancel();
+  }
+}
 
 // Manual mock implementation for TokenJwtDAO
 class MockTokenJwtDAO implements TokenJwtDAO {
@@ -193,6 +211,39 @@ void main() {
       test('returns false when state is error', () {
         cubit.emit(TokenJwtState.error('error'));
         expect(cubit.isAuthenticated(), isFalse);
+      });
+    });
+
+    group('TokenRefreshService integration', () {
+      test('schedules refresh on loadToken when token exists', () async {
+        final mockRefresh = MockTokenRefreshService();
+        final cubitWithRefresh = TokenJwtCubit(mockDao, mockRefresh);
+        mockDao._token = 'my-token';
+
+        await cubitWithRefresh.loadToken();
+
+        expect(mockRefresh.lastScheduledToken, equals('my-token'));
+        cubitWithRefresh.close();
+      });
+
+      test('schedules refresh on saveToken', () async {
+        final mockRefresh = MockTokenRefreshService();
+        final cubitWithRefresh = TokenJwtCubit(mockDao, mockRefresh);
+
+        await cubitWithRefresh.saveToken('saved-token');
+
+        expect(mockRefresh.lastScheduledToken, equals('saved-token'));
+        cubitWithRefresh.close();
+      });
+
+      test('cancels refresh on clearToken', () async {
+        final mockRefresh = MockTokenRefreshService();
+        final cubitWithRefresh = TokenJwtCubit(mockDao, mockRefresh);
+
+        await cubitWithRefresh.clearToken();
+
+        expect(mockRefresh.cancelCalled, isTrue);
+        cubitWithRefresh.close();
       });
     });
   });

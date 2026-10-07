@@ -22,8 +22,17 @@ class LanguageCubit extends Cubit<Locale> {
   // Default language jika tidak ada preference
   static const String _defaultLanguage = 'id'; // Indonesian default
 
-  // Reference ke Hive box
-  late Box<dynamic> _preferencesBox;
+  // Reference ke Hive box (lazy initialized)
+  Box<dynamic>? _preferencesBox;
+
+  /// Helper untuk memastikan Hive box sudah terbuka sebelum diakses
+  Future<Box<dynamic>> _getBox() async {
+    if (_preferencesBox != null && _preferencesBox!.isOpen) {
+      return _preferencesBox!;
+    }
+    _preferencesBox = await Hive.openBox(_boxName);
+    return _preferencesBox!;
+  }
 
   /// Constructor — initialize dengan default locale Indonesian
   /// 
@@ -39,7 +48,7 @@ class LanguageCubit extends Cubit<Locale> {
     try {
       // Buka box untuk preferences (non-encrypted untuk language preference)
       // Language preference tidak sensitive data, boleh plain text
-      _preferencesBox = await Hive.openBox(_boxName);
+      await _getBox();
     } catch (e) {
       throw Exception('Failed to initialize LanguageCubit: $e');
     }
@@ -54,7 +63,8 @@ class LanguageCubit extends Cubit<Locale> {
     try {
       // Get language code dari Hive preferences
       // Hive.get() return null jika key tidak ada
-      final languageCode = _preferencesBox.get(
+      final box = await _getBox();
+      final languageCode = box.get(
         _languageKey,
         defaultValue: _defaultLanguage, // Default ke 'id' jika tidak ada
       );
@@ -72,7 +82,7 @@ class LanguageCubit extends Cubit<Locale> {
       emit(Locale(safeCode));
     } catch (e) {
       // Error saat load preference — fallback ke default
-      print('Error loading language: $e');
+      debugPrint('Error loading language: $e');
       emit(const Locale(_defaultLanguage));
     }
   }
@@ -93,7 +103,8 @@ class LanguageCubit extends Cubit<Locale> {
 
       // Simpan language preference ke Hive storage
       // Ini persist ke disk, jadi next app startup akan load bahasa ini
-      await _preferencesBox.put(_languageKey, languageCode);
+      final box = await _getBox();
+      await box.put(_languageKey, languageCode);
 
       // Emit Locale baru
       // MaterialApp akan auto-rebuild dengan locale baru
@@ -135,7 +146,9 @@ class LanguageCubit extends Cubit<Locale> {
   @override
   Future<void> close() async {
     try {
-      await _preferencesBox.close();
+      if (_preferencesBox != null && _preferencesBox!.isOpen) {
+        await _preferencesBox!.close();
+      }
     } catch (e) {
       // ignore
     }

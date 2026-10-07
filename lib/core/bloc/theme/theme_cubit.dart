@@ -24,8 +24,17 @@ class ThemeCubit extends Cubit<ThemeMode> {
   // Default = light mode
   static const ThemeMode _defaultThemeMode = ThemeMode.light;
 
-  // Reference ke Hive box
-  late Box<dynamic> _preferencesBox;
+  // Reference ke Hive box (lazy initialized)
+  Box<dynamic>? _preferencesBox;
+
+  /// Helper untuk memastikan Hive box sudah terbuka sebelum diakses
+  Future<Box<dynamic>> _getBox() async {
+    if (_preferencesBox != null && _preferencesBox!.isOpen) {
+      return _preferencesBox!;
+    }
+    _preferencesBox = await Hive.openBox(_boxName);
+    return _preferencesBox!;
+  }
 
   /// Constructor — initialize dengan default ThemeMode.light
   /// 
@@ -42,7 +51,7 @@ class ThemeCubit extends Cubit<ThemeMode> {
       // Buka box untuk preferences (non-encrypted)
       // Theme preference tidak sensitive data, boleh plain text
       // Box ini shared dengan LanguageCubit untuk efficiency
-      _preferencesBox = await Hive.openBox(_boxName);
+      await _getBox();
     } catch (e) {
       throw Exception('Failed to initialize ThemeCubit: $e');
     }
@@ -57,7 +66,8 @@ class ThemeCubit extends Cubit<ThemeMode> {
     try {
       // Get theme mode string dari Hive preferences
       // String format: 'light', 'dark', 'system'
-      final themeModeString = _preferencesBox.get(
+      final box = await _getBox();
+      final themeModeString = box.get(
         _themeModeKey,
         defaultValue: _defaultThemeMode.toString(), // Default ke 'ThemeMode.light'
       );
@@ -73,7 +83,7 @@ class ThemeCubit extends Cubit<ThemeMode> {
       emit(themeMode);
     } catch (e) {
       // Error saat load preference — fallback ke default
-      print('Error loading theme: $e');
+      debugPrint('Error loading theme: $e');
       emit(_defaultThemeMode);
     }
   }
@@ -98,7 +108,8 @@ class ThemeCubit extends Cubit<ThemeMode> {
 
       // Simpan theme preference ke Hive storage
       // Format: 'ThemeMode.light' atau 'ThemeMode.dark'
-      await _preferencesBox.put(_themeModeKey, newThemeMode.toString());
+      final box = await _getBox();
+      await box.put(_themeModeKey, newThemeMode.toString());
 
       // Emit ThemeMode baru
       // MaterialApp akan auto-rebuild dengan theme baru
@@ -118,7 +129,8 @@ class ThemeCubit extends Cubit<ThemeMode> {
   Future<void> setThemeMode(ThemeMode themeMode) async {
     try {
       // Simpan theme preference ke Hive storage
-      await _preferencesBox.put(_themeModeKey, themeMode.toString());
+      final box = await _getBox();
+      await box.put(_themeModeKey, themeMode.toString());
 
       // Emit ThemeMode baru
       emit(themeMode);
@@ -147,7 +159,9 @@ class ThemeCubit extends Cubit<ThemeMode> {
   @override
   Future<void> close() async {
     try {
-      await _preferencesBox.close();
+      if (_preferencesBox != null && _preferencesBox!.isOpen) {
+        await _preferencesBox!.close();
+      }
     } catch (e) {
       // ignore
     }

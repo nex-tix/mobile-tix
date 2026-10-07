@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_tix/core/bloc/auth/auth_bloc.dart';
+import 'package:mobile_tix/core/bloc/auth/auth_event.dart';
 import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:provider/provider.dart';
 
@@ -45,8 +47,10 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
       confirmLabel: 'KELUAR',
     );
     if (!ok || !mounted) return;
-    context.read<SessionState>().signOut();
-    if (widget.isSwitch) Navigator.of(context).maybePop();
+        // Bersihkan sesi lokal, lalu logout via AuthBloc → kembali ke LoginScreen.
+        context.read<SessionState>().signOut();
+        context.read<AuthBloc>().add(const LogoutRequested());
+        if (widget.isSwitch) Navigator.of(context).maybePop();
   }
 
   @override

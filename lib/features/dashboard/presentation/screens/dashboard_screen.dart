@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/connectivity/demo_connectivity.dart';
 import '../../../auth/logic/session_state.dart';
-import '../../../auth/presentation/widgets/profile_bottom_sheet.dart';
+
 import '../../data/models/gate_stats.dart';
 import '../../logic/dashboard_state.dart';
 
@@ -51,7 +51,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   // Tappable Profile / Gate Info
                   InkWell(
                     borderRadius: BorderRadius.circular(99),
-                    onTap: () => ProfileBottomSheet.show(context),
+                    onTap: () => Navigator.of(context).pushNamed('/profile'),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
                       child: Row(

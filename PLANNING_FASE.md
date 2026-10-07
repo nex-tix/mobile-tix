@@ -10,7 +10,7 @@ Dokumen ini memecah seluruh fase migrasi arsitektur dari `.hermes/plans/architec
 |:---|:---|:---:|:---:|:---:|
 | **Fase 0** | Persiapan & Setup Dependencies | 30m | ✅ Selesai | 1 Commit |
 | **Fase 1** | Core Services Foundation (Security, API, Session) | 3h | ✅ Selesai | 1 Commit (`e4812d1`) |
-| **Fase 2** | Global State Management (BLoC/Cubit) | 2h | ⏳ Menunggu | 4 Commit |
+| **Fase 2** | Global State Management (BLoC/Cubit) | 2h | ✅ Selesai | 4 Commit |
 | **Fase 3** | Data Access Objects (DAO & Offline Storage) | 1h | ⏳ Menunggu | 3 Commit |
 | **Fase 4** | Core UI Widgets (Snackbar Top, Copyable, Confirm Dialog) | 1.5h | ⏳ Menunggu | 4 Commit |
 | **Fase 5** | Internationalization (i18n EasyLocalization id/en) | 2h | ⏳ Menunggu | 3 Commit |
@@ -53,11 +53,11 @@ Dokumen ini memecah seluruh fase migrasi arsitektur dari `.hermes/plans/architec
 ---
 
 ## 📋 FASE 2: Global State Management (BLoC/Cubit)
-> **Status:** ⏳ SIAP DIKERJAKAN  
+> **Status:** ✅ SELESAI  
 > **Goal:** Mengelola state aplikasi global (Token, Bahasa, Tema) secara terpusat dan reaktif.
 
 ### 📌 Commit 2.1: Finalisasi TokenJwtCubit
-- **Pesan Commit:** `feat(bloc): finalize and integrate TokenJwtCubit with DAO and refresh service`
+- [x] **Pesan Commit:** `feat(bloc): finalize and integrate TokenJwtCubit with DAO and refresh service`
 - **Files:**
   - `lib/core/bloc/token_jwt/token_jwt_cubit.dart`
   - `lib/core/bloc/token_jwt/token_jwt_state.dart`
@@ -68,7 +68,7 @@ Dokumen ini memecah seluruh fase migrasi arsitektur dari `.hermes/plans/architec
   - Menulis unit test untuk `TokenJwtCubit`.
 
 ### 📌 Commit 2.2: Implementasi ThemeCubit Persistent
-- **Pesan Commit:** `feat(bloc): implement ThemeCubit for persistent dark/light theme switching`
+- [x] **Pesan Commit:** `feat(bloc): implement ThemeCubit for persistent dark/light theme switching`
 - **Files:**
   - `lib/core/bloc/theme/theme_cubit.dart`
   - `lib/core/bloc/theme/theme_state.dart`
@@ -79,7 +79,7 @@ Dokumen ini memecah seluruh fase migrasi arsitektur dari `.hermes/plans/architec
   - Buat unit test switching tema.
 
 ### 📌 Commit 2.3: Implementasi LanguageCubit
-- **Pesan Commit:** `feat(bloc): implement LanguageCubit for app-wide language switching`
+- [x] **Pesan Commit:** `feat(bloc): implement LanguageCubit for app-wide language switching`
 - **Files:**
   - `lib/core/bloc/language/language_cubit.dart`
   - `lib/core/bloc/language/language_state.dart`
@@ -90,7 +90,7 @@ Dokumen ini memecah seluruh fase migrasi arsitektur dari `.hermes/plans/architec
   - Sediakan hook untuk sinkronisasi dengan locale `EasyLocalization`.
 
 ### 📌 Commit 2.4: Integrasi MultiBlocProvider Global
-- **Pesan Commit:** `feat(bloc): wire global cubits into root MultiBlocProvider in main.dart`
+- [x] **Pesan Commit:** `feat(bloc): wire global cubits into root MultiBlocProvider in main.dart`
 - **Files:**
   - `lib/main.dart`
   - `lib/app.dart`
@@ -101,7 +101,7 @@ Dokumen ini memecah seluruh fase migrasi arsitektur dari `.hermes/plans/architec
 ---
 
 ## 📋 FASE 3: Data Access Objects (DAO & Offline Storage)
-> **Status:** ⏳ MENUNGGU FASE 2  
+> **Status:** ⏳ SIAP DIKERJAKAN  
 > **Goal:** Standarisasi akses storage lokal menggunakan DAO pattern yang terenkripsi dan terstruktur.
 
 ### 📌 Commit 3.1: Implementasi CheckpointDao

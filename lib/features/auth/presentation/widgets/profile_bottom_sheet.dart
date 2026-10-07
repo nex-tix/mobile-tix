@@ -1,5 +1,8 @@
+import 'package:mobile_tix/core/bloc/auth/auth_bloc.dart';
+import 'package:mobile_tix/core/bloc/auth/auth_event.dart';
 import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/connectivity/demo_connectivity.dart';
@@ -223,10 +226,11 @@ class ProfileBottomSheet extends StatelessWidget {
                     message: 'Sesi saat ini akan diakhiri.',
                     confirmLabel: 'LOGOUT',
                   );
-                  if (ok && context.mounted) {
-                    Navigator.of(context).pop();
-                    context.read<SessionState>().signOut();
-                  }
+                  if (!ok || !context.mounted) return;
+                                    Navigator.of(context).pop();
+                                    // Bersihkan sesi lokal, lalu logout via AuthBloc → kembali ke LoginScreen.
+                                    context.read<SessionState>().signOut();
+                                    context.read<AuthBloc>().add(const LogoutRequested());
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,

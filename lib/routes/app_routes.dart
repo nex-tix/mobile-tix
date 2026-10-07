@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_tix/features/auth/presentation/screens/profile_screen.dart';
 
 class AppRoutes {
   const AppRoutes._();
@@ -8,5 +9,13 @@ class AppRoutes {
 
 /// Pushed routes. Currently empty.
 Route<dynamic>? onGenerateRoute(RouteSettings settings) {
-  return null;
+  switch (settings.name) {
+    case '/profile':
+      return MaterialPageRoute(
+        builder: (_) => const ProfileScreen(),
+        settings: settings,
+      );
+    default:
+      return null;
+  }
 }

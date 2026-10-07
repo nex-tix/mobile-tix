@@ -31,8 +31,8 @@ import 'routes/shell_controller.dart';
 final TokenJwtDAO authTokenDao = TokenJwtDAO();
 final ApiService authApiService = ApiService();
 final AuthRepository authRepository = AuthRepository(authApiService, authTokenDao);
-final TokenJwtCubit authTokenCubit = TokenJwtCubit(authTokenDao);
 final TokenRefreshService authTokenRefreshService = TokenRefreshService();
+final TokenJwtCubit authTokenCubit = TokenJwtCubit(authTokenDao, authTokenRefreshService);
 final AutoLogoutService authAutoLogoutService = AutoLogoutService();
 final AutoLogoutObserver authAutoLogoutObserver =
     AutoLogoutObserver(logoutService: authAutoLogoutService);

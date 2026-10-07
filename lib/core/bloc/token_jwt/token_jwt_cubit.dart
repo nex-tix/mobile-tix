@@ -3,6 +3,7 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/dao/token_jwt_dao.dart';
+import '../../services/token_refresh_service.dart';
 import 'token_jwt_state.dart';
 
 /// Cubit untuk manage JWT token lifecycle global
@@ -11,15 +12,16 @@ import 'token_jwt_state.dart';
 /// - Load token saat app startup
 /// - Save token setelah login sukses
 /// - Clear token saat logout
+/// - Sinkronisasi otomatis penjadwalan proactive refresh via TokenRefreshService
 /// - Expose token state untuk dependency injection ke services
 class TokenJwtCubit extends Cubit<TokenJwtState> {
   // Singleton instance DAO untuk akses encrypted storage
   final TokenJwtDAO _tokenDAO;
+  final TokenRefreshService? _refreshService;
 
-  /// Constructor dengan dependency injection TokenJwtDAO
-  /// 
-  /// [_tokenDAO]: DAO singleton untuk Hive storage
-  TokenJwtCubit(this._tokenDAO) : super(const TokenJwtState.initial());
+  /// Constructor dengan dependency injection TokenJwtDAO dan optional TokenRefreshService
+  TokenJwtCubit(this._tokenDAO, [this._refreshService])
+      : super(const TokenJwtState.initial());
 
   /// Load token dari storage saat app startup
   /// 
@@ -39,6 +41,7 @@ class TokenJwtCubit extends Cubit<TokenJwtState> {
         // - Protect routes (jika token ada, skip login screen)
         // - Inject token ke BLoC/service lainnya
         emit(TokenJwtState.authenticated(token));
+        _refreshService?.scheduleNextRefresh(token);
       } else {
         // Token tidak ada atau kosong — user belum login
         // Emit unauthenticated state (aplikasi tampilkan login screen)
@@ -72,6 +75,7 @@ class TokenJwtCubit extends Cubit<TokenJwtState> {
       // Emit authenticated state dengan token yang baru disimpan
       // State ini akan trigger update di semua BLoC yang listen
       emit(TokenJwtState.authenticated(token));
+      _refreshService?.scheduleNextRefresh(token);
     } catch (e) {
       // Error saat save token (misal Hive error)
       emit(TokenJwtState.error(e.toString()));
@@ -84,6 +88,9 @@ class TokenJwtCubit extends Cubit<TokenJwtState> {
   /// Delete token dari storage dan emit unauthenticated state
   Future<void> clearToken() async {
     try {
+      // Batalkan penjadwalan proactive refresh yang aktif
+      _refreshService?.cancel();
+
       // Hapus token dari Hive storage
       // Setelah ini, next app startup tidak ada token lagi
       await _tokenDAO.deleteToken();

@@ -21,18 +21,15 @@ import 'auth_state.dart';
 /// - TokenJwtCubit: mengelola state token global dan penyimpanan Hive
 /// - ApiService: client Dio dengan interceptor (token injection)
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  final AuthRepository _authRepository;
-  final TokenJwtCubit _tokenCubit;
-  final ApiService _apiService;
+  final AuthRepository authRepository;
+  final TokenJwtCubit tokenCubit;
+  final ApiService apiService;
 
   AuthBloc({
-    required AuthRepository authRepository,
-    required TokenJwtCubit tokenCubit,
-    required ApiService apiService,
-  })  : _authRepository = authRepository,
-        _tokenCubit = tokenCubit,
-        _apiService = apiService,
-        super(const AuthInitial()) {
+    required this.authRepository,
+    required this.tokenCubit,
+    required this.apiService,
+  }) : super(const AuthInitial()) {
     // Event handlers
     on<AuthCheckRequested>(_onAuthCheckRequested);
     on<LoginSubmitted>(_onLoginSubmitted);
@@ -52,11 +49,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     try {
       // Load token dari TokenJwtCubit (Hive storage)
-      final token = _tokenCubit.getCurrentToken();
+      final token = tokenCubit.getCurrentToken();
 
       if (token != null && token.isNotEmpty) {
         // Set token di ApiService interceptor untuk request selanjutnya
-        _apiService.setToken(token);
+        apiService.setToken(token);
         // Emit authenticated state, UI dapat langsung navigasi ke home
         emit(const AuthAuthenticated());
       } else {
@@ -85,14 +82,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(const AuthLoading());
     try {
-      final response = await _authRepository.login(
+      final response = await authRepository.login(
         username: event.username,
         password: event.password,
       );
 
       // Simpan token (sudah di‑save oleh AuthRepository, tapi kita set lagi untuk UI sync)
-      _tokenCubit.saveToken(response.token);
-      _apiService.setToken(response.token);
+      tokenCubit.saveToken(response.token);
+      apiService.setToken(response.token);
 
       emit(const AuthAuthenticated());
     } catch (e) {
@@ -113,13 +110,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     try {
-      await _authRepository.logout();
+      await authRepository.logout();
     } catch (_) {
       // ignore server error, still clear locally
     }
     // Clear token dari cubit dan interceptor
-    _tokenCubit.clearToken();
-    _apiService.clearToken();
+    tokenCubit.clearToken();
+    apiService.clearToken();
     emit(const AuthUnauthenticated());
   }
 }
