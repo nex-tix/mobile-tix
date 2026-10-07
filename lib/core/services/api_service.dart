@@ -86,6 +86,8 @@ class ApiService {
 
         // Encrypt body jika enabled
         if (EnvConfig.isNeedEncrypt) {
+          // EncryptionService.encrypt() return format IV+CIPHERTEXT
+          // IV (16 bytes) prepended ke ciphertext, diencode Base64
           final encryptedBody = EncryptionService.encrypt(bodyString);
           options.data = {'encrypted': encryptedBody};
         }
