@@ -8,6 +8,8 @@ import 'core/bloc/auth/auth_bloc.dart';
 import 'core/bloc/auth/auth_state.dart';
 import 'core/bloc/auth/auth_event.dart';
 import 'core/bloc/token_jwt/token_jwt_cubit.dart';
+import 'core/bloc/theme/theme_cubit.dart';
+import 'core/bloc/language/language_cubit.dart';
 import 'core/data/dao/token_jwt_dao.dart';
 import 'core/data/repositories/auth_repository.dart';
 import 'core/services/api_service.dart';
@@ -37,8 +39,19 @@ final AutoLogoutObserver authAutoLogoutObserver =
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 /// The main application shell.
+///
+/// Menerima [themeCubit] dan [languageCubit] dari main() agar state global
+/// tema & bahasa bisa di-inject ke root MultiBlocProvider (Commit 2.4).
 class MobileTixApp extends StatefulWidget {
-  const MobileTixApp({super.key});
+  // Global cubit instances — dibuat & di-load di main() sebelum runApp
+  final ThemeCubit themeCubit;
+  final LanguageCubit languageCubit;
+
+  const MobileTixApp({
+    super.key,
+    required this.themeCubit,
+    required this.languageCubit,
+  });
 
   @override
   State<MobileTixApp> createState() => _MobileTixAppState();
@@ -130,14 +143,11 @@ class _MobileTixAppState extends State<MobileTixApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
+    return MultiBlocProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => SessionState()),
-        ChangeNotifierProvider(create: (_) => DemoConnectivity()),
-        ChangeNotifierProvider(create: (_) => ScannerState()),
-        ChangeNotifierProvider(create: (_) => HistoryState()),
-        ChangeNotifierProvider(create: (_) => DashboardState()),
-        ChangeNotifierProvider(create: (_) => ShellController()),
+        // Global state cubits (Commit 2.4)
+        BlocProvider<ThemeCubit>.value(value: widget.themeCubit),
+        BlocProvider<LanguageCubit>.value(value: widget.languageCubit),
         // Auth & Security dependencies
         BlocProvider<TokenJwtCubit>.value(value: authTokenCubit),
         Provider<AuthRepository>.value(value: authRepository),
@@ -148,41 +158,57 @@ class _MobileTixAppState extends State<MobileTixApp> {
             apiService: authApiService,
           )..add(const AuthCheckRequested()),
         ),
+        // Legacy providers (akan dihapus di Fase 6)
+        ChangeNotifierProvider(create: (_) => SessionState()),
+        ChangeNotifierProvider(create: (_) => DemoConnectivity()),
+        ChangeNotifierProvider(create: (_) => ScannerState()),
+        ChangeNotifierProvider(create: (_) => HistoryState()),
+        ChangeNotifierProvider(create: (_) => DashboardState()),
+        ChangeNotifierProvider(create: (_) => ShellController()),
       ],
-      child: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, authState) {
-          if (authState is AuthAuthenticated) {
-            authAutoLogoutService.resetTimer();
-            final token = authTokenDao.getToken();
-            if (token != null && token.isNotEmpty) {
-              authTokenRefreshService.scheduleNextRefresh(token);
-            }
-          } else if (authState is AuthUnauthenticated) {
-            authAutoLogoutService.stop();
-            authTokenRefreshService.cancel();
-          }
-        },
-        builder: (context, authState) {
-          final (key, phase) = _phase(authState);
-          return Listener(
-            onPointerDown: (_) => authAutoLogoutService.resetTimer(),
-            behavior: HitTestBehavior.translucent,
-            child: MaterialApp(
-              navigatorKey: rootNavigatorKey,
-              navigatorObservers: [authAutoLogoutObserver],
-              title: 'Mobile Ticket Validator',
-              debugShowCheckedModeBanner: false,
-              theme: AppTheme.light(),
-              darkTheme: AppTheme.dark(),
-              themeMode: ThemeMode.dark,
-              onGenerateRoute: onGenerateRoute,
-              home: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 260),
-                switchInCurve: Curves.easeOut,
-                switchOutCurve: Curves.easeIn,
-                child: KeyedSubtree(key: ValueKey(key), child: phase),
-              ),
-            ),
+      child: BlocBuilder<ThemeCubit, ThemeMode>(
+        builder: (context, themeMode) {
+          return BlocBuilder<LanguageCubit, Locale>(
+            builder: (context, locale) {
+              return BlocConsumer<AuthBloc, AuthState>(
+                listener: (context, authState) {
+                  if (authState is AuthAuthenticated) {
+                    authAutoLogoutService.resetTimer();
+                    final token = authTokenDao.getToken();
+                    if (token != null && token.isNotEmpty) {
+                      authTokenRefreshService.scheduleNextRefresh(token);
+                    }
+                  } else if (authState is AuthUnauthenticated) {
+                    authAutoLogoutService.stop();
+                    authTokenRefreshService.cancel();
+                  }
+                },
+                builder: (context, authState) {
+                  final (key, phase) = _phase(authState);
+                  return Listener(
+                    onPointerDown: (_) => authAutoLogoutService.resetTimer(),
+                    behavior: HitTestBehavior.translucent,
+                    child: MaterialApp(
+                      navigatorKey: rootNavigatorKey,
+                      navigatorObservers: [authAutoLogoutObserver],
+                      title: 'Mobile Ticket Validator',
+                      debugShowCheckedModeBanner: false,
+                      theme: AppTheme.light(),
+                      darkTheme: AppTheme.dark(),
+                      themeMode: themeMode, // Dynamic dari ThemeCubit
+                      locale: locale, // Dynamic dari LanguageCubit
+                      onGenerateRoute: onGenerateRoute,
+                      home: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 260),
+                        switchInCurve: Curves.easeOut,
+                        switchOutCurve: Curves.easeIn,
+                        child: KeyedSubtree(key: ValueKey(key), child: phase),
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
           );
         },
       ),
