@@ -279,6 +279,17 @@ void main() {
         expect((cubit.state as HistoryReady).filter.checkpoint, 'Gate B');
       });
 
+      test('applyFilter dengan HistoryFilter.rejected meneruskan status rejected ke API', () async {
+        await cubit.applyFilter(HistoryFilter.rejected);
+
+        final call = repository.calls.single;
+        expect(call.status, 'rejected');
+        expect(call.checkpoint, isNull);
+        expect(call.date, isNull);
+        expect(call.page, 1);
+        expect((cubit.state as HistoryReady).filter.rejectedOnly, isTrue);
+      });
+
       test('applyFilter memuat ulang dari halaman pertama', () async {
         repository.dataset = [
           for (var i = 0; i < 25; i++) _record('TKT-$i', minutesAgo: i),

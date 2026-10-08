@@ -38,7 +38,12 @@ class _FakeDashboardRepository implements DashboardRepository {
       totalVisitors: period == StatsPeriod.today ? 128 : 3412,
       validTickets: period == StatsPeriod.today ? 121 : 3204,
       rejectedTickets: period == StatsPeriod.today ? 7 : 208,
-      byCheckpoint: const {'Gate A': 45},
+      byCheckpoint: period == StatsPeriod.today
+          ? const {'Gate A': 70, 'Gate B': 58}
+          : const {'Gate A': 1800, 'Gate B': 1612},
+      byVisitorType: period == StatsPeriod.today
+          ? const {'Regular': 90, 'VIP': 38}
+          : const {'Regular': 2500, 'VIP': 912},
     );
   }
 
@@ -89,9 +94,11 @@ void main() {
       expect(ready.stats.totalVisitors, 128);
       expect(ready.stats.validTickets, 121);
       expect(ready.stats.rejectedTickets, 7);
+      expect(ready.stats.byCheckpoint, {'Gate A': 70, 'Gate B': 58});
+      expect(ready.stats.byVisitorType, {'Regular': 90, 'VIP': 38});
     });
 
-    test('loadMonth mengambil periode bulan ini', () async {
+    test('loadMonth mengambil periode bulan ini dengan breakdown lengkap', () async {
       await cubit.loadMonth();
 
       expect(repository.requested, [StatsPeriod.month]);
@@ -99,6 +106,10 @@ void main() {
       expect(ready.period, StatsPeriod.month);
       expect(ready.stats.period, StatsPeriod.month);
       expect(ready.stats.totalVisitors, 3412);
+      expect(ready.stats.validTickets, 3204);
+      expect(ready.stats.rejectedTickets, 208);
+      expect(ready.stats.byCheckpoint, {'Gate A': 1800, 'Gate B': 1612});
+      expect(ready.stats.byVisitorType, {'Regular': 2500, 'VIP': 912});
     });
 
     test('select tidak memuat ulang periode yang sudah tampil', () async {
