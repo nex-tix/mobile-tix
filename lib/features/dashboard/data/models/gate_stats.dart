@@ -2,14 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../../core/constants/ticket_status.dart';
 
-enum StatsPeriod {
-  today('HARI INI'),
-  month('BULAN INI');
-
-  const StatsPeriod(this.label);
-
-  final String label;
-}
+export 'dashboard_stats.dart' show StatsPeriod;
 
 /// One period's tally for one gate.
 ///

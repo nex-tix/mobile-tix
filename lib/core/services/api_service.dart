@@ -172,6 +172,7 @@ class ApiService {
 
       if (path.endsWith('/dashboard/summary')) {
         final res = await adapter.getDashboardSummary(
+          period: options.queryParameters['period']?.toString(),
           date: options.queryParameters['date']?.toString(),
         );
         return handler.resolve(Response(

@@ -310,39 +310,74 @@ class MockApiAdapter {
   // ==================== DASHBOARD & HISTORY ====================
 
   /// Mock endpoint: GET /dashboard/summary
-  /// 
-  /// Get ringkasan statistik untuk dashboard
-  /// Query params: [date] (optional) — default hari ini
-  /// 
-  /// Returns: ApiResponse dengan summary metrics
+  ///
+  /// Ringkasan statistik dashboard.
+  /// Query params: [period] — `today` (default) atau `month`.
+  /// Query params: [date] — `YYYY-MM-DD`, hanya informatif pada mock.
+  ///
+  /// Angka sengaja saling konsisten: `hourly` berjumlah sama dengan
+  /// `total_visitors`, begitu pula pecahan per gate dan per jenis pengunjung,
+  /// serta `valid_tickets + rejected_tickets`. Dashboard yang angkanya
+  /// bertentangan merusak kepercayaan pada seluruh layar.
   Future<ApiResponse<Map<String, dynamic>>> getDashboardSummary({
-    String? date, // Format: YYYY-MM-DD, default hari ini
+    String? period, // 'today' | 'month'
+    String? date, // Format: YYYY-MM-DD, hanya dikembalikan apa adanya
   }) async {
     // Simulasi network delay
     await Future.delayed(_networkDelay);
 
-    // Return dummy dashboard metrics
+    final resolved = period == 'month' ? 'month' : 'today';
+    final now = DateTime.now();
+
+    final metrics = resolved == 'month'
+        ? <String, dynamic>{
+            'period': 'month',
+            'total_visitors': 3412,
+            'valid_tickets': 3204,
+            'rejected_tickets': 208,
+            'by_checkpoint': {
+              'Gate A': 1180,
+              'Gate B': 1020,
+              'Gate C': 860,
+              'VIP Gate': 352,
+            },
+            'by_visitor_type': {
+              'Regular': 2650,
+              'VIP': 420,
+              'Press': 190,
+              'Staff': 152,
+            },
+            // Total pengunjung per jam operasional sepanjang bulan ini
+            // (jumlah = 3412, sama dengan total_visitors).
+            'hourly': [107, 240, 640, 480, 293, 160, 187, 320, 373, 240, 160, 133, 79],
+            'hour_start': 8,
+          }
+        : <String, dynamic>{
+            'period': 'today',
+            'total_visitors': 128,
+            'valid_tickets': 121,
+            'rejected_tickets': 7,
+            'by_checkpoint': {
+              'Gate A': 45,
+              'Gate B': 38,
+              'Gate C': 32,
+              'VIP Gate': 13,
+            },
+            'by_visitor_type': {
+              'Regular': 98,
+              'VIP': 18,
+              'Press': 7,
+              'Staff': 5,
+            },
+            'hourly': [4, 9, 24, 18, 11, 6, 7, 12, 14, 9, 6, 5, 3],
+            'hour_start': 8,
+          };
+
     return ApiResponse.success(
       data: {
-        'date': date ?? DateTime.now().toIso8601String().split('T')[0], // YYYY-MM-DD
-        'total_checked_in': 127, // Total check-in hari ini
-        'total_valid': 145, // Total ticket valid yang dicek
-        'total_invalid': 8, // Total ticket invalid
-        'by_checkpoint': {
-          // Breakdown per gate
-          'Gate A': 45,
-          'Gate B': 38,
-          'Gate C': 32,
-          'VIP Gate': 12,
-        },
-        'by_visitor_type': {
-          // Breakdown per tipe visitor
-          'Regular': 98,
-          'VIP': 18,
-          'Press': 7,
-          'Staff': 4,
-        },
-        'last_updated': DateTime.now().toIso8601String(), // Kapan data di-update terakhir
+        ...metrics,
+        'date': date ?? now.toIso8601String().split('T')[0], // YYYY-MM-DD
+        'last_updated': now.toIso8601String(),
       },
       message: 'Dashboard summary retrieved',
     );
