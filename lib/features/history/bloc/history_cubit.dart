@@ -165,7 +165,7 @@ class HistoryCubit extends Cubit<HistoryState> {
       page: page,
       pageSize: pageSize,
       checkpoint: filter.checkpoint,
-      status: filter.statusCode,
+      status: filter.statusParam,
       date: filter.dateParam,
     );
   }

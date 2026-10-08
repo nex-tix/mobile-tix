@@ -408,7 +408,10 @@ class MockApiAdapter {
     var records = historyRecords();
 
     if (status != null && status.isNotEmpty && status != 'all') {
-      records = records.where((item) => item['status'] == status).toList();
+      // `rejected` adalah nilai kelompok: semua verdict kecuali valid.
+      records = status == 'rejected'
+          ? records.where((item) => item['status'] != 'valid').toList()
+          : records.where((item) => item['status'] == status).toList();
     }
     if (checkpoint != null && checkpoint.isNotEmpty && checkpoint != 'all') {
       records = records

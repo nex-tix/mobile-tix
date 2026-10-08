@@ -11,8 +11,10 @@ import 'core/bloc/auth/auth_event.dart';
 import 'core/bloc/token_jwt/token_jwt_cubit.dart';
 import 'core/bloc/theme/theme_cubit.dart';
 import 'core/bloc/language/language_cubit.dart';
+import 'core/data/dao/offline_queue_dao.dart';
 import 'core/data/dao/token_jwt_dao.dart';
 import 'core/data/repositories/auth_repository.dart';
+import 'core/data/repositories/dashboard_repository.dart';
 import 'core/services/api_service.dart';
 import 'core/services/token_refresh_service.dart';
 import 'core/services/auto_logout_service.dart';
@@ -21,9 +23,10 @@ import 'core/services/mock_api_adapter.dart';
 import 'features/auth/logic/session_state.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/auth/presentation/screens/splash_screen.dart';
-import 'features/dashboard/logic/dashboard_state.dart';
-import 'features/history/logic/history_state.dart';
-import 'features/scanner/logic/scanner_state.dart';
+import 'features/dashboard/bloc/dashboard_cubit.dart';
+import 'features/history/bloc/history_cubit.dart';
+import 'features/scanner/bloc/scanner_cubit.dart';
+import 'features/scanner/data/repositories/ticket_repository.dart';
 import 'routes/app_routes.dart';
 import 'routes/home_shell.dart';
 import 'routes/shell_controller.dart';
@@ -38,6 +41,18 @@ final AutoLogoutService authAutoLogoutService = AutoLogoutService();
 final AutoLogoutObserver authAutoLogoutObserver =
     AutoLogoutObserver(logoutService: authAutoLogoutService);
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+
+// ==================== FEATURE SINGLETONS (FASE 6) ====================
+// Satu instance per proses, sama seperti singleton auth di atas: cubit fitur
+// menerima dependensinya lewat constructor, jadi tidak ada service locator.
+final DashboardRepository appDashboardRepository =
+    DashboardRepositoryImpl(authApiService);
+final TicketRepository appTicketRepository = TicketRepositoryImpl(authApiService);
+final OfflineQueueDAO appOfflineQueueDao = OfflineQueueDAO();
+
+/// Sumber tunggal status koneksi: badge di layar dan antrean offline membaca
+/// instance yang sama, jadi keduanya tidak bisa berbeda cerita.
+final DemoConnectivity appConnectivity = DemoConnectivity();
 
 /// The main application shell.
 ///
@@ -175,12 +190,23 @@ class _MobileTixAppState extends State<MobileTixApp> {
             apiService: authApiService,
           )..add(const AuthCheckRequested()),
         ),
-        // Legacy providers (akan dihapus di Fase 6)
+        // Feature cubits (Fase 6)
+        ChangeNotifierProvider<DemoConnectivity>.value(value: appConnectivity),
+        BlocProvider<ScannerCubit>(
+          create: (_) => ScannerCubit(
+            repository: appTicketRepository,
+            queueDao: appOfflineQueueDao,
+            connectivity: appConnectivity,
+          ),
+        ),
+        BlocProvider<DashboardCubit>(
+          create: (_) => DashboardCubit(repository: appDashboardRepository),
+        ),
+        BlocProvider<HistoryCubit>(
+          create: (_) => HistoryCubit(repository: appDashboardRepository),
+        ),
+        // Sesi & navigasi masih memakai ChangeNotifier; dibersihkan di 6.5.
         ChangeNotifierProvider(create: (_) => SessionState()),
-        ChangeNotifierProvider(create: (_) => DemoConnectivity()),
-        ChangeNotifierProvider(create: (_) => ScannerState()),
-        ChangeNotifierProvider(create: (_) => HistoryState()),
-        ChangeNotifierProvider(create: (_) => DashboardState()),
         ChangeNotifierProvider(create: (_) => ShellController()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(

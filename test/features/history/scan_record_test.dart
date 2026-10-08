@@ -189,15 +189,38 @@ void main() {
   group('HistoryFilter', () {
     test('none tidak menyaring apa pun', () {
       expect(HistoryFilter.none.isUnfiltered, isTrue);
-      expect(HistoryFilter.none.statusCode, isNull);
+      expect(HistoryFilter.none.statusParam, isNull);
       expect(HistoryFilter.none.dateParam, isNull);
     });
 
     test('mengirim kode status yang dipakai API', () {
       const filter = HistoryFilter(status: TicketStatus.alreadyUsed);
 
-      expect(filter.statusCode, 'already_used');
+      expect(filter.statusParam, 'already_used');
       expect(filter.isUnfiltered, isFalse);
+    });
+
+    test('kelompok "ditolak" memakai nilai kelompok, bukan satu verdict', () {
+      expect(HistoryFilter.rejected.statusParam, 'rejected');
+      expect(HistoryFilter.rejected.rejectedOnly, isTrue);
+      expect(HistoryFilter.rejected.isUnfiltered, isFalse);
+    });
+
+    test('withRejectedOnly melepas penyaring status pasti', () {
+      const filter = HistoryFilter(status: TicketStatus.expired);
+
+      final rejected = filter.withRejectedOnly();
+
+      expect(rejected.status, isNull);
+      expect(rejected.rejectedOnly, isTrue);
+      expect(rejected.statusParam, 'rejected');
+    });
+
+    test('withStatus melepas penyaring kelompok', () {
+      final exact = HistoryFilter.rejected.withStatus(TicketStatus.valid);
+
+      expect(exact.rejectedOnly, isFalse);
+      expect(exact.statusParam, 'valid');
     });
 
     test('dateParam memformat tanggal sebagai YYYY-MM-DD', () {

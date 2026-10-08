@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_tix/core/constants/app_icons.dart';
 
-import '../../../../core/constants/ticket_status.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../data/models/ledger_entry.dart';
+import '../../data/models/scan_record.dart';
 
 /// Ticket card matching Screen 13 (`13._history_all/code.html`).
+///
+/// Merender satu baris riwayat dari server. Yang dipakai hanya kejadian yang
+/// sudah tercatat — tidak ada tanggal atau jam yang dikarang di sini.
 class HistoryRow extends StatelessWidget {
-  const HistoryRow({super.key, required this.entry});
+  const HistoryRow({super.key, required this.record});
 
-  final LedgerEntry entry;
+  final ScanRecord record;
 
   @override
   Widget build(BuildContext context) {
-    final isValid = entry.status == TicketStatus.valid;
+    final isValid = record.isValid;
 
     final badgeOuterColor = isValid
         ? const Color(0x332ECC71)
@@ -28,7 +30,7 @@ class HistoryRow extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => _showDetail(context, entry),
+          onTap: () => _showDetail(context, record),
           borderRadius: BorderRadius.circular(16),
           child: Container(
             padding: const EdgeInsets.all(16),
@@ -63,11 +65,7 @@ class HistoryRow extends StatelessWidget {
                             shape: BoxShape.circle,
                             color: badgeInnerColor,
                           ),
-                          child: Icon(
-                            badgeIcon,
-                            size: 15,
-                            color: Colors.white,
-                          ),
+                          child: Icon(badgeIcon, size: 15, color: Colors.white),
                         ),
                       ),
                     ),
@@ -78,7 +76,7 @@ class HistoryRow extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          entry.code,
+                          record.ticketCode,
                           style: const TextStyle(
                             fontFamily: 'DMSans',
                             fontSize: 14.5,
@@ -89,7 +87,7 @@ class HistoryRow extends StatelessWidget {
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          Fmt.clockSeconds(entry.at),
+                          Fmt.clockSeconds(record.scannedAt),
                           style: const TextStyle(
                             fontFamily: 'DMSans',
                             fontSize: 12,
@@ -106,7 +104,7 @@ class HistoryRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '${entry.tickets} visitor',
+                      '${record.visitorCount} visitor',
                       style: const TextStyle(
                         fontFamily: 'DMSans',
                         fontSize: 12.5,
@@ -116,7 +114,7 @@ class HistoryRow extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      entry.gate,
+                      record.checkpoint ?? '—',
                       style: const TextStyle(
                         fontFamily: 'DMSans',
                         fontSize: 12,
@@ -133,7 +131,7 @@ class HistoryRow extends StatelessWidget {
     );
   }
 
-  static void _showDetail(BuildContext context, LedgerEntry entry) {
+  static void _showDetail(BuildContext context, ScanRecord record) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -142,9 +140,7 @@ class HistoryRow extends StatelessWidget {
           decoration: const BoxDecoration(
             color: Color(0xFF212B2F),
             borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-            border: Border(
-              top: BorderSide(color: Color(0xFF3E4E55), width: 1.2),
-            ),
+            border: Border(top: BorderSide(color: Color(0xFF3E4E55), width: 1.2)),
           ),
           padding: const EdgeInsets.fromLTRB(24, 14, 24, 28),
           child: SafeArea(
@@ -164,7 +160,7 @@ class HistoryRow extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Detail Tiket ${entry.code}',
+                  'Detail Tiket ${record.ticketCode}',
                   style: const TextStyle(
                     fontFamily: 'DMSans',
                     fontSize: 18,
@@ -173,13 +169,46 @@ class HistoryRow extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                _infoRow('Status', entry.status.label, entry.status == TicketStatus.valid ? const Color(0xFF2ECC71) : const Color(0xFFCF4647)),
-                _infoRow('Waktu Pindai', '${Fmt.fullDate(entry.at)} ${Fmt.clockSeconds(entry.at)}', const Color(0xFFF8F6F6)),
-                _infoRow('Checkpoint', entry.gate, const Color(0xFFF8F6F6)),
-                _infoRow('Jumlah Pengunjung', '${entry.tickets} orang', const Color(0xFFF8F6F6)),
-                _infoRow('Metode Pindai', entry.mode.label, const Color(0xFFF8F6F6)),
-                if (entry.visitor != null)
-                  _infoRow('Nama Tamu', entry.visitor!, const Color(0xFFF5D061)),
+                _infoRow(
+                  'Status',
+                  record.status.label,
+                  record.isValid
+                      ? const Color(0xFF2ECC71)
+                      : const Color(0xFFCF4647),
+                ),
+                _infoRow(
+                  'Waktu Pindai',
+                  '${Fmt.fullDate(record.scannedAt)} ${Fmt.clockSeconds(record.scannedAt)}',
+                  const Color(0xFFF8F6F6),
+                ),
+                _infoRow(
+                  'Checkpoint',
+                  record.checkpoint ?? '—',
+                  const Color(0xFFF8F6F6),
+                ),
+                _infoRow(
+                  'Jumlah Pengunjung',
+                  '${record.visitorCount} orang',
+                  const Color(0xFFF8F6F6),
+                ),
+                if (record.category != null)
+                  _infoRow(
+                    'Jenis Tiket',
+                    record.category!,
+                    const Color(0xFFF8F6F6),
+                  ),
+                if (record.validatedBy != null)
+                  _infoRow(
+                    'Petugas',
+                    record.validatedBy!,
+                    const Color(0xFFF8F6F6),
+                  ),
+                if (record.visitorName != null)
+                  _infoRow(
+                    'Nama Tamu',
+                    record.visitorName!,
+                    const Color(0xFFF5D061),
+                  ),
               ],
             ),
           ),
@@ -196,17 +225,17 @@ class HistoryRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 13.5,
-              color: Color(0xFFA3B1B7),
-            ),
+            style: const TextStyle(fontSize: 13.5, color: Color(0xFFA3B1B7)),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: valueColor,
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: valueColor,
+              ),
             ),
           ),
         ],
