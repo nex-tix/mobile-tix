@@ -384,64 +384,117 @@ class MockApiAdapter {
   }
 
   /// Mock endpoint: GET /ticket/history
-  /// 
-  /// Get riwayat ticket validation/check-in
-  /// Query params: [page], [limit], [date], [checkpoint], [status]
-  /// 
-  /// Returns: ApiResponse dengan paginated history
+  ///
+  /// Riwayat scan terhalaman, terbaru lebih dulu.
+  /// Query params: [page] (1-indexed), [pageSize], [date] (YYYY-MM-DD),
+  /// [checkpoint], [status].
+  ///
+  /// Semua filter benar-benar diterapkan dan hasilnya dipaginasi sungguhan,
+  /// supaya perilaku "muat lebih banyak" serta penyaringan bisa diuji lewat HTTP
+  /// mock — bukan hanya lewat unit test model.
   Future<ApiResponse<Map<String, dynamic>>> getTicketHistory({
-    int page = 1, // Pagination — halaman ke berapa
-    int limit = 20, // Pagination — berapa item per halaman
+    int page = 1, // Halaman ke berapa (1-indexed)
+    int pageSize = 20, // Berapa item per halaman
     String? date, // Filter by date (YYYY-MM-DD)
     String? checkpoint, // Filter by checkpoint
-    String? status, // Filter by status (valid, invalid, checked_in)
+    String? status, // Filter by status (valid, already_used, expired, …)
   }) async {
     // Simulasi network delay
     await Future.delayed(_networkDelay);
 
-    // Return dummy history dengan pagination
+    final safePage = page < 1 ? 1 : page;
+    final safeSize = pageSize < 1 ? 20 : pageSize;
+
+    var records = historyRecords();
+
+    if (status != null && status.isNotEmpty && status != 'all') {
+      records = records.where((item) => item['status'] == status).toList();
+    }
+    if (checkpoint != null && checkpoint.isNotEmpty && checkpoint != 'all') {
+      records = records
+          .where((item) => item['checkpoint'] == checkpoint)
+          .toList();
+    }
+    final day = date?.trim();
+    if (day != null && day.isNotEmpty) {
+      records = records
+          .where(
+            (item) => (item['scanned_at'] as String).startsWith(day),
+          )
+          .toList();
+    }
+
+    final totalItems = records.length;
+    final totalPages = totalItems == 0
+        ? 0
+        : (totalItems + safeSize - 1) ~/ safeSize;
+    final start = (safePage - 1) * safeSize;
+    final end = (start + safeSize).clamp(0, totalItems);
+    final items = start >= totalItems
+        ? const <Map<String, dynamic>>[]
+        : records.sublist(start, end);
+
     return ApiResponse.success(
       data: {
-        'current_page': page,
-        'per_page': limit,
-        'total_items': 127, // Total seluruh items
-        'total_pages': 7, // Total halaman (127 / 20 = 7 pages)
-        'items': [
-          // Array of ticket transaction
-          {
-            'id': 101,
-            'ticket_code': 'VALID-20261007-001',
-            'visitor_name': 'John Doe',
-            'visitor_type': 'Regular',
-            'checkpoint': 'Gate A',
-            'status': 'checked_in',
-            'check_in_time': '2026-10-07T05:30:00.000Z',
-            'validator_name': 'Admin Gate',
-          },
-          {
-            'id': 102,
-            'ticket_code': 'VALID-20261007-002',
-            'visitor_name': 'Jane Smith',
-            'visitor_type': 'VIP',
-            'checkpoint': 'VIP Gate',
-            'status': 'checked_in',
-            'check_in_time': '2026-10-07T05:32:15.000Z',
-            'validator_name': 'Admin Gate',
-          },
-          {
-            'id': 103,
-            'ticket_code': 'INVALID-20261007-003',
-            'visitor_name': null,
-            'visitor_type': null,
-            'checkpoint': 'Gate B',
-            'status': 'invalid',
-            'check_in_time': null, // Null karena gagal check-in
-            'validator_name': 'Admin Gate',
-          },
-          // ... dst, total 20 items per page
-        ],
+        'current_page': safePage,
+        'per_page': safeSize,
+        'total_items': totalItems,
+        'total_pages': totalPages,
+        'items': items,
       },
       message: 'Ticket history retrieved',
     );
+  }
+
+  /// Dataset riwayat yang deterministik untuk diuji.
+  ///
+  /// 27 baris dalam 3 hari terakhir (9 baris per hari). Status dan gate dirotasi
+  /// supaya setiap kombinasi filter punya hasil, dan waktunya relatif terhadap
+  /// [today] supaya filter tanggal selalu bisa diuji kapan pun demo dijalankan.
+  static List<Map<String, dynamic>> historyRecords({DateTime? today}) {
+    const statuses = [
+      'valid',
+      'already_used',
+      'expired',
+      'not_found',
+      'cancelled',
+    ];
+    const gates = ['Gate A', 'Gate B', 'Gate C', 'VIP Gate'];
+
+    final now = today ?? DateTime.now();
+    final records = <Map<String, dynamic>>[];
+
+    for (var i = 0; i < 27; i++) {
+      final dayOffset = i ~/ 9;
+      final status = statuses[i % statuses.length];
+      final gate = gates[i % gates.length];
+      final at = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        9 + (i % 8),
+        (i * 7) % 60,
+      ).subtract(Duration(days: dayOffset));
+      final withHolder = status == 'valid' || status == 'already_used';
+
+      records.add({
+        'id': 100 + i,
+        'ticket_code': 'TKT-2026-${(1236 + i).toString().padLeft(6, '0')}',
+        'status': status,
+        'checkpoint': gate,
+        'visitor_name': withHolder ? 'Tamu ${i + 1}' : null,
+        'visitor_count': status == 'not_found' ? 0 : 1 + (i % 3),
+        'category': withHolder ? (i.isEven ? 'Individu' : 'Rombongan') : null,
+        'scanned_at': at.toIso8601String(),
+        'validated_by': 'Admin Gate',
+      });
+    }
+
+    // Terbaru lebih dulu, sesuai urutan yang diminta PRD.
+    records.sort(
+      (a, b) =>
+          (b['scanned_at'] as String).compareTo(a['scanned_at'] as String),
+    );
+    return records;
   }
 }

@@ -9,6 +9,7 @@ import 'package:mobile_tix/core/error/api_failure.dart';
 import 'package:mobile_tix/features/dashboard/bloc/dashboard_cubit.dart';
 import 'package:mobile_tix/features/dashboard/bloc/dashboard_state.dart';
 import 'package:mobile_tix/features/dashboard/data/models/dashboard_stats.dart';
+import 'package:mobile_tix/features/history/data/models/scan_record_page.dart';
 
 /// Repository palsu: mencatat periode yang diminta dan bisa ditahan/di-gagalkan.
 class _FakeDashboardRepository implements DashboardRepository {
@@ -43,23 +44,13 @@ class _FakeDashboardRepository implements DashboardRepository {
 
   // Riwayat tidak dipakai di test dashboard.
   @override
-  Future<TicketHistoryResponse> getTicketHistory({
+  Future<ScanRecordPage> getTicketHistory({
     int page = 1,
     int pageSize = 10,
-    String? startDate,
-    String? endDate,
+    String? checkpoint,
     String? status,
+    String? date,
   }) => throw UnimplementedError('riwayat tidak dipakai di test dashboard');
-
-  @override
-  Future<TicketHistoryResponse> getNextPage(
-    TicketHistoryResponse currentResponse,
-  ) => throw UnimplementedError('riwayat tidak dipakai di test dashboard');
-
-  @override
-  Future<TicketHistoryResponse> getPreviousPage(
-    TicketHistoryResponse currentResponse,
-  ) => throw UnimplementedError('riwayat tidak dipakai di test dashboard');
 }
 
 void main() {
@@ -242,21 +233,11 @@ class _ThrowingDashboardRepository implements DashboardRepository {
   }) => throw StateError('boom');
 
   @override
-  Future<TicketHistoryResponse> getTicketHistory({
+  Future<ScanRecordPage> getTicketHistory({
     int page = 1,
     int pageSize = 10,
-    String? startDate,
-    String? endDate,
+    String? checkpoint,
     String? status,
+    String? date,
   }) => throw UnimplementedError('riwayat tidak dipakai di test dashboard');
-
-  @override
-  Future<TicketHistoryResponse> getNextPage(
-    TicketHistoryResponse currentResponse,
-  ) => throw UnimplementedError('riwayat tidak dipakai di test dashboard');
-
-  @override
-  Future<TicketHistoryResponse> getPreviousPage(
-    TicketHistoryResponse currentResponse,
-  ) => throw UnimplementedError('riwayat tidak dipakai di test dashboard');
 }

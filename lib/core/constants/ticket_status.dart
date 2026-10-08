@@ -59,6 +59,22 @@ enum TicketStatus {
 
   bool get isEntry => this == TicketStatus.valid;
 
+  /// Petakan string status dari server ke salah satu dari lima verdict.
+  ///
+  /// Toleran terhadap variasi penulisan backend (`checked_in`, `used`, `void`…)
+  /// dan mengembalikan [notFound] untuk apa pun yang tidak dikenali — termasuk
+  /// null — supaya layar tidak pernah merender verdict kosong.
+  static TicketStatus parse(Object? raw) {
+    final value = raw?.toString().trim().toLowerCase();
+    return switch (value) {
+      'valid' || 'active' || 'checked_in' => TicketStatus.valid,
+      'already_used' || 'used' || 'reused' => TicketStatus.alreadyUsed,
+      'expired' => TicketStatus.expired,
+      'cancelled' || 'canceled' || 'void' => TicketStatus.cancelled,
+      _ => TicketStatus.notFound,
+    };
+  }
+
   Color ink(AppColors c) => switch (this) {
     TicketStatus.valid => c.valid,
     TicketStatus.alreadyUsed => c.used,

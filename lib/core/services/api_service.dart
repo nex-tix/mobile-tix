@@ -183,11 +183,17 @@ class ApiService {
       }
 
       if (path.endsWith('/ticket/history')) {
-        final page = int.tryParse(options.queryParameters['page']?.toString() ?? '1') ?? 1;
-        final limit = int.tryParse(options.queryParameters['limit']?.toString() ?? '20') ?? 20;
+        final page =
+            int.tryParse(options.queryParameters['page']?.toString() ?? '1') ??
+            1;
+        final pageSize =
+            int.tryParse(
+              options.queryParameters['pageSize']?.toString() ?? '20',
+            ) ??
+            20;
         final res = await adapter.getTicketHistory(
           page: page,
-          limit: limit,
+          pageSize: pageSize,
           date: options.queryParameters['date']?.toString(),
           checkpoint: options.queryParameters['checkpoint']?.toString(),
           status: options.queryParameters['status']?.toString(),

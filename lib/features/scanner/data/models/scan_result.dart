@@ -114,16 +114,7 @@ class ScanResult {
   }
 
   /// Map the server's status string onto the gate's five verdicts.
-  static TicketStatus parseStatus(Object? raw) {
-    final value = raw?.toString().trim().toLowerCase();
-    return switch (value) {
-      'valid' || 'active' || 'checked_in' => TicketStatus.valid,
-      'already_used' || 'used' || 'reused' => TicketStatus.alreadyUsed,
-      'expired' => TicketStatus.expired,
-      'cancelled' || 'canceled' || 'void' => TicketStatus.cancelled,
-      _ => TicketStatus.notFound,
-    };
-  }
+  static TicketStatus parseStatus(Object? raw) => TicketStatus.parse(raw);
 
   /// The presentation model the result sheet renders.
   ScanOutcome toOutcome({String? gate}) {
