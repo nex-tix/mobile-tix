@@ -81,6 +81,24 @@ void main() {
         // Item yang lebih tua harus di posisi pertama
         expect(items.first.id, equals('q-older'));
       });
+
+      test('enqueue beruntun tidak saling menimpa (ID & urutan unik)', () async {
+        // Regresi: ID item diturunkan dari jam perangkat, yang di Windows bisa
+        // beresolusi kasar — dua scan beruntun pernah mendapat microsecond yang
+        // sama sehingga item kedua menimpa yang pertama.
+        await dao.enqueue(ticketCode: 'TIX-RACE-1', checkpointId: 'cp-01');
+        await dao.enqueue(ticketCode: 'TIX-RACE-2', checkpointId: 'cp-01');
+        await dao.enqueue(ticketCode: 'TIX-RACE-3', checkpointId: 'cp-01');
+
+        final items = dao.getAll();
+        expect(items.length, equals(3));
+        expect(items.map((scan) => scan.id).toSet().length, equals(3));
+        // Urutan FIFO tetap terjaga walau stempel waktunya berdekatan
+        expect(
+          items.map((scan) => scan.ticketCode).toList(),
+          equals(['TIX-RACE-1', 'TIX-RACE-2', 'TIX-RACE-3']),
+        );
+      });
     });
 
     group('remove & retry', () {

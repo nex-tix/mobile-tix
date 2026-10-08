@@ -134,8 +134,14 @@ class ApiService {
 
       if (path.endsWith('/ticket/check')) {
         final res = await adapter.checkTicket(
-          ticketCode: body['ticket_code']?.toString() ??
+          ticketCode:
+              body['ticket_code']?.toString() ??
               body['ticketCode']?.toString() ??
+              '',
+          checkpoint:
+              body['checkpointId']?.toString() ??
+              body['checkpoint_id']?.toString() ??
+              body['checkpoint']?.toString() ??
               '',
         );
         return handler.resolve(Response(
@@ -147,10 +153,15 @@ class ApiService {
 
       if (path.endsWith('/ticket/validate-and-checkin')) {
         final res = await adapter.validateAndCheckIn(
-          ticketCode: body['ticket_code']?.toString() ??
+          ticketCode:
+              body['ticket_code']?.toString() ??
               body['ticketCode']?.toString() ??
               '',
-          checkpoint: body['checkpoint']?.toString() ?? 'Gate A',
+          checkpoint:
+              body['checkpointId']?.toString() ??
+              body['checkpoint_id']?.toString() ??
+              body['checkpoint']?.toString() ??
+              'Gate A',
         );
         return handler.resolve(Response(
           requestOptions: options,

@@ -177,60 +177,113 @@ class MockApiAdapter {
 
   // ==================== TICKET VALIDATION ====================
 
+  /// Verdict yang dikembalikan server untuk sebuah kode tiket.
+  ///
+  /// Prefix `VALID` / `USED` / `EXPIRED` / `CANCEL` dipakai untuk menguji kontrak
+  /// API secara eksplisit. Kode demo `TKT-…` mengikuti aturan digit terakhir yang
+  /// sama dengan prototype, supaya walkthrough di layar tetap konsisten.
+  /// Prefix `ERR` mensimulasikan kegagalan server (bukan verdict tiket).
+  static String ticketStatusFor(String ticketCode) {
+    final code = ticketCode.trim().toUpperCase();
+    if (code.startsWith('ERR')) return 'server_error';
+    if (code.startsWith('VALID')) return 'valid';
+    if (code.startsWith('USED')) return 'already_used';
+    if (code.startsWith('EXPIRED')) return 'expired';
+    if (code.startsWith('CANCEL')) return 'cancelled';
+    if (code.startsWith('TKT-')) {
+      if (code.endsWith('4')) return 'already_used';
+      if (code.endsWith('3')) return 'expired';
+      if (code.endsWith('0') || code.endsWith('9')) return 'not_found';
+      if (code.endsWith('1')) return 'cancelled';
+      return 'valid';
+    }
+    return 'not_found';
+  }
+
+  /// Payload satu tiket, dalam bentuk yang sama dengan backend real.
+  ///
+  /// Semua lima verdict dikirim sebagai payload yang bisa dibaca `ScanResult`
+  /// (statusnya bagian dari data, bukan kegagalan transport).
+  Map<String, dynamic> _ticketPayload({
+    required String code,
+    required String status,
+    required String checkpoint,
+    required bool checkedIn,
+  }) {
+    final now = DateTime.now();
+    final gate = checkpoint.trim().isEmpty ? 'Gate A' : checkpoint.trim();
+    final valid = status == 'valid';
+    final used = status == 'already_used';
+    final withHolder = valid || used;
+    final written = checkedIn && valid;
+
+    return {
+      'ticket_code': code,
+      'status': status,
+      'visitor_name': withHolder ? 'Rangga Prasetyo' : null,
+      'visitor_count': withHolder ? 1 : 0,
+      'category': withHolder ? 'Individu' : null,
+      'used_at': used
+          ? now.subtract(const Duration(minutes: 27)).toIso8601String()
+          : (written ? now.toIso8601String() : null),
+      'used_by': (used || written) ? 'Admin Gate' : null,
+      'used_at_checkpoint': (used || written) ? gate : null,
+      'expiry_date': status == 'expired'
+          ? now.subtract(const Duration(days: 1)).toIso8601String()
+          : now.add(const Duration(days: 1)).toIso8601String(),
+      'is_checked_in': written,
+      'message': ticketMessageFor(status, checkedIn: checkedIn),
+    };
+  }
+
+  /// Pesan operator untuk tiap verdict.
+  static String ticketMessageFor(String status, {required bool checkedIn}) {
+    return switch (status) {
+      'valid' => checkedIn ? 'Check-in berhasil' : 'Tiket valid',
+      'already_used' => 'Tiket sudah pernah digunakan',
+      'expired' => 'Tiket sudah kadaluarsa',
+      'cancelled' => 'Tiket dibatalkan',
+      _ => 'Tiket tidak ditemukan',
+    };
+  }
+
   /// Mock endpoint: POST /ticket/check
-  /// 
-  /// Check apakah ticket valid atau tidak (tanpa proses check-in)
+  ///
+  /// Mode Cek — membaca status tiket tanpa mengubahnya.
   /// [ticketCode]: kode ticket dari QR scan atau manual input
-  /// 
-  /// Returns: ApiResponse dengan ticket info dan status
+  /// [checkpoint]: gate tempat petugas bertugas (tidak mengubah tiket)
+  ///
+  /// Returns: ApiResponse dengan payload tiket + salah satu dari lima status
   Future<ApiResponse<Map<String, dynamic>>> checkTicket({
     required String ticketCode,
+    String checkpoint = '',
   }) async {
     // Simulasi network delay
     await Future.delayed(_networkDelay);
 
-    // Simulasi berbagai kondisi ticket berdasarkan kode
-    if (ticketCode.startsWith('VALID')) {
-      // Ticket valid — bisa di-check-in
-      return ApiResponse.success(
-        data: {
-          'ticket_code': ticketCode,
-          'status': 'valid', // Status: valid, invalid, already_used, expired
-          'visitor_name': 'John Doe',
-          'visitor_type': 'Regular', // Regular, VIP, Press, Staff
-          'event_name': 'Kecak Dance Show',
-          'event_date': '2026-10-07',
-          'gate_allowed': ['Gate A', 'Gate B', 'Gate C'], // Gate mana saja yang boleh
-          'check_in_time': null, // Null karena belum check-in
-          'is_checked_in': false,
-        },
-        message: 'Ticket valid',
-      );
-    } else if (ticketCode.startsWith('USED')) {
-      // Ticket sudah pernah digunakan
-      return ApiResponse.error(
-        message: 'Ticket sudah pernah digunakan',
-      );
-    } else if (ticketCode.startsWith('EXPIRED')) {
-      // Ticket expired
-      return ApiResponse.error(
-        message: 'Ticket sudah kadaluarsa',
-      );
-    } else {
-      // Ticket tidak ditemukan atau invalid format
-      return ApiResponse.error(
-        message: 'Ticket tidak valid atau tidak ditemukan',
-      );
+    final status = ticketStatusFor(ticketCode);
+    if (status == 'server_error') {
+      return ApiResponse.error(message: 'Terjadi kesalahan di server');
     }
+
+    return ApiResponse.success(
+      data: _ticketPayload(
+        code: ticketCode,
+        status: status,
+        checkpoint: checkpoint,
+        checkedIn: false,
+      ),
+      message: ticketMessageFor(status, checkedIn: false),
+    );
   }
 
   /// Mock endpoint: POST /ticket/validate-and-checkin
-  /// 
-  /// Validate ticket + proses check-in sekaligus (atomic operation)
+  ///
+  /// Validate ticket + proses check-in sekaligus (atomic operation).
   /// [ticketCode]: kode ticket dari QR scan atau manual input
   /// [checkpoint]: gate tempat check-in dilakukan
-  /// 
-  /// Returns: ApiResponse dengan ticket info setelah check-in sukses
+  ///
+  /// Returns: ApiResponse dengan payload tiket setelah check-in untuk status valid
   Future<ApiResponse<Map<String, dynamic>>> validateAndCheckIn({
     required String ticketCode,
     required String checkpoint,
@@ -238,40 +291,20 @@ class MockApiAdapter {
     // Simulasi network delay
     await Future.delayed(_networkDelay);
 
-    // Simulasi berbagai kondisi ticket
-    if (ticketCode.startsWith('VALID')) {
-      // Check-in sukses
-      return ApiResponse.success(
-        data: {
-          'ticket_code': ticketCode,
-          'status': 'checked_in', // Status berubah jadi checked_in
-          'visitor_name': 'John Doe',
-          'visitor_type': 'Regular',
-          'event_name': 'Kecak Dance Show',
-          'event_date': '2026-10-07',
-          'checkpoint': checkpoint, // Gate tempat check-in
-          'check_in_time': DateTime.now().toIso8601String(), // Timestamp check-in
-          'is_checked_in': true,
-          'validator_name': 'Admin Gate', // Siapa yang melakukan check-in
-        },
-        message: 'Check-in berhasil',
-      );
-    } else if (ticketCode.startsWith('USED')) {
-      // Ticket sudah pernah digunakan
-      return ApiResponse.error(
-        message: 'Ticket sudah pernah digunakan',
-      );
-    } else if (ticketCode.startsWith('EXPIRED')) {
-      // Ticket expired
-      return ApiResponse.error(
-        message: 'Ticket sudah kadaluarsa',
-      );
-    } else {
-      // Ticket tidak valid
-      return ApiResponse.error(
-        message: 'Ticket tidak valid atau tidak ditemukan',
-      );
+    final status = ticketStatusFor(ticketCode);
+    if (status == 'server_error') {
+      return ApiResponse.error(message: 'Terjadi kesalahan di server');
     }
+
+    return ApiResponse.success(
+      data: _ticketPayload(
+        code: ticketCode,
+        status: status,
+        checkpoint: checkpoint,
+        checkedIn: true,
+      ),
+      message: ticketMessageFor(status, checkedIn: true),
+    );
   }
 
   // ==================== DASHBOARD & HISTORY ====================

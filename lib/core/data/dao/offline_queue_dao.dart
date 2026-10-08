@@ -29,6 +29,10 @@ class OfflineQueueDAO {
   // Reference ke Hive box bertipe QueuedScan
   Box<QueuedScan>? _queueBox;
 
+  // Stempel waktu terakhir yang sudah dipakai untuk sebuah item antrean.
+  // Dipakai penjaga monotonik di [_monotonicStamp].
+  DateTime _lastStamp = DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+
   bool get isInitialized => _queueBox?.isOpen ?? false;
 
   /// Daftarkan Hive adapter untuk [QueuedScan].
@@ -77,13 +81,13 @@ class OfflineQueueDAO {
       final box = await _getBox();
 
       // Waktu scan (UTC) — dipakai sebagai urutan FIFO dan dasar TTL
-      final now = DateTime.now().toUtc();
+      final stamp = _monotonicStamp(DateTime.now().toUtc());
       final scan = QueuedScan(
-        id: 'offline_${now.microsecondsSinceEpoch}',
+        id: 'offline_${stamp.microsecondsSinceEpoch}',
         ticketCode: ticketCode,
         mode: mode,
         checkpointId: checkpointId,
-        queuedAt: now,
+        queuedAt: stamp,
       );
 
       // Simpan per-item (key = id) — tidak menulis ulang seluruh antrean
@@ -92,6 +96,23 @@ class OfflineQueueDAO {
     } catch (e) {
       throw Exception('Failed to enqueue scan: $e');
     }
+  }
+
+  /// Stempel waktu yang **selalu naik** untuk setiap item antrean baru.
+  ///
+  /// Jam perangkat (khususnya di Windows) punya resolusi kasar: dua scan
+  /// beruntun dapat memperoleh microsecond yang persis sama. Karena ID item
+  /// diturunkan dari stempel ini, tabrakan berarti `box.put` kedua menimpa yang
+  /// pertama — satu check-in hilang tanpa jejak. Urutan naik ini menjaga ID
+  /// tetap unik sekaligus menjamin FIFO, karena [getAll] mengurutkan menurut
+  /// [QueuedScan.queuedAt].
+  DateTime _monotonicStamp(DateTime now) {
+    if (now.isAfter(_lastStamp)) {
+      _lastStamp = now;
+    } else {
+      _lastStamp = _lastStamp.add(const Duration(microseconds: 1));
+    }
+    return _lastStamp;
   }
 
   /// Simpan objek [QueuedScan] yang sudah dibentuk pemanggil.

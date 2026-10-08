@@ -1,23 +1,15 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../../core/constants/ticket_status.dart';
+import 'scan_mode.dart';
 
-/// What the operator is doing at the gate.
-enum ScanMode {
-  /// First entry — the scan writes the ticket.
-  checkIn('CHECK-IN', 'Masuk'),
+export 'scan_mode.dart';
 
-  /// Read-only check, typically at the exit.
-  check('CEK', 'Cek');
-
-  const ScanMode(this.label, this.shortLabel);
-
-  final String label;
-  final String shortLabel;
-}
-
-/// The result of one ticket scan. Every field here is dummy data authored for the
-/// prototype; nothing arrives from a server in this stage.
+/// The result of one ticket scan, as the gate renders it.
+///
+/// Ini model presentasi. Hasil dari server masuk sebagai `ScanResult`
+/// (lihat `scan_result.dart`) dan dikonversi lewat `ScanResult.toOutcome()`;
+/// `ScanOutcome` langsung boleh dibentuk hanya oleh data demo di layar.
 @immutable
 class ScanOutcome {
   const ScanOutcome({
