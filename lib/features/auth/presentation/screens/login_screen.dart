@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -53,9 +54,12 @@ class _LoginScreenState extends State<LoginScreen> {
       final username = _username.text.trim();
       final password = _password.text;
       setState(() {
-        _usernameError = username.isEmpty ? 'Username wajib diisi' : null;
-        _passwordError = password.isEmpty ? 'Password wajib diisi' : null;
-        _gateError = _selectedGate == null ? 'Pilih gate terlebih dahulu' : null;
+        _usernameError =
+            username.isEmpty ? context.tr('auth.usernameRequired') : null;
+        _passwordError =
+            password.isEmpty ? context.tr('auth.passwordRequired') : null;
+        _gateError =
+            _selectedGate == null ? context.tr('auth.gateRequired') : null;
       });
       if (_usernameError != null || _passwordError != null || _gateError != null) return;
 
@@ -185,9 +189,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(height: 20),
 
                             // App Title
-                            const Text(
-                              'Gate Validator',
-                              style: TextStyle(
+                            Text(
+                              context.tr('auth.appTitle'),
+                              style: const TextStyle(
                                 fontFamily: 'DMSans',
                                 fontSize: 22,
                                 fontWeight: FontWeight.w700,
@@ -201,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             _buildInputField(
                               controller: _username,
                               focusNode: _usernameFocus,
-                              hint: 'Username',
+                              hint: context.tr('auth.username'),
                               icon: AppIcons.person,
                               obscure: false,
                               error: _usernameError,
@@ -212,7 +216,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             _buildInputField(
                               controller: _password,
                               focusNode: _passwordFocus,
-                              hint: 'Password',
+                              hint: context.tr('auth.password'),
                               icon: AppIcons.lock,
                               obscure: _obscured,
                               error: _passwordError,
@@ -264,9 +268,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 color: Color(0xFFF8F6F6),
                                               ),
                                             )
-                                          : const Text(
-                                              'Login',
-                                              style: TextStyle(
+                                          : Text(
+                                              context.tr('auth.login'),
+                                              style: const TextStyle(
                                                 fontFamily: 'DMSans',
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w700,
@@ -283,7 +287,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             // Helper demo hint
                             const SizedBox(height: 16),
                             Text(
-                              'Gunakan akun demo: ${AppConfig.demoUsername}',
+                              context.tr(
+                                'auth.demoHint',
+                                namedArgs: {'username': AppConfig.demoUsername},
+                              ),
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: Color(0xFFA3B1B7),
@@ -367,7 +374,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              if (trailing != null) trailing,
+              ?trailing,
             ],
           ),
         ),
@@ -420,9 +427,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: DropdownButton<Checkpoint>(
                     value: _selectedGate,
                     isExpanded: true,
-                    hint: const Text(
-                      'Pilih Gate',
-                      style: TextStyle(
+                    hint: Text(
+                      context.tr('auth.selectGate'),
+                      style: const TextStyle(
                         fontFamily: 'DMSans',
                         fontSize: 15,
                         color: Color(0xFF8B9FA8),

@@ -1,13 +1,16 @@
 // File: confirm_dialog_test.dart
-// Widget test untuk ConfirmDialog (Commit 4.4).
+// Widget test untuk ConfirmDialog (Commit 4.4 + i18n Commit 5.3).
 //
 // Yang diuji:
 // - Dialog menampilkan judul + pesan.
 // - Tombol konfirmasi mengembalikan true.
 // - Tombol batal mengembalikan false.
 // - Menutup dialog dengan cara lain (tap barrier) tetap dianggap batal (false).
+// - Label default (BATAL) berasal dari kamus i18n.
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_tix/core/theme/app_theme.dart';
 import 'package:mobile_tix/core/ui/widgets/confirm_dialog.dart';
@@ -15,6 +18,13 @@ import 'package:mobile_tix/core/ui/widgets/confirm_dialog.dart';
 void main() {
   // Menyimpan hasil Future<bool> dari showConfirmDialog.
   bool? result;
+
+  setUp(() {
+    // rootBundle menyimpan cache string; dibersihkan tiap test supaya delegate
+    // EasyLocalization benar-benar memuat ulang kamus dan Localizations siap
+    // sebelum interaksi dilakukan.
+    rootBundle.clear();
+  });
 
   // Helper: app dengan tombol yang membuka dialog konfirmasi.
   Future<void> pumpHarness(
@@ -25,28 +35,43 @@ void main() {
     result = null;
 
     await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.dark(),
-        home: Scaffold(
-          body: Builder(
-            builder: (context) => Center(
-              child: ElevatedButton(
-                onPressed: () async {
-                  result = await showConfirmDialog(
-                    context,
-                    title: 'Keluar dari akun?',
-                    message: 'Sesi saat ini akan diakhiri.',
-                    confirmLabel: confirmLabel,
-                    destructive: destructive,
-                  );
-                },
-                child: const Text('OPEN'),
+      EasyLocalization(
+        supportedLocales: const [Locale('id'), Locale('en')],
+        path: 'assets/translations',
+        fallbackLocale: const Locale('id'),
+        startLocale: const Locale('id'),
+        saveLocale: false,
+        child: Builder(
+          builder: (easyContext) => MaterialApp(
+            locale: easyContext.locale,
+            supportedLocales: easyContext.supportedLocales,
+            localizationsDelegates: easyContext.localizationDelegates,
+            theme: AppTheme.dark(),
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => Center(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      result = await showConfirmDialog(
+                        context,
+                        title: 'Keluar dari akun?',
+                        message: 'Sesi saat ini akan diakhiri.',
+                        confirmLabel: confirmLabel,
+                        destructive: destructive,
+                      );
+                    },
+                    child: const Text('OPEN'),
+                  ),
+                ),
               ),
             ),
           ),
         ),
       ),
     );
+
+    // Beri kesempatan EasyLocalization memuat kamus sebelum berinteraksi.
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
   }
 
   testWidgets('menampilkan judul dan pesan', (tester) async {

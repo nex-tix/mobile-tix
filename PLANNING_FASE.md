@@ -13,7 +13,7 @@ Dokumen ini memecah seluruh fase migrasi arsitektur dari `.hermes/plans/architec
 | **Fase 2** | Global State Management (BLoC/Cubit) | 2h | ✅ Selesai | 4 Commit |
 | **Fase 3** | Data Access Objects (DAO & Offline Storage) | 1h | ✅ Selesai | 3 Commit (`79a80a5`) |
 | **Fase 4** | Core UI Widgets (Snackbar Top, Copyable, Confirm Dialog) | 1.5h | ✅ Selesai | 4 Commit |
-| **Fase 5** | Internationalization (i18n EasyLocalization id/en) | 2h | ⏳ SIAP DIKERJAKAN | 3 Commit |
+| **Fase 5** | Internationalization (i18n EasyLocalization id/en) | 2h | ✅ Selesai | 3 Commit |
 | **Fase 6** | Feature BLoC Migration (Scanner, Dashboard, History) | 3h | ⏳ Menunggu | 5 Commit |
 | **Fase 7** | Full 8 Endpoints API Integration | 2h | ⏳ Menunggu | 3 Commit |
 | **Fase 8** | Polish, Audio Feedback, Shimmer, & Production Readiness | 2h | ⏳ Menunggu | 3 Commit |
@@ -177,20 +177,22 @@ Dokumen ini memecah seluruh fase migrasi arsitektur dari `.hermes/plans/architec
 ---
 
 ## 📋 FASE 5: Internationalization (i18n)
-> **Status:** ⏳ SIAP DIKERJAKAN  
+> **Status:** ✅ SELESAI  
 > **Goal:** Dukungan multi-bahasa (Bahasa Indonesia & English) tanpa hardcoded string.
 
 ### 📌 Commit 5.1: Konfigurasi EasyLocalization
-- **Pesan Commit:** `feat(i18n): configure EasyLocalization in pubspec and main.dart`
+- [x] **Pesan Commit:** `feat(i18n): configure EasyLocalization in pubspec and main.dart`
 - **Files:**
   - `pubspec.yaml`
   - `lib/main.dart`
+  - `lib/app.dart`
 - **Cakupan Tugas:**
   - Daftarkan path `assets/translations/` di `pubspec.yaml`.
   - Inisialisasi `EasyLocalization` dengan locale default `id` dan fallback `id`.
+  - Sinkronkan `LanguageCubit` ke locale EasyLocalization via `BlocListener` + `context.setLocale`.
 
 ### 📌 Commit 5.2: File Terjemahan Lengkap (ID & EN)
-- **Pesan Commit:** `feat(i18n): create translation dictionaries for id and en locales`
+- [x] **Pesan Commit:** `feat(i18n): create translation dictionaries for id and en locales`
 - **Files:**
   - `assets/translations/id.json`
   - `assets/translations/en.json`
@@ -198,7 +200,7 @@ Dokumen ini memecah seluruh fase migrasi arsitektur dari `.hermes/plans/architec
   - Struktur JSON key hierarkis: `auth.*`, `scanner.*`, `ticket.*`, `dashboard.*`, `history.*`, `profile.*`, `common.*`.
 
 ### 📌 Commit 5.3: Refactor String Hardcoded ke `tr()`
-- **Pesan Commit:** `refactor(i18n): apply tr() localization across core widgets and auth screens`
+- [x] **Pesan Commit:** `refactor(i18n): apply tr() localization across core widgets and auth screens`
 - **Files:**
   - `lib/features/auth/presentation/screens/login_screen.dart`
   - `lib/features/auth/presentation/screens/profile_screen.dart`

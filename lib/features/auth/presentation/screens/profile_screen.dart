@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:mobile_tix/core/bloc/auth/auth_bloc.dart';
 import 'package:mobile_tix/core/bloc/auth/auth_event.dart';
 import 'package:mobile_tix/core/bloc/language/language_cubit.dart';
@@ -26,9 +27,9 @@ class ProfileScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Profil Petugas',
-          style: TextStyle(
+        title: Text(
+          context.tr('profile.title'),
+          style: const TextStyle(
             fontFamily: 'DMSans',
             fontWeight: FontWeight.w700,
             fontSize: 20,
@@ -89,7 +90,7 @@ class ProfileScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            staff?.role ?? 'Gate Staff · Shift Utama',
+                            staff?.role ?? context.tr('profile.defaultRole'),
                             style: const TextStyle(
                               fontSize: 13,
                               color: Color(0xFFA3B1B7),
@@ -116,22 +117,22 @@ class ProfileScreen extends StatelessWidget {
                                   ListTile(
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                                     leading: Icon(AppIcons.sun, size: 22, color: const Color(0xFFA3B1B7)),
-                                    title: const Text(
-                                      'Tema',
-                                      style: TextStyle(fontSize: 14, color: Color(0xFFA3B1B7)),
+                                    title: Text(
+                                      context.tr('profile.theme'),
+                                      style: const TextStyle(fontSize: 14, color: Color(0xFFA3B1B7)),
                                     ),
                                     trailing: BlocBuilder<ThemeCubit, ThemeMode>(
                                       builder: (context, themeMode) {
-                                        String label;
+                                        final String label;
                                         switch (themeMode) {
                                           case ThemeMode.light:
-                                            label = 'Terang';
+                                            label = context.tr('common.light');
                                             break;
                                           case ThemeMode.dark:
-                                            label = 'Gelap';
+                                            label = context.tr('common.dark');
                                             break;
                                           case ThemeMode.system:
-                                            label = 'Sistem';
+                                            label = context.tr('common.system');
                                             break;
                                         }
                                         return Text(
@@ -161,14 +162,16 @@ class ProfileScreen extends StatelessWidget {
                                   ListTile(
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
                                     leading: Icon(AppIcons.language, size: 22, color: const Color(0xFFA3B1B7)),
-                                    title: const Text(
-                                      'Bahasa',
-                                      style: TextStyle(fontSize: 14, color: Color(0xFFA3B1B7)),
+                                    title: Text(
+                                      context.tr('profile.language'),
+                                      style: const TextStyle(fontSize: 14, color: Color(0xFFA3B1B7)),
                                     ),
                                     trailing: BlocBuilder<LanguageCubit, Locale>(
                                       builder: (context, state) {
                                         return Text(
-                                          state.languageCode == 'en' ? 'English' : 'Indonesia',
+                                          state.languageCode == 'en'
+                                              ? context.tr('common.english')
+                                              : context.tr('common.indonesian'),
                                           style: const TextStyle(
                                             fontSize: 13.5,
                                             fontWeight: FontWeight.w600,
@@ -207,12 +210,12 @@ class ProfileScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
-                            children: const [
-                              Icon(AppIcons.meetingRoom, size: 20, color: Color(0xFFA3B1B7)),
-                              SizedBox(width: 12),
+                            children: [
+                              const Icon(AppIcons.meetingRoom, size: 20, color: Color(0xFFA3B1B7)),
+                              const SizedBox(width: 12),
                               Text(
-                                'Checkpoint',
-                                style: TextStyle(
+                                context.tr('profile.checkpoint'),
+                                style: const TextStyle(
                                   fontSize: 14,
                                   color: Color(0xFFA3B1B7),
                                 ),
@@ -238,12 +241,12 @@ class ProfileScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
-                            children: const [
-                              Icon(AppIcons.wifi, size: 20, color: Color(0xFFA3B1B7)),
-                              SizedBox(width: 12),
+                            children: [
+                              const Icon(AppIcons.wifi, size: 20, color: Color(0xFFA3B1B7)),
+                              const SizedBox(width: 12),
                               Text(
-                                'Koneksi',
-                                style: TextStyle(
+                                context.tr('profile.connection'),
+                                style: const TextStyle(
                                   fontSize: 14,
                                   color: Color(0xFFA3B1B7),
                                 ),
@@ -264,7 +267,9 @@ class ProfileScreen extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                connectivity.online ? 'Online' : 'Offline',
+                                connectivity.online
+                                    ? context.tr('common.online')
+                                    : context.tr('common.offline'),
                                 style: TextStyle(
                                   fontSize: 13.5,
                                   fontWeight: FontWeight.w600,
@@ -298,9 +303,9 @@ class ProfileScreen extends StatelessWidget {
                   onPressed: () async {
                     final ok = await showConfirmDialog(
                       context,
-                      title: 'Keluar dari akun?',
-                      message: 'Sesi saat ini akan diakhiri.',
-                      confirmLabel: 'LOGOUT',
+                      title: context.tr('auth.logoutTitle'),
+                      message: context.tr('auth.logoutMessage'),
+                      confirmLabel: context.tr('common.logout'),
                     );
                     if (!ok || !context.mounted) return;
                     // Pop profile screen dari navigator stack agar tidak stuck
@@ -314,12 +319,12 @@ class ProfileScreen extends StatelessWidget {
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(AppIcons.logout, size: 18, color: Color(0xFFCF4647)),
-                      SizedBox(width: 8),
+                    children: [
+                      const Icon(AppIcons.logout, size: 18, color: Color(0xFFCF4647)),
+                      const SizedBox(width: 8),
                       Text(
-                        'Logout',
-                        style: TextStyle(
+                        context.tr('common.logout'),
+                        style: const TextStyle(
                           fontFamily: 'DMSans',
                           fontSize: 15,
                           fontWeight: FontWeight.w600,

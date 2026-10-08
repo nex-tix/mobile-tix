@@ -5,6 +5,7 @@
 // keadaan petugas (logout, ganti gate, hapus antrean) — bukan konfirmasi untuk
 // setiap aksi, karena itu justru melatih petugas menekan "YA" tanpa membaca.
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../constants/app_icons.dart';
@@ -21,8 +22,8 @@ class ConfirmDialog extends StatelessWidget {
     super.key,
     required this.title,
     required this.message,
-    this.confirmLabel = 'YA',
-    this.cancelLabel = 'BATAL',
+    this.confirmLabel,
+    this.cancelLabel,
     this.destructive = true,
     this.icon,
     this.accentColor,
@@ -34,11 +35,11 @@ class ConfirmDialog extends StatelessWidget {
   // Penjelasan konsekuensi aksi.
   final String message;
 
-  // Teks tombol konfirmasi.
-  final String confirmLabel;
+  // Teks tombol konfirmasi. Null → fallback ke terjemahan `common.confirm`.
+  final String? confirmLabel;
 
-  // Teks tombol batal.
-  final String cancelLabel;
+  // Teks tombol batal. Null → fallback ke terjemahan `common.cancel`.
+  final String? cancelLabel;
 
   // True → aksi merusak/mengakhiri sesi, tombol konfirmasi memakai warna bahaya.
   final bool destructive;
@@ -53,6 +54,10 @@ class ConfirmDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final text = AppText.of(context);
+
+    // Label tombol: pakai yang dikirim pemanggil, atau terjemahan default.
+    final confirmText = confirmLabel ?? context.tr('common.confirm');
+    final cancelText = cancelLabel ?? context.tr('common.cancel');
 
     // Warna aksi: eksplisit menang, lalu merah bila destruktif, selain itu primer.
     final accent =
@@ -97,7 +102,7 @@ class ConfirmDialog extends StatelessWidget {
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
           style: TextButton.styleFrom(foregroundColor: c.inkMuted),
-          child: Text(cancelLabel),
+          child: Text(cancelText),
         ),
         // Tombol konfirmasi — hasil true, warna mengikuti tingkat bahaya aksi.
         TextButton(
@@ -106,7 +111,7 @@ class ConfirmDialog extends StatelessWidget {
             foregroundColor: accent,
             textStyle: text.button,
           ),
-          child: Text(confirmLabel),
+          child: Text(confirmText),
         ),
       ],
     );
@@ -122,8 +127,8 @@ Future<bool> showConfirmDialog(
   BuildContext context, {
   required String title,
   required String message,
-  String confirmLabel = 'YA',
-  String cancelLabel = 'BATAL',
+  String? confirmLabel,
+  String? cancelLabel,
   bool destructive = true,
   IconData? icon = AppIcons.warning,
   Color? accentColor,

@@ -102,6 +102,7 @@ flutter:
   assets:
     - assets/images/logo.png
     - assets/images/kecak-background.jpg
+    - assets/translations/
 
   fonts:
     - family: DMSans

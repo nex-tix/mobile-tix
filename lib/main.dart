@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -33,8 +34,23 @@ void main() async {
   await languageCubit.initialize();
   await languageCubit.loadLanguage();
 
-  runApp(MobileTixApp(
-    themeCubit: themeCubit,
-    languageCubit: languageCubit,
-  ));
+  // 5. Inisialisasi EasyLocalization (i18n).
+  //    Locale awal diambil dari LanguageCubit (persisted di Hive) agar pilihan
+  //    bahasa petugas tetap terjaga antar restart. Persistensi tetap dikelola
+  //    LanguageCubit (saveLocale: false) supaya tidak ada dua sumber kebenaran.
+  await EasyLocalization.ensureInitialized();
+
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [Locale('id'), Locale('en')],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('id'),
+      startLocale: languageCubit.state,
+      saveLocale: false,
+      child: MobileTixApp(
+        themeCubit: themeCubit,
+        languageCubit: languageCubit,
+      ),
+    ),
+  );
 }

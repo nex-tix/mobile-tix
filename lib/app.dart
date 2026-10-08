@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -66,6 +67,13 @@ class _MobileTixAppState extends State<MobileTixApp> {
     _setupSecurityServices();
   }
 
+  @override
+  void dispose() {
+    authAutoLogoutService.stop();
+    authTokenRefreshService.cancel();
+    super.dispose();
+  }
+
   void _setupSecurityServices() {
     // 1. Proactive Token Refresh
     authTokenRefreshService.onRefreshToken = () async {
@@ -105,10 +113,13 @@ class _MobileTixAppState extends State<MobileTixApp> {
       barrierDismissible: false,
       builder: (dialogCtx) => AlertDialog(
         backgroundColor: const Color(0xFF18202C),
-        title: const Text('Peringatan Sesi', style: TextStyle(color: Colors.white)),
-        content: const Text(
-          'Sesi Anda akan segera berakhir karena tidak ada aktivitas. Tetap masuk atau keluar sekarang?',
-          style: TextStyle(color: Color(0xFF94A3B8)),
+        title: Text(
+          dialogCtx.tr('auth.sessionExpiringTitle'),
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: Text(
+          dialogCtx.tr('auth.sessionExpiringMessage'),
+          style: const TextStyle(color: Color(0xFF94A3B8)),
         ),
         actions: [
           TextButton(
@@ -116,7 +127,10 @@ class _MobileTixAppState extends State<MobileTixApp> {
               Navigator.of(dialogCtx, rootNavigator: true).pop();
               authAutoLogoutService.forceLogout();
             },
-            child: const Text('Keluar', style: TextStyle(color: Color(0xFFCF4647))),
+            child: Text(
+              dialogCtx.tr('auth.signOut'),
+              style: const TextStyle(color: Color(0xFFCF4647)),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE5A93C)),
@@ -124,7 +138,10 @@ class _MobileTixAppState extends State<MobileTixApp> {
               Navigator.of(dialogCtx, rootNavigator: true).pop();
               authAutoLogoutService.stayLoggedIn();
             },
-            child: const Text('Tetap Masuk', style: TextStyle(color: Colors.black)),
+            child: Text(
+              dialogCtx.tr('auth.stayLoggedIn'),
+              style: const TextStyle(color: Colors.black),
+            ),
           ),
         ],
       ),
@@ -168,9 +185,17 @@ class _MobileTixAppState extends State<MobileTixApp> {
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
-          return BlocBuilder<LanguageCubit, Locale>(
-            builder: (context, locale) {
-              return BlocConsumer<AuthBloc, AuthState>(
+          return BlocListener<LanguageCubit, Locale>(
+            listenWhen: (previous, current) =>
+                previous.languageCode != current.languageCode,
+            listener: (context, locale) {
+              // Sinkronkan locale LanguageCubit → EasyLocalization supaya
+              // tr() memakai kamus bahasa yang benar.
+              if (context.locale.languageCode != locale.languageCode) {
+                context.setLocale(locale);
+              }
+            },
+            child: BlocConsumer<AuthBloc, AuthState>(
                 listener: (context, authState) {
                   if (authState is AuthAuthenticated) {
                     authAutoLogoutService.resetTimer();
@@ -196,7 +221,10 @@ class _MobileTixAppState extends State<MobileTixApp> {
                       theme: AppTheme.light(),
                       darkTheme: AppTheme.dark(),
                       themeMode: themeMode, // Dynamic dari ThemeCubit
-                      locale: locale, // Dynamic dari LanguageCubit
+                      // i18n — EasyLocalization sebagai sumber locale tunggal.
+                      locale: context.locale,
+                      supportedLocales: context.supportedLocales,
+                      localizationsDelegates: context.localizationDelegates,
                       onGenerateRoute: onGenerateRoute,
                       home: AnimatedSwitcher(
                         duration: const Duration(milliseconds: 260),
@@ -207,9 +235,8 @@ class _MobileTixAppState extends State<MobileTixApp> {
                     ),
                   );
                 },
-              );
-            },
-          );
+              ),
+            );
         },
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/config/app_config.dart';
@@ -52,9 +53,9 @@ class _SplashScreenState extends State<SplashScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    const Text(
-                      'Gate Validator',
-                      style: TextStyle(
+                    Text(
+                      context.tr('auth.appTitle'),
+                      style: const TextStyle(
                         fontFamily: 'DMSans',
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
@@ -63,9 +64,9 @@ class _SplashScreenState extends State<SplashScreen> {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    const Text(
-                      'Uluwatu Kecak Gate Validator',
-                      style: TextStyle(
+                    Text(
+                      context.tr('splash.subtitle'),
+                      style: const TextStyle(
                         fontFamily: 'DMSans',
                         fontSize: 13,
                         color: Color(0xFFA3B1B7),
@@ -80,7 +81,13 @@ class _SplashScreenState extends State<SplashScreen> {
                 right: 0,
                 child: Center(
                   child: Text(
-                    'Versi ${AppConfig.version} · Demo UI',
+                    context.tr(
+                      'splash.version',
+                      namedArgs: {
+                        'version': AppConfig.version,
+                        'build': 'Demo UI',
+                      },
+                    ),
                     style: const TextStyle(
                       fontSize: 12,
                       color: Color(0xFF6B7E86),

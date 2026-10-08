@@ -1,3 +1,101 @@
-// File: id.json
-// Placeholder - will be implemented in architecture migration
-{}
+{
+  "common": {
+    "confirm": "YA",
+    "cancel": "BATAL",
+    "save": "Simpan",
+    "close": "Tutup",
+    "retry": "Coba Lagi",
+    "logout": "Logout",
+    "yes": "Ya",
+    "no": "Tidak",
+    "online": "Online",
+    "offline": "Offline",
+    "light": "Terang",
+    "dark": "Gelap",
+    "system": "Sistem",
+    "english": "English",
+    "indonesian": "Indonesia",
+    "loading": "Memuat...",
+    "error": "Terjadi kesalahan",
+    "success": "Berhasil",
+    "copied": "Disalin!"
+  },
+  "auth": {
+    "appTitle": "Gate Validator",
+    "username": "Username",
+    "password": "Password",
+    "selectGate": "Pilih Gate",
+    "usernameRequired": "Username wajib diisi",
+    "passwordRequired": "Password wajib diisi",
+    "gateRequired": "Pilih gate terlebih dahulu",
+    "login": "Login",
+    "loggingIn": "Memproses...",
+    "demoHint": "Gunakan akun demo: {username}",
+    "logoutTitle": "Keluar dari akun?",
+    "logoutMessage": "Sesi saat ini akan diakhiri.",
+    "sessionExpiringTitle": "Peringatan Sesi",
+    "sessionExpiringMessage": "Sesi Anda akan segera berakhir karena tidak ada aktivitas. Tetap masuk atau keluar sekarang?",
+    "stayLoggedIn": "Tetap Masuk",
+    "signOut": "Keluar"
+  },
+  "splash": {
+    "subtitle": "Uluwatu Kecak Gate Validator",
+    "version": "Versi {version} · {build}"
+  },
+  "profile": {
+    "title": "Profil Petugas",
+    "theme": "Tema",
+    "language": "Bahasa",
+    "checkpoint": "Checkpoint",
+    "connection": "Koneksi",
+    "defaultRole": "Gate Staff · Shift Utama"
+  },
+  "scanner": {
+    "title": "Scan Ticket",
+    "checkIn": "Check-in",
+    "check": "Check",
+    "enterCode": "Masukkan kode manual",
+    "codeHint": "mis. TKT-2026-001245",
+    "codeRequired": "Masukkan kode tiket",
+    "offlineDisabled": "Pindai dinonaktifkan saat offline.",
+    "demoOutcomes": "DEMO OUTCOMES (SIMULASI)",
+    "scanNext": "Scan Berikutnya"
+  },
+  "ticket": {
+    "valid": "VALID",
+    "alreadyUsed": "SUDAH DIPAKAI",
+    "expired": "KEDALUWARSA",
+    "invalid": "TIKET TIDAK VALID",
+    "cancelled": "DIBATALKAN",
+    "visitor": "{count} Pengunjung",
+    "previousUse": "Dipakai sebelumnya: {time} ({gate})",
+    "instructionValid": "Tiket sah. Persilakan masuk.",
+    "instructionAlreadyUsed": "Tiket sudah dipindai. Arahkan ke petugas.",
+    "instructionExpired": "Tiket di luar masa berlaku.",
+    "instructionNotFound": "Kode tidak dikenali. Periksa tiket atau masukkan kode manual.",
+    "instructionCancelled": "Tiket dibatalkan di sistem. Tolak masuk."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "goodAfternoon": "Selamat siang",
+    "visitors": "Pengunjung",
+    "valid": "Valid",
+    "rejected": "Ditolak",
+    "today": "Hari Ini",
+    "thisMonth": "Bulan Ini"
+  },
+  "history": {
+    "title": "Riwayat",
+    "all": "Semua",
+    "valid": "Valid",
+    "rejected": "Ditolak",
+    "scansCount": "{count} pemindaian",
+    "empty": "Tidak ada data tiket"
+  },
+  "checkpoint": {
+    "selectTitle": "Pilih checkpoint",
+    "selectSubtitle": "Pilih checkpoint aktif Anda",
+    "enterGate": "Masuk ke Gate",
+    "back": "Kembali"
+  }
+}

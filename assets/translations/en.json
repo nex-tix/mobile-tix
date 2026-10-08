@@ -1,3 +1,101 @@
-// File: en.json
-// Placeholder - will be implemented in architecture migration
-{}
+{
+  "common": {
+    "confirm": "YES",
+    "cancel": "CANCEL",
+    "save": "Save",
+    "close": "Close",
+    "retry": "Retry",
+    "logout": "Logout",
+    "yes": "Yes",
+    "no": "No",
+    "online": "Online",
+    "offline": "Offline",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "english": "English",
+    "indonesian": "Indonesian",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "success": "Success",
+    "copied": "Copied!"
+  },
+  "auth": {
+    "appTitle": "Gate Validator",
+    "username": "Username",
+    "password": "Password",
+    "selectGate": "Select Gate",
+    "usernameRequired": "Username is required",
+    "passwordRequired": "Password is required",
+    "gateRequired": "Please select a gate first",
+    "login": "Login",
+    "loggingIn": "Signing in...",
+    "demoHint": "Use demo account: {username}",
+    "logoutTitle": "Sign out?",
+    "logoutMessage": "Your current session will be ended.",
+    "sessionExpiringTitle": "Session Warning",
+    "sessionExpiringMessage": "Your session is about to expire due to inactivity. Stay signed in or sign out now?",
+    "stayLoggedIn": "Stay Signed In",
+    "signOut": "Sign Out"
+  },
+  "splash": {
+    "subtitle": "Uluwatu Kecak Gate Validator",
+    "version": "Version {version} · {build}"
+  },
+  "profile": {
+    "title": "Officer Profile",
+    "theme": "Theme",
+    "language": "Language",
+    "checkpoint": "Checkpoint",
+    "connection": "Connection",
+    "defaultRole": "Gate Staff · Main Shift"
+  },
+  "scanner": {
+    "title": "Scan Ticket",
+    "checkIn": "Check-in",
+    "check": "Check",
+    "enterCode": "Enter code manually",
+    "codeHint": "e.g. TKT-2026-001245",
+    "codeRequired": "Please enter a ticket code",
+    "offlineDisabled": "Scanning is disabled while offline.",
+    "demoOutcomes": "DEMO OUTCOMES (SIMULATION)",
+    "scanNext": "Scan Next"
+  },
+  "ticket": {
+    "valid": "VALID",
+    "alreadyUsed": "ALREADY USED",
+    "expired": "EXPIRED",
+    "invalid": "INVALID TICKET",
+    "cancelled": "CANCELLED",
+    "visitor": "{count} Visitor",
+    "previousUse": "Previously used: {time} ({gate})",
+    "instructionValid": "Ticket is valid. Please let the visitor in.",
+    "instructionAlreadyUsed": "Ticket already scanned. Direct to staff.",
+    "instructionExpired": "Ticket is outside its validity period.",
+    "instructionNotFound": "Code not recognized. Check the ticket or enter the code manually.",
+    "instructionCancelled": "Ticket was cancelled in the system. Deny entry."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "goodAfternoon": "Good afternoon",
+    "visitors": "Visitors",
+    "valid": "Valid",
+    "rejected": "Rejected",
+    "today": "Today",
+    "thisMonth": "This Month"
+  },
+  "history": {
+    "title": "History",
+    "all": "All",
+    "valid": "Valid",
+    "rejected": "Rejected",
+    "scansCount": "{count} scans",
+    "empty": "No ticket data"
+  },
+  "checkpoint": {
+    "selectTitle": "Select checkpoint",
+    "selectSubtitle": "Choose your active checkpoint",
+    "enterGate": "Enter Gate",
+    "back": "Back"
+  }
+}
