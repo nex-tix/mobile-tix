@@ -273,6 +273,29 @@ void main() {
         expect(queueDao.size, 1);
       });
 
+      test('scan tiket yang sudah ada di antrean offline mencegah duplikasi queue', () async {
+        final connectivity = _FakeConnectivity(online: false);
+        addTearDown(connectivity.dispose);
+
+        final cubit = ScannerCubit(
+          repository: repository,
+          queueDao: queueDao,
+          connectivity: connectivity,
+        );
+        addTearDown(cubit.close);
+
+        // Scan pertama saat offline -> masuk antrean
+        await cubit.scanTicket(ticketCode: 'TKT-DUP', checkpointId: 'cp-01');
+        expect(cubit.state, isA<ScannerQueued>());
+        expect(queueDao.size, 1);
+
+        // Scan kedua dengan tiket yang sama -> tetap queued, antrean tidak bertambah
+        await cubit.scanTicket(ticketCode: 'TKT-DUP', checkpointId: 'cp-01');
+        expect(cubit.state, isA<ScannerQueued>());
+        expect(queueDao.size, 1);
+        expect(repository.calls, isEmpty);
+      });
+
       test('timeout TIDAK diantrekan (request bisa saja sudah diproses)', () async {
         repository.handler = (code, mode) async =>
             throw const ApiFailure(

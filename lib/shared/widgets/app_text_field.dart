@@ -69,7 +69,7 @@ class AppTextField extends StatelessWidget {
           Row(
             children: [
               Expanded(child: Text(label!.toUpperCase(), style: text.label)),
-              if (labelTrailing != null) labelTrailing!,
+              ?labelTrailing,
             ],
           ),
           const SizedBox(height: AppSpacing.xs),

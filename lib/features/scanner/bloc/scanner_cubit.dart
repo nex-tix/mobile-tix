@@ -96,6 +96,19 @@ class ScannerCubit extends Cubit<ScannerState> {
       return;
     }
 
+    // Cegah duplikasi: jika tiket sudah ada di antrean offline,
+    // beritahukan status antrean tanpa membuat duplikasi entri atau request.
+    if (_queueDao.containsTicket(code)) {
+      emit(
+        ScannerQueued(
+          mode: mode,
+          pendingSync: pendingSyncCount,
+          ticketCode: code,
+        ),
+      );
+      return;
+    }
+
     emit(
       ScannerProcessing(
         mode: mode,

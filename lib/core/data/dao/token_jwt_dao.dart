@@ -2,7 +2,7 @@
 // Data Access Object untuk JWT token storage dengan encryption
 
 import 'dart:convert';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import '../../config/env_config.dart';
 
@@ -84,7 +84,7 @@ class TokenJwtDAO {
       if (_tokenBox == null) return null;
       return _tokenBox!.get(_tokenKey);
     } catch (e) {
-      print('Error getting token: $e');
+      debugPrint('Error getting token: $e');
       return null;
     }
   }
@@ -133,7 +133,7 @@ class TokenJwtDAO {
       _tokenBox = null;
       _isInitialized = false;
     } catch (e) {
-      print('Error closing token box: $e');
+      debugPrint('Error closing token box: $e');
     }
   }
 }

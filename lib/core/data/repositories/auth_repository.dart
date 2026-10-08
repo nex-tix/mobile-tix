@@ -1,6 +1,7 @@
 // File: auth_repository.dart
 // Repository untuk authentication endpoints (login, logout, me)
 
+import 'package:flutter/foundation.dart';
 import '../../services/api_service.dart';
 import '../dao/token_jwt_dao.dart';
 import '../../config/api_endpoints.dart';
@@ -197,7 +198,7 @@ class AuthRepository {
       return loginResponse;
     } catch (e) {
       // Log error (di production gunakan logging service)
-      print('Login error: $e');
+      debugPrint('Login error: $e');
       rethrow; // Re-throw untuk di-handle BLoC
     }
   }
@@ -233,7 +234,7 @@ class AuthRepository {
         // Check success (opsional, bahkan jika gagal cleanup local token)
         final success = responseData?['success'] as bool? ?? false;
         if (!success) {
-          print('Logout server response error: ${responseData?['message']}');
+          debugPrint('Logout server response error: ${responseData?['message']}');
           // Continue cleanup local token meskipun server error
         }
       }
@@ -247,7 +248,7 @@ class AuthRepository {
 
     } catch (e) {
       // Log error tapi tetap cleanup local storage
-      print('Logout error: $e');
+      debugPrint('Logout error: $e');
       
       // Ensure local cleanup
       await _tokenDAO.deleteToken();
@@ -316,7 +317,7 @@ class AuthRepository {
       // Return user data
       return userResponse;
     } catch (e) {
-      print('Me endpoint error: $e');
+      debugPrint('Me endpoint error: $e');
       rethrow;
     }
   }

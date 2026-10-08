@@ -99,6 +99,29 @@ void main() {
           equals(['TIX-RACE-1', 'TIX-RACE-2', 'TIX-RACE-3']),
         );
       });
+
+      test('enqueue tiket yang sama tidak membuat duplikasi di antrean', () async {
+        final first = await dao.enqueue(
+          ticketCode: 'TIX-DUP',
+          checkpointId: 'cp-01',
+        );
+        final second = await dao.enqueue(
+          ticketCode: 'TIX-DUP',
+          checkpointId: 'cp-01',
+        );
+
+        // Hanya 1 item yang tersimpan di box dan ID-nya sama
+        expect(dao.size, equals(1));
+        expect(dao.getAll().length, equals(1));
+        expect(second.id, equals(first.id));
+      });
+
+      test('containsTicket mendeteksi keberadaan tiket di antrean aktif', () async {
+        expect(dao.containsTicket('TIX-CHECK'), isFalse);
+        await dao.enqueue(ticketCode: 'TIX-CHECK', checkpointId: 'cp-01');
+        expect(dao.containsTicket('TIX-CHECK'), isTrue);
+        expect(dao.containsTicket('TIX-OTHER'), isFalse);
+      });
     });
 
     group('remove & retry', () {

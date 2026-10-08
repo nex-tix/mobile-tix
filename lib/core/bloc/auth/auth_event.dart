@@ -9,7 +9,7 @@ abstract class AuthEvent {
 /// Event untuk meminta cek status otentikasi saat app start
 /// 
 /// Dipanggil di main.dart setelah inisialisasi BLoC
-/// Contoh: context.read<AuthBloc>().add(const AuthCheckRequested());
+/// Contoh: `context.read<AuthBloc>().add(const AuthCheckRequested());`
 class AuthCheckRequested extends AuthEvent {
   const AuthCheckRequested();
 }
@@ -19,10 +19,7 @@ class AuthCheckRequested extends AuthEvent {
 /// [username]: Email atau username
 /// [password]: Password plaintext
 /// 
-/// Contoh: context.read<AuthBloc>().add(LoginSubmitted(
-///   username: 'user@example.com',
-///   password: 'password123',
-/// ));
+/// Contoh: `context.read<AuthBloc>().add(LoginSubmitted(...));`
 class LoginSubmitted extends AuthEvent {
   final String username;
   final String password;
@@ -46,7 +43,7 @@ class LoginSubmitted extends AuthEvent {
 
 /// Event untuk logout
 /// 
-/// Contoh: context.read<AuthBloc>().add(const LogoutRequested());
+/// Contoh: `context.read<AuthBloc>().add(const LogoutRequested());`
 class LogoutRequested extends AuthEvent {
   const LogoutRequested();
 }

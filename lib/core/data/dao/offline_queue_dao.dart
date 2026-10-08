@@ -66,7 +66,17 @@ class OfflineQueueDAO {
     }
   }
 
+  /// Cek apakah tiket dengan kode ini sudah ada di antrean aktif (belum kedaluwarsa).
+  bool containsTicket(String ticketCode) {
+    final code = ticketCode.trim();
+    if (code.isEmpty) return false;
+    return getAll().any((scan) => scan.ticketCode == code);
+  }
+
   /// Masukkan satu scan ke antrean offline.
+  ///
+  /// Mencegah duplikasi: jika tiket sudah ada di antrean aktif, tidak dibuat
+  /// item baru untuk mencegah multi check-in saat online kembali.
   ///
   /// [ticketCode]: barcode/QR hasil scan
   /// [checkpointId]: gate tempat scan dilakukan
@@ -78,13 +88,24 @@ class OfflineQueueDAO {
     String mode = 'checkIn',
   }) async {
     try {
+      final code = ticketCode.trim();
       final box = await _getBox();
+
+      // Cegah duplikasi: jika tiket dengan kode yang sama sudah ada di antrean
+      // aktif (belum expired), kembalikan item yang sudah ada tanpa menambah baru.
+      final existing = getAll().cast<QueuedScan?>().firstWhere(
+        (scan) => scan?.ticketCode == code,
+        orElse: () => null,
+      );
+      if (existing != null) {
+        return existing;
+      }
 
       // Waktu scan (UTC) — dipakai sebagai urutan FIFO dan dasar TTL
       final stamp = _monotonicStamp(DateTime.now().toUtc());
       final scan = QueuedScan(
         id: 'offline_${stamp.microsecondsSinceEpoch}',
-        ticketCode: ticketCode,
+        ticketCode: code,
         mode: mode,
         checkpointId: checkpointId,
         queuedAt: stamp,

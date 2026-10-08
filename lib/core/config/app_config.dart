@@ -1,5 +1,7 @@
 /// App config for the UI prototype stage. Dummy values only — nothing here talks
 /// to a backend; the Dio layer is untouched and unused by these screens.
+library;
+
 import 'package:mobile_tix/core/config/env_config.dart';
 
 class AppConfig {

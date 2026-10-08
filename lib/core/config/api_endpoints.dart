@@ -1,6 +1,8 @@
 /// API endpoints for Mobile Tix application
 /// 
 /// Sesuai dengan PRDMOBILE.md — 8 endpoints tetap.
+library;
+
 import '../config/env_config.dart';
 
 class ApiEndpoints {

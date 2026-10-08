@@ -1,6 +1,7 @@
 // File: checkpoint_repository.dart
 // Repository untuk checkpoint dan ticket validation endpoints
 
+import 'package:flutter/foundation.dart';
 import '../../services/api_service.dart';
 import '../dao/checkpoint_dao.dart';
 import '../dao/offline_queue_dao.dart';
@@ -284,7 +285,7 @@ class CheckpointRepository {
 
       return checkpoints;
     } catch (e) {
-      print('Get checkpoints error: $e');
+      debugPrint('Get checkpoints error: $e');
       rethrow;
     }
   }
@@ -331,7 +332,7 @@ class CheckpointRepository {
       // Parse ke model
       return TicketCheckResponse.fromJson(data);
     } catch (e) {
-      print('Check ticket error: $e');
+      debugPrint('Check ticket error: $e');
       rethrow;
     }
   }
@@ -390,7 +391,7 @@ class CheckpointRepository {
       // Parse ke model
       return CheckInResponse.fromJson(data);
     } catch (e) {
-      print('Validate and check-in error: $e');
+      debugPrint('Validate and check-in error: $e');
       
       // Jika error network, tambah ke offline queue
       // TODO: Detect network error specifically
