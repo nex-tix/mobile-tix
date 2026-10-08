@@ -38,11 +38,11 @@ class CheckpointModel {
   /// Parse dari JSON
   factory CheckpointModel.fromJson(Map<String, dynamic> json) {
     return CheckpointModel(
-      id: json['id'] as String? ?? '',
+      id: json['id']?.toString() ?? '',
       name: json['name'] as String? ?? '',
       location: json['location'] as String?,
       status: json['status'] as String?,
-      eventId: json['eventId'] as String?,
+      eventId: json['eventId']?.toString(),
     );
   }
 
@@ -103,15 +103,15 @@ class TicketCheckResponse {
   /// Parse dari JSON
   factory TicketCheckResponse.fromJson(Map<String, dynamic> json) {
     return TicketCheckResponse(
-      id: json['id'] as String? ?? '',
-      ticketCode: json['ticketCode'] as String? ?? '',
-      eventName: json['eventName'] as String? ?? '',
-      ticketType: json['ticketType'] as String? ?? '',
-      buyerName: json['buyerName'] as String? ?? '',
+      id: (json['id'] ?? json['ticket_id'] ?? json['ticketCode'] ?? json['ticket_code'])?.toString() ?? '',
+      ticketCode: (json['ticketCode'] ?? json['ticket_code']) as String? ?? '',
+      eventName: (json['eventName'] ?? json['event_name']) as String? ?? '',
+      ticketType: (json['ticketType'] ?? json['ticket_type'] ?? json['category']) as String? ?? '',
+      buyerName: (json['buyerName'] ?? json['buyer_name'] ?? json['visitor_name']) as String? ?? '',
       status: json['status'] as String? ?? '',
-      purchaseDate: json['purchaseDate'] as String?,
-      checkInTime: json['checkInTime'] as String?,
-      checkpointId: json['checkpointId'] as String?,
+      purchaseDate: (json['purchaseDate'] ?? json['purchase_date']) as String?,
+      checkInTime: (json['checkInTime'] ?? json['check_in_time'] ?? json['used_at']) as String?,
+      checkpointId: (json['checkpointId'] ?? json['checkpoint_id'] ?? json['used_at_checkpoint'])?.toString(),
     );
   }
 
@@ -173,11 +173,11 @@ class CheckInResponse {
   /// Parse dari JSON
   factory CheckInResponse.fromJson(Map<String, dynamic> json) {
     return CheckInResponse(
-      ticketId: json['ticketId'] as String? ?? '',
+      ticketId: (json['ticketId'] ?? json['ticket_id'] ?? json['ticket_code'] ?? json['id'])?.toString() ?? '',
       status: json['status'] as String? ?? '',
-      checkInTime: json['checkInTime'] as String? ?? '',
-      checkpointId: json['checkpointId'] as String? ?? '',
-      checkpointName: json['checkpointName'] as String? ?? '',
+      checkInTime: (json['checkInTime'] ?? json['check_in_time'] ?? json['used_at']) as String? ?? '',
+      checkpointId: (json['checkpointId'] ?? json['checkpoint_id'] ?? json['used_at_checkpoint'])?.toString() ?? '',
+      checkpointName: (json['checkpointName'] ?? json['checkpoint_name'] ?? json['checkpoint']) as String? ?? '',
       message: json['message'] as String?,
     );
   }
@@ -392,10 +392,6 @@ class CheckpointRepository {
       return CheckInResponse.fromJson(data);
     } catch (e) {
       debugPrint('Validate and check-in error: $e');
-      
-      // Jika error network, tambah ke offline queue
-      // TODO: Detect network error specifically
-      // For now, rethrow saja (implementasi offline di commit selanjutnya)
       rethrow;
     }
   }

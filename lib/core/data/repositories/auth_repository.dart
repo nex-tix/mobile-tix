@@ -78,7 +78,7 @@ class UserResponse {
   /// Parse dari JSON response
   factory UserResponse.fromJson(Map<String, dynamic> json) {
     return UserResponse(
-      id: json['id'] as String? ?? '',
+      id: json['id']?.toString() ?? '',
       email: json['email'] as String? ?? '',
       name: json['name'] as String? ?? '',
       role: json['role'] as String?,
