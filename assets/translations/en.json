@@ -52,6 +52,7 @@
   },
   "scanner": {
     "title": "Scan Ticket",
+    "navScan": "Scan",
     "checkIn": "Check-in",
     "check": "Check",
     "enterCode": "Enter code manually",
@@ -59,7 +60,8 @@
     "codeRequired": "Please enter a ticket code",
     "offlineDisabled": "Scanning is disabled while offline.",
     "demoOutcomes": "DEMO OUTCOMES (SIMULATION)",
-    "scanNext": "Scan Next"
+    "scanNext": "Scan Next",
+    "pendingSync": "{count} tickets pending sync to server"
   },
   "ticket": {
     "valid": "VALID",
@@ -68,6 +70,15 @@
     "invalid": "INVALID TICKET",
     "cancelled": "CANCELLED",
     "visitor": "{count} Visitor",
+    "defaultCategory": "Ticket",
+    "detailTitle": "Ticket Details {code}",
+    "statusLabel": "Status",
+    "scanTimeLabel": "Scan Time",
+    "checkpointLabel": "Checkpoint",
+    "visitorsCountLabel": "Total Visitors",
+    "ticketTypeLabel": "Ticket Type",
+    "officerLabel": "Officer",
+    "guestNameLabel": "Guest Name",
     "previousUse": "Previously used: {time} ({gate})",
     "instructionValid": "Ticket is valid. Please let the visitor in.",
     "instructionAlreadyUsed": "Ticket already scanned. Direct to staff.",
@@ -77,7 +88,10 @@
   },
   "dashboard": {
     "title": "Dashboard",
+    "goodMorning": "Good morning",
     "goodAfternoon": "Good afternoon",
+    "goodEvening": "Good evening",
+    "goodNight": "Good evening",
     "visitors": "Visitors",
     "valid": "Valid",
     "rejected": "Rejected",

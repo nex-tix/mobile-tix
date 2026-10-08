@@ -1,13 +1,14 @@
-import 'package:easy_localization/easy_localization.dart';
-import 'package:mobile_tix/core/bloc/auth/auth_bloc.dart';
-import 'package:mobile_tix/core/bloc/auth/auth_event.dart';
-import 'package:mobile_tix/core/bloc/language/language_cubit.dart';
-import 'package:mobile_tix/core/bloc/theme/theme_cubit.dart';
-import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/connectivity/demo_connectivity.dart';
+import '../../../../core/constants/app_icons.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/bloc/auth/auth_bloc.dart';
+import '../../../../core/bloc/auth/auth_event.dart';
+import '../../../../core/bloc/language/language_cubit.dart';
+import '../../../../core/bloc/theme/theme_cubit.dart';
+import '../../../../core/utils/i18n_helper.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../logic/session_state.dart';
 
@@ -16,24 +17,25 @@ class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
-    Widget build(BuildContext context) {
-      final session = context.watch<SessionState>();
-      final connectivity = context.watch<DemoConnectivity>();
-      final staff = session.staff;
-      final checkpoint = session.checkpoint;
+  Widget build(BuildContext context) {
+    final session = context.watch<SessionState>();
+    final connectivity = context.watch<DemoConnectivity>();
+    final staff = session.staff;
+    final checkpoint = session.checkpoint;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF2A363B),
+      backgroundColor: context.colors.ground,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        iconTheme: IconThemeData(color: context.colors.ink),
         title: Text(
-          context.tr('profile.title'),
-          style: const TextStyle(
+          context.trSafe('profile.title', 'Profil Petugas'),
+          style: TextStyle(
             fontFamily: 'DMSans',
             fontWeight: FontWeight.w700,
             fontSize: 20,
-            color: Color(0xFFF8F6F6),
+            color: context.colors.ink,
           ),
         ),
       ),
@@ -47,9 +49,9 @@ class ProfileScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF212B2F),
+                  color: context.colors.surface,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFF3E4E55)),
+                  border: Border.all(color: context.colors.outline),
                 ),
                 child: Row(
                   children: [
@@ -58,8 +60,8 @@ class ProfileScreen extends StatelessWidget {
                       height: 58,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: const Color(0xFF1E272B),
-                        border: Border.all(color: const Color(0xFF334147), width: 2),
+                        color: context.colors.surfaceAlt,
+                        border: Border.all(color: context.colors.outline, width: 2),
                       ),
                       child: ClipOval(
                         child: Center(
@@ -81,19 +83,20 @@ class ProfileScreen extends StatelessWidget {
                         children: [
                           Text(
                             staff?.name ?? 'Raya',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'DMSans',
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFFF8F6F6),
+                              color: context.colors.ink,
                             ),
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            staff?.role ?? context.tr('profile.defaultRole'),
-                            style: const TextStyle(
+                            staff?.role ??
+                                context.trSafe('profile.defaultRole', 'Gate Staff · Shift Utama'),
+                            style: TextStyle(
                               fontSize: 13,
-                              color: Color(0xFFA3B1B7),
+                              color: context.colors.inkMuted,
                             ),
                           ),
                         ],
@@ -104,102 +107,102 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-                            // Settings Card: Theme & Language
-                            Container(
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF212B2F),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: const Color(0xFF3E4E55)),
-                              ),
-                              child: Column(
-                                children: [
-                                  // Theme Row
-                                  ListTile(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                                    leading: Icon(AppIcons.sun, size: 22, color: const Color(0xFFA3B1B7)),
-                                    title: Text(
-                                      context.tr('profile.theme'),
-                                      style: const TextStyle(fontSize: 14, color: Color(0xFFA3B1B7)),
-                                    ),
-                                    trailing: BlocBuilder<ThemeCubit, ThemeMode>(
-                                      builder: (context, themeMode) {
-                                        final String label;
-                                        switch (themeMode) {
-                                          case ThemeMode.light:
-                                            label = context.tr('common.light');
-                                            break;
-                                          case ThemeMode.dark:
-                                            label = context.tr('common.dark');
-                                            break;
-                                          case ThemeMode.system:
-                                            label = context.tr('common.system');
-                                            break;
-                                        }
-                                        return Text(
-                                          label,
-                                          style: const TextStyle(
-                                            fontSize: 13.5,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFFF8F6F6),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    onTap: () async {
-                                      final cubit = context.read<ThemeCubit>();
-                                      if (cubit.state == ThemeMode.light) {
-                                        await cubit.setThemeMode(ThemeMode.dark);
-                                      } else if (cubit.state == ThemeMode.dark) {
-                                        await cubit.setThemeMode(ThemeMode.system);
-                                      } else {
-                                        await cubit.setThemeMode(ThemeMode.light);
-                                      }
-                                    },
-                                  ),
-                                  const Divider(height: 1, thickness: 1, color: Color(0xFF334147)),
-
-                                  // Language Row
-                                  ListTile(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                                    leading: Icon(AppIcons.language, size: 22, color: const Color(0xFFA3B1B7)),
-                                    title: Text(
-                                      context.tr('profile.language'),
-                                      style: const TextStyle(fontSize: 14, color: Color(0xFFA3B1B7)),
-                                    ),
-                                    trailing: BlocBuilder<LanguageCubit, Locale>(
-                                      builder: (context, state) {
-                                        return Text(
-                                          state.languageCode == 'en'
-                                              ? context.tr('common.english')
-                                              : context.tr('common.indonesian'),
-                                          style: const TextStyle(
-                                            fontSize: 13.5,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFFF8F6F6),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                    onTap: () async {
-                                      final cubit = context.read<LanguageCubit>();
-                                      if (cubit.state.languageCode == 'id') {
-                                        await cubit.changeLanguage('en');
-                                      } else {
-                                        await cubit.changeLanguage('id');
-                                      }
-                                    },
-                                  ),
-                                ],
-                              ),
+              // Settings Card: Theme & Language
+              Container(
+                decoration: BoxDecoration(
+                  color: context.colors.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: context.colors.outline),
+                ),
+                child: Column(
+                  children: [
+                    // Theme Row
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                      leading: Icon(AppIcons.sun, size: 22, color: context.colors.inkMuted),
+                      title: Text(
+                        context.trSafe('profile.theme', 'Tema'),
+                        style: TextStyle(fontSize: 14, color: context.colors.inkMuted),
+                      ),
+                      trailing: BlocBuilder<ThemeCubit, ThemeMode>(
+                        builder: (context, themeMode) {
+                          final String label;
+                          switch (themeMode) {
+                            case ThemeMode.light:
+                              label = context.trSafe('common.light', 'Terang');
+                              break;
+                            case ThemeMode.dark:
+                              label = context.trSafe('common.dark', 'Gelap');
+                              break;
+                            case ThemeMode.system:
+                              label = context.trSafe('common.system', 'Sistem');
+                              break;
+                          }
+                          return Text(
+                            label,
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600,
+                              color: context.colors.ink,
                             ),
-                            const SizedBox(height: 20),
+                          );
+                        },
+                      ),
+                      onTap: () async {
+                        final cubit = context.read<ThemeCubit>();
+                        if (cubit.state == ThemeMode.light) {
+                          await cubit.setThemeMode(ThemeMode.dark);
+                        } else if (cubit.state == ThemeMode.dark) {
+                          await cubit.setThemeMode(ThemeMode.system);
+                        } else {
+                          await cubit.setThemeMode(ThemeMode.light);
+                        }
+                      },
+                    ),
+                    Divider(height: 1, thickness: 1, color: context.colors.outline),
+
+                    // Language Row
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                      leading: Icon(AppIcons.language, size: 22, color: context.colors.inkMuted),
+                      title: Text(
+                        context.trSafe('profile.language', 'Bahasa'),
+                        style: TextStyle(fontSize: 14, color: context.colors.inkMuted),
+                      ),
+                      trailing: BlocBuilder<LanguageCubit, Locale>(
+                        builder: (context, state) {
+                          return Text(
+                            state.languageCode == 'en'
+                                ? context.trSafe('common.english', 'English')
+                                : context.trSafe('common.indonesian', 'Indonesia'),
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600,
+                              color: context.colors.ink,
+                            ),
+                          );
+                        },
+                      ),
+                      onTap: () async {
+                        final cubit = context.read<LanguageCubit>();
+                        if (cubit.state.languageCode == 'id') {
+                          await cubit.changeLanguage('en');
+                        } else {
+                          await cubit.changeLanguage('id');
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
 
               // Operational Details Card
               Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF212B2F),
+                  color: context.colors.surface,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFF3E4E55)),
+                  border: Border.all(color: context.colors.outline),
                 ),
                 child: Column(
                   children: [
@@ -211,29 +214,29 @@ class ProfileScreen extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              const Icon(AppIcons.meetingRoom, size: 20, color: Color(0xFFA3B1B7)),
+                              Icon(AppIcons.meetingRoom, size: 20, color: context.colors.inkMuted),
                               const SizedBox(width: 12),
                               Text(
-                                context.tr('profile.checkpoint'),
-                                style: const TextStyle(
+                                context.trSafe('profile.checkpoint', 'Checkpoint'),
+                                style: TextStyle(
                                   fontSize: 14,
-                                  color: Color(0xFFA3B1B7),
+                                  color: context.colors.inkMuted,
                                 ),
                               ),
                             ],
                           ),
                           Text(
                             checkpoint?.gate ?? 'Gate 1',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFFF8F6F6),
+                              color: context.colors.ink,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const Divider(height: 1, thickness: 1, color: Color(0xFF334147)),
+                    Divider(height: 1, thickness: 1, color: context.colors.outline),
                     // Connection Row
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
@@ -242,13 +245,13 @@ class ProfileScreen extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              const Icon(AppIcons.wifi, size: 20, color: Color(0xFFA3B1B7)),
+                              Icon(AppIcons.wifi, size: 20, color: context.colors.inkMuted),
                               const SizedBox(width: 12),
                               Text(
-                                context.tr('profile.connection'),
-                                style: const TextStyle(
+                                context.trSafe('profile.connection', 'Koneksi'),
+                                style: TextStyle(
                                   fontSize: 14,
-                                  color: Color(0xFFA3B1B7),
+                                  color: context.colors.inkMuted,
                                 ),
                               ),
                             ],
@@ -268,8 +271,8 @@ class ProfileScreen extends StatelessWidget {
                               ),
                               Text(
                                 connectivity.online
-                                    ? context.tr('common.online')
-                                    : context.tr('common.offline'),
+                                    ? context.trSafe('common.online', 'Online')
+                                    : context.trSafe('common.offline', 'Offline'),
                                 style: TextStyle(
                                   fontSize: 13.5,
                                   fontWeight: FontWeight.w600,
@@ -288,14 +291,13 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 28),
 
-              // Logout Button — dispatch AuthBloc LogoutRequested agar root
-              // MaterialApp berpindah kembali ke LoginScreen (AuthUnauthenticated).
+              // Logout Button
               SizedBox(
                 height: 52,
                 child: OutlinedButton(
                   style: OutlinedButton.styleFrom(
-                    backgroundColor: const Color(0xFF212B2F),
-                    side: const BorderSide(color: Color(0xFF3E4E55)),
+                    backgroundColor: context.colors.surface,
+                    side: BorderSide(color: context.colors.outline),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -303,18 +305,15 @@ class ProfileScreen extends StatelessWidget {
                   onPressed: () async {
                     final ok = await showConfirmDialog(
                       context,
-                      title: context.tr('auth.logoutTitle'),
-                      message: context.tr('auth.logoutMessage'),
-                      confirmLabel: context.tr('common.logout'),
+                      title: context.trSafe('auth.logoutTitle', 'Keluar dari akun?'),
+                      message: context.trSafe('auth.logoutMessage', 'Sesi saat ini akan diakhiri.'),
+                      confirmLabel: context.trSafe('common.logout', 'Logout'),
                     );
                     if (!ok || !context.mounted) return;
-                    // Pop profile screen dari navigator stack agar tidak stuck
                     if (Navigator.of(context).canPop()) {
                       Navigator.of(context).pop();
                     }
-                    // 1) Bersihkan sesi lokal (staff, checkpoint, mode).
                     context.read<SessionState>().signOut();
-                    // 2) Hapus token + emit AuthUnauthenticated → kembali ke login.
                     context.read<AuthBloc>().add(const LogoutRequested());
                   },
                   child: Row(
@@ -323,7 +322,7 @@ class ProfileScreen extends StatelessWidget {
                       const Icon(AppIcons.logout, size: 18, color: Color(0xFFCF4647)),
                       const SizedBox(width: 8),
                       Text(
-                        context.tr('common.logout'),
+                        context.trSafe('common.logout', 'Logout'),
                         style: const TextStyle(
                           fontFamily: 'DMSans',
                           fontSize: 15,

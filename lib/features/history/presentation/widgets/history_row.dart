@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_tix/core/constants/app_icons.dart';
 
+import '../../../../core/constants/ticket_status.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/utils/i18n_helper.dart';
 import '../../data/models/scan_record.dart';
 
 /// Ticket card matching Screen 13 (`13._history_all/code.html`).
@@ -12,6 +15,14 @@ class HistoryRow extends StatelessWidget {
   const HistoryRow({super.key, required this.record});
 
   final ScanRecord record;
+
+  static String _statusText(BuildContext context, TicketStatus status) => switch (status) {
+    TicketStatus.valid => context.trSafe('ticket.valid', 'VALID'),
+    TicketStatus.alreadyUsed => context.trSafe('ticket.alreadyUsed', 'SUDAH DIPAKAI'),
+    TicketStatus.expired => context.trSafe('ticket.expired', 'KEDALUWARSA'),
+    TicketStatus.notFound => context.trSafe('ticket.invalid', 'TIKET TIDAK VALID'),
+    TicketStatus.cancelled => context.trSafe('ticket.cancelled', 'DIBATALKAN'),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +46,9 @@ class HistoryRow extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF212B2F),
+              color: context.colors.surface,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF3E4E55)),
+              border: Border.all(color: context.colors.outline),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -77,21 +88,21 @@ class HistoryRow extends StatelessWidget {
                       children: [
                         Text(
                           record.ticketCode,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'DMSans',
                             fontSize: 14.5,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFFF8F6F6),
+                            color: context.colors.ink,
                             letterSpacing: 0.3,
                           ),
                         ),
                         const SizedBox(height: 3),
                         Text(
                           Fmt.clockSeconds(record.scannedAt),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'DMSans',
                             fontSize: 12,
-                            color: Color(0xFFA3B1B7),
+                            color: context.colors.inkMuted,
                           ),
                         ),
                       ],
@@ -104,21 +115,25 @@ class HistoryRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '${record.visitorCount} visitor',
-                      style: const TextStyle(
+                      context.trSafe(
+                        'ticket.visitor',
+                        '${record.visitorCount} visitor',
+                        namedArgs: {'count': '${record.visitorCount}'},
+                      ),
+                      style: TextStyle(
                         fontFamily: 'DMSans',
                         fontSize: 12.5,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFFF8F6F6),
+                        color: context.colors.ink,
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       record.checkpoint ?? '—',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'DMSans',
                         fontSize: 12,
-                        color: Color(0xFFA3B1B7),
+                        color: context.colors.inkMuted,
                       ),
                     ),
                   ],
@@ -137,10 +152,10 @@ class HistoryRow extends StatelessWidget {
       backgroundColor: Colors.transparent,
       builder: (_) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFF212B2F),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-            border: Border(top: BorderSide(color: Color(0xFF3E4E55), width: 1.2)),
+          decoration: BoxDecoration(
+            color: context.colors.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            border: Border(top: BorderSide(color: context.colors.outline, width: 1.2)),
           ),
           padding: const EdgeInsets.fromLTRB(24, 14, 24, 28),
           child: SafeArea(
@@ -154,58 +169,73 @@ class HistoryRow extends StatelessWidget {
                     height: 4,
                     margin: const EdgeInsets.only(bottom: 20),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4B5E66),
+                      color: context.colors.outline,
                       borderRadius: BorderRadius.circular(99),
                     ),
                   ),
                 ),
                 Text(
-                  'Detail Tiket ${record.ticketCode}',
-                  style: const TextStyle(
+                  context.trSafe(
+                    'ticket.detailTitle',
+                    'Detail Tiket ${record.ticketCode}',
+                    namedArgs: {'code': record.ticketCode},
+                  ),
+                  style: TextStyle(
                     fontFamily: 'DMSans',
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFFF8F6F6),
+                    color: context.colors.ink,
                   ),
                 ),
                 const SizedBox(height: 16),
                 _infoRow(
-                  'Status',
-                  record.status.label,
+                  context,
+                  context.trSafe('ticket.statusLabel', 'Status'),
+                  _statusText(context, record.status),
                   record.isValid
                       ? const Color(0xFF2ECC71)
                       : const Color(0xFFCF4647),
                 ),
                 _infoRow(
-                  'Waktu Pindai',
+                  context,
+                  context.trSafe('ticket.scanTimeLabel', 'Waktu Pindai'),
                   '${Fmt.fullDate(record.scannedAt)} ${Fmt.clockSeconds(record.scannedAt)}',
-                  const Color(0xFFF8F6F6),
+                  context.colors.ink,
                 ),
                 _infoRow(
-                  'Checkpoint',
+                  context,
+                  context.trSafe('ticket.checkpointLabel', 'Checkpoint'),
                   record.checkpoint ?? '—',
-                  const Color(0xFFF8F6F6),
+                  context.colors.ink,
                 ),
                 _infoRow(
-                  'Jumlah Pengunjung',
-                  '${record.visitorCount} orang',
-                  const Color(0xFFF8F6F6),
+                  context,
+                  context.trSafe('ticket.visitorsCountLabel', 'Jumlah Pengunjung'),
+                  context.trSafe(
+                    'ticket.visitor',
+                    '${record.visitorCount} visitor',
+                    namedArgs: {'count': '${record.visitorCount}'},
+                  ),
+                  context.colors.ink,
                 ),
                 if (record.category != null)
                   _infoRow(
-                    'Jenis Tiket',
+                    context,
+                    context.trSafe('ticket.ticketTypeLabel', 'Jenis Tiket'),
                     record.category!,
-                    const Color(0xFFF8F6F6),
+                    context.colors.ink,
                   ),
                 if (record.validatedBy != null)
                   _infoRow(
-                    'Petugas',
+                    context,
+                    context.trSafe('ticket.officerLabel', 'Petugas'),
                     record.validatedBy!,
-                    const Color(0xFFF8F6F6),
+                    context.colors.ink,
                   ),
                 if (record.visitorName != null)
                   _infoRow(
-                    'Nama Tamu',
+                    context,
+                    context.trSafe('ticket.guestNameLabel', 'Nama Tamu'),
                     record.visitorName!,
                     const Color(0xFFF5D061),
                   ),
@@ -217,7 +247,7 @@ class HistoryRow extends StatelessWidget {
     );
   }
 
-  static Widget _infoRow(String label, String value, Color valueColor) {
+  static Widget _infoRow(BuildContext context, String label, String value, Color valueColor) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -225,7 +255,7 @@ class HistoryRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(fontSize: 13.5, color: Color(0xFFA3B1B7)),
+            style: TextStyle(fontSize: 13.5, color: context.colors.inkMuted),
           ),
           Flexible(
             child: Text(

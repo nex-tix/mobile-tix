@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/shimmer_loading.dart';
 
 /// Skeleton loader yang mencerminkan tata letak kartu metrik pada DashboardScreen.
@@ -19,18 +20,33 @@ class DashboardSkeleton extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: const Color(0xFF212B2F),
+              color: context.colors.surface,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: const Color(0xFF3E4E55)),
+              border: Border.all(color: context.colors.outline),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const ShimmerBox(width: 40, height: 40, borderRadius: 12),
+                ShimmerBox(
+                  width: 40,
+                  height: 40,
+                  borderRadius: 12,
+                  color: context.colors.surfaceAlt,
+                ),
                 const SizedBox(height: 16),
-                const ShimmerBox(width: 120, height: 44, borderRadius: 8),
+                ShimmerBox(
+                  width: 120,
+                  height: 44,
+                  borderRadius: 8,
+                  color: context.colors.surfaceAlt,
+                ),
                 const SizedBox(height: 8),
-                const ShimmerBox(width: 60, height: 14, borderRadius: 4),
+                ShimmerBox(
+                  width: 60,
+                  height: 14,
+                  borderRadius: 4,
+                  color: context.colors.surfaceAlt,
+                ),
               ],
             ),
           ),
@@ -39,9 +55,9 @@ class DashboardSkeleton extends StatelessWidget {
           // Valid & Rejected Cards Skeleton
           Row(
             children: [
-              Expanded(child: _metricSkeleton()),
+              Expanded(child: _metricSkeleton(context)),
               const SizedBox(width: 12),
-              Expanded(child: _metricSkeleton()),
+              Expanded(child: _metricSkeleton(context)),
             ],
           ),
         ],
@@ -49,22 +65,37 @@ class DashboardSkeleton extends StatelessWidget {
     );
   }
 
-  Widget _metricSkeleton() {
+  Widget _metricSkeleton(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFF212B2F),
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFF3E4E55)),
+        border: Border.all(color: context.colors.outline),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          ShimmerBox(width: 28, height: 28, borderRadius: 14),
-          SizedBox(height: 14),
-          ShimmerBox(width: 70, height: 32, borderRadius: 6),
-          SizedBox(height: 8),
-          ShimmerBox(width: 45, height: 12, borderRadius: 4),
+        children: [
+          ShimmerBox(
+            width: 28,
+            height: 28,
+            borderRadius: 14,
+            color: context.colors.surfaceAlt,
+          ),
+          const SizedBox(height: 14),
+          ShimmerBox(
+            width: 70,
+            height: 32,
+            borderRadius: 6,
+            color: context.colors.surfaceAlt,
+          ),
+          const SizedBox(height: 8),
+          ShimmerBox(
+            width: 45,
+            height: 12,
+            borderRadius: 4,
+            color: context.colors.surfaceAlt,
+          ),
         ],
       ),
     );

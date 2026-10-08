@@ -1,15 +1,17 @@
-import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/connectivity/demo_connectivity.dart';
+import '../../../../core/constants/app_icons.dart';
 import '../../../../core/constants/ticket_status.dart';
+import '../../../../core/services/audio_feedback_service.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/ui/widgets/app_snackbar.dart';
+import '../../../../core/utils/i18n_helper.dart';
 import '../../../auth/logic/session_state.dart';
 import '../../bloc/scanner_cubit.dart';
 import '../../bloc/scanner_state.dart';
 import '../../data/dummy_scans.dart';
-import '../../../../core/services/audio_feedback_service.dart';
 import '../widgets/scan_result_sheet.dart';
 import '../widgets/scanner_viewfinder.dart';
 
@@ -45,20 +47,24 @@ class _ScannerScreenState extends State<ScannerScreen> {
     super.dispose();
   }
 
-  /// Kirim satu kode ke cubit. Validasi yang bisa dilakukan tanpa jaringan
-  /// (kode kosong, gate belum dipilih) ditangani di sini supaya tidak menjadi
-  /// permintaan yang pasti gagal.
+  /// Kirim satu kode ke cubit.
   Future<void> _submit(String code) async {
     final trimmed = code.trim();
     if (trimmed.isEmpty) {
-      AppSnackbar.warning(context, 'Masukkan kode tiket');
+      AppSnackbar.warning(
+        context,
+        context.trSafe('scanner.codeRequired', 'Masukkan kode tiket'),
+      );
       return;
     }
 
     final checkpointId =
         context.read<SessionState>().checkpoint?.id ?? '';
     if (checkpointId.isEmpty) {
-      AppSnackbar.warning(context, 'Checkpoint aktif belum dipilih');
+      AppSnackbar.warning(
+        context,
+        context.trSafe('auth.gateRequired', 'Checkpoint aktif belum dipilih'),
+      );
       return;
     }
 
@@ -86,8 +92,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
     ScanResultSheet.show(context, outcome: outcome, autoDismiss: false);
   }
 
-  /// Reaksi terhadap hasil yang tidak lagi menunggu: tutup verdict, atau
-  /// beritahukan apa yang terjadi pada tiket yang tidak bisa diproses.
+  /// Reaksi terhadap hasil yang tidak lagi menunggu.
   Future<void> _onScanOutcome(ScannerState state) async {
     final cubit = context.read<ScannerCubit>();
 
@@ -102,9 +107,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
         await ScanResultSheet.show(
           context,
           outcome: result.toOutcome(gate: gate),
-          // Hanya check-in yang sah yang menutup sendiri: petugas tidak perlu
-          // menekan apa pun saat tiket lolos, tapi setiap penolakan harus
-          // bertahan sampai dibaca.
           autoDismiss:
               result.status == TicketStatus.valid &&
               result.mode == ScanMode.checkIn,
@@ -143,7 +145,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
     final viewHeight = (screenHeight * 0.44).clamp(240.0, 380.0);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF2A363B),
+      backgroundColor: context.colors.ground,
       body: BlocListener<ScannerCubit, ScannerState>(
         listenWhen: (previous, current) =>
             current is ScannerSuccess ||
@@ -183,8 +185,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
                       height: viewHeight,
                       onSimulate: _simulateCameraScan,
                       processing: state.isProcessing,
-                      // Offline tidak lagi mematikan pemindai: scan disimpan ke
-                      // antrean dan dikirim saat koneksi pulih.
                       disabled: false,
                     ),
                     const SizedBox(height: 14),
@@ -208,8 +208,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
         height: 48,
         child: OutlinedButton(
           style: OutlinedButton.styleFrom(
-            backgroundColor: const Color(0xFF212B2F),
-            side: const BorderSide(color: Color(0xFF3E4E55)),
+            backgroundColor: context.colors.surface,
+            side: BorderSide(color: context.colors.outline),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
             ),
@@ -217,16 +217,16 @@ class _ScannerScreenState extends State<ScannerScreen> {
           onPressed: () => setState(() => _showManualInput = true),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Icon(AppIcons.keyboard, size: 18, color: Color(0xFFA3B1B7)),
-              SizedBox(width: 8),
+            children: [
+              Icon(AppIcons.keyboard, size: 18, color: context.colors.inkMuted),
+              const SizedBox(width: 8),
               Text(
-                'Enter code manually',
+                context.trSafe('scanner.enterCode', 'Enter code manually'),
                 style: TextStyle(
                   fontFamily: 'DMSans',
                   fontSize: 13.5,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFFF8F6F6),
+                  color: context.colors.ink,
                 ),
               ),
             ],
@@ -238,9 +238,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF212B2F),
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF3E4E55)),
+        border: Border.all(color: context.colors.outline),
       ),
       child: Row(
         children: [
@@ -248,19 +248,19 @@ class _ScannerScreenState extends State<ScannerScreen> {
             child: TextField(
               controller: _codeController,
               autofocus: true,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'DMSans',
                 fontSize: 14.5,
-                color: Color(0xFFF8F6F6),
+                color: context.colors.ink,
               ),
-              decoration: const InputDecoration(
-                hintText: 'e.g. TKT-2026-001245',
-                hintStyle: TextStyle(fontSize: 13, color: Color(0xFFA3B1B7)),
+              decoration: InputDecoration(
+                hintText: context.trSafe('scanner.codeHint', 'e.g. TKT-2026-001245'),
+                hintStyle: TextStyle(fontSize: 13, color: context.colors.inkMuted),
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
                 filled: false,
-                contentPadding: EdgeInsets.symmetric(horizontal: 10),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10),
               ),
               onSubmitted: _submit,
             ),
@@ -270,9 +270,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
             onPressed: () => _submit(_codeController.text),
           ),
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               AppIcons.close,
-              color: Color(0xFFA3B1B7),
+              color: context.colors.inkMuted,
               size: 18,
             ),
             onPressed: () => setState(() => _showManualInput = false),
@@ -303,22 +303,22 @@ class _Header extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Scan Ticket',
+            Text(
+              context.trSafe('scanner.title', 'Scan Ticket'),
               style: TextStyle(
                 fontFamily: 'DMSans',
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFFF8F6F6),
+                color: context.colors.ink,
                 letterSpacing: 0.2,
               ),
             ),
             const SizedBox(height: 2),
             Text(
               gate,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12.5,
-                color: Color(0xFFA3B1B7),
+                color: context.colors.inkMuted,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -348,7 +348,10 @@ class _Header extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  online ? 'Online' : 'Offline',
+                  context.trSafe(
+                    online ? 'common.online' : 'common.offline',
+                    online ? 'Online' : 'Offline',
+                  ),
                   style: TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w600,
@@ -367,9 +370,6 @@ class _Header extends StatelessWidget {
 }
 
 /// Berapa tiket tertahan karena koneksi putus.
-///
-/// Ditampilkan menonjol karena ini satu-satunya cara petugas tahu ada check-in
-/// yang belum sampai ke server.
 class _PendingBanner extends StatelessWidget {
   const _PendingBanner({required this.count});
 
@@ -390,7 +390,11 @@ class _PendingBanner extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              '$count tiket menunggu dikirim ke server',
+              context.trSafe(
+                'scanner.pendingSync',
+                '$count tiket menunggu dikirim ke server',
+                namedArgs: {'count': '$count'},
+              ),
               style: const TextStyle(
                 fontFamily: 'DMSans',
                 fontSize: 12.5,
@@ -417,9 +421,9 @@ class _ModeSwitch extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E272B),
+        color: context.colors.surfaceAlt,
         borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: const Color(0xFF334147)),
+        border: Border.all(color: context.colors.outline),
       ),
       child: Row(
         children: [
@@ -439,7 +443,9 @@ class _ModeSwitch extends StatelessWidget {
                     borderRadius: BorderRadius.circular(99),
                   ),
                   child: Text(
-                    option == ScanMode.checkIn ? 'Check-in' : 'Check',
+                    option == ScanMode.checkIn
+                        ? context.trSafe('scanner.checkIn', 'Check-in')
+                        : context.trSafe('scanner.check', 'Check'),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: 'DMSans',
@@ -447,7 +453,7 @@ class _ModeSwitch extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                       color: mode == option
                           ? const Color(0xFFF8F6F6)
-                          : const Color(0xFFA3B1B7),
+                          : context.colors.inkMuted,
                     ),
                   ),
                 ),
@@ -470,22 +476,22 @@ class _DemoOutcomes extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E272B),
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF334147)),
+        border: Border.all(color: context.colors.outline),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.only(left: 4, bottom: 6),
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 6),
             child: Text(
-              'DEMO OUTCOMES (SIMULASI)',
+              context.trSafe('scanner.demoOutcomes', 'DEMO OUTCOMES (SIMULASI)'),
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.8,
-                color: Color(0xFFA3B1B7),
+                color: context.colors.inkMuted,
               ),
             ),
           ),
@@ -494,27 +500,27 @@ class _DemoOutcomes extends StatelessWidget {
             runSpacing: 6,
             children: [
               _chip(
-                label: 'Valid',
+                label: context.trSafe('ticket.valid', 'Valid'),
                 color: const Color(0xFF2ECC71),
                 onTap: () => onPick(TicketStatus.valid),
               ),
               _chip(
-                label: 'Already Used',
+                label: context.trSafe('ticket.alreadyUsed', 'Already Used'),
                 color: const Color(0xFFCF4647),
                 onTap: () => onPick(TicketStatus.alreadyUsed),
               ),
               _chip(
-                label: 'Expired',
+                label: context.trSafe('ticket.expired', 'Expired'),
                 color: const Color(0xFFF5D061),
                 onTap: () => onPick(TicketStatus.expired),
               ),
               _chip(
-                label: 'Invalid',
-                color: const Color(0xFFA3B1B7),
+                label: context.trSafe('ticket.invalid', 'Invalid'),
+                color: context.colors.inkMuted,
                 onTap: () => onPick(TicketStatus.notFound),
               ),
               _chip(
-                label: 'Cancelled',
+                label: context.trSafe('ticket.cancelled', 'Cancelled'),
                 color: const Color(0xFFCF4647),
                 onTap: () => onPick(TicketStatus.cancelled),
               ),

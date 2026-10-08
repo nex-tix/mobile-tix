@@ -1,19 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_tix/core/bloc/auth/auth_bloc.dart';
-import 'package:mobile_tix/core/bloc/auth/auth_event.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_tix/core/constants/app_icons.dart';
-import 'package:provider/provider.dart';
 
-import '../../../../shared/widgets/confirm_dialog.dart';
+import '../../../../core/bloc/auth/auth_bloc.dart';
+import '../../../../core/bloc/auth/auth_event.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/i18n_helper.dart';
 import '../../../auth/logic/session_state.dart';
 import '../../data/dummy_checkpoints.dart';
 import '../../data/models/checkpoint.dart';
 import '../widgets/checkpoint_tile.dart';
 
 /// Screen 2: Checkpoint Selection matching `newDesign/2._checkpoint_selection/code.html`.
+///
+/// Features:
+/// - Screen title & subtitle: "Pilih checkpoint aktif Anda"
+/// - List of selectable checkpoints with custom radio & active outline
+/// - Primary Action button at bottom: "Masuk ke Gate"
+/// - Top bar with back button (if switching) & logout action
 class CheckpointScreen extends StatefulWidget {
   const CheckpointScreen({super.key, this.isSwitch = false});
 
+  /// `true` jika dibuka dari profil/pengaturan untuk ganti checkpoint (bisa pop kembali)
   final bool isSwitch;
 
   @override
@@ -26,37 +34,31 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
   @override
   void initState() {
     super.initState();
-    _selected = context.read<SessionState>().checkpoint ?? dummyCheckpoints.first;
+    // Default seleksi ke checkpoint yang sedang aktif di session (jika ada)
+    final current = context.read<SessionState>().checkpoint;
+    _selected = current ?? (dummyCheckpoints.isNotEmpty ? dummyCheckpoints.first : null);
   }
 
   void _confirm() {
-    final selected = _selected;
-    if (selected == null) return;
-    final session = context.read<SessionState>();
-    session.selectCheckpoint(selected);
+    if (_selected == null) return;
+    context.read<SessionState>().selectCheckpoint(_selected!);
     if (widget.isSwitch) {
       Navigator.of(context).maybePop();
+    } else {
+      Navigator.of(context).pushReplacementNamed('/home');
     }
   }
 
-  Future<void> _signOut() async {
-    final ok = await showConfirmDialog(
-      context,
-      title: 'Keluar dari akun?',
-      message: 'Anda akan kembali ke layar login.',
-      confirmLabel: 'KELUAR',
-    );
-    if (!ok || !mounted) return;
-        // Bersihkan sesi lokal, lalu logout via AuthBloc → kembali ke LoginScreen.
-        context.read<SessionState>().signOut();
-        context.read<AuthBloc>().add(const LogoutRequested());
-        if (widget.isSwitch) Navigator.of(context).maybePop();
+  void _signOut() {
+    context.read<SessionState>().signOut();
+    context.read<AuthBloc>().add(const LogoutRequested());
+    if (widget.isSwitch) Navigator.of(context).maybePop();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF2A363B),
+      backgroundColor: context.colors.ground,
       body: SafeArea(
         child: Column(
           children: [
@@ -68,17 +70,17 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
                 children: [
                   if (widget.isSwitch)
                     IconButton(
-                      icon: const Icon(AppIcons.arrowBack, color: Color(0xFFF8F6F6)),
+                      icon: Icon(AppIcons.arrowBack, color: context.colors.ink),
                       onPressed: () => Navigator.of(context).maybePop(),
-                      tooltip: 'Kembali',
+                      tooltip: context.trSafe('checkpoint.back', 'Kembali'),
                     )
                   else
                     const SizedBox(width: 48),
                   const Spacer(),
                   IconButton(
-                    icon: const Icon(AppIcons.logout, color: Color(0xFFA3B1B7), size: 20),
+                    icon: Icon(AppIcons.logout, color: context.colors.inkMuted, size: 20),
                     onPressed: _signOut,
-                    tooltip: 'Logout',
+                    tooltip: context.trSafe('common.logout', 'Logout'),
                   ),
                 ],
               ),
@@ -91,24 +93,27 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
                 alignment: Alignment.centerLeft,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
-                      'Select checkpoint',
+                      context.trSafe('checkpoint.selectTitle', 'Pilih checkpoint'),
                       style: TextStyle(
                         fontFamily: 'DMSans',
                         fontSize: 26,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFFF8F6F6),
+                        color: context.colors.ink,
                         letterSpacing: -0.2,
                       ),
                     ),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 6),
                     Text(
-                      'Choose your active checkpoint',
+                      context.trSafe(
+                        'checkpoint.selectSubtitle',
+                        'Pilih checkpoint aktif Anda',
+                      ),
                       style: TextStyle(
                         fontFamily: 'DMSans',
                         fontSize: 14,
-                        color: Color(0xFFA3B1B7),
+                        color: context.colors.inkMuted,
                       ),
                     ),
                   ],
@@ -157,10 +162,10 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(14),
                           onTap: _selected != null ? _confirm : null,
-                          child: const Center(
+                          child: Center(
                             child: Text(
-                              'Masuk ke Gate',
-                              style: TextStyle(
+                              context.trSafe('checkpoint.enterGate', 'Masuk ke Gate'),
+                              style: const TextStyle(
                                 fontFamily: 'DMSans',
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,

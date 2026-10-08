@@ -1,8 +1,10 @@
 import 'dart:ui';
-import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../core/constants/app_icons.dart';
+import '../core/theme/app_colors.dart';
+import '../core/utils/i18n_helper.dart';
 import '../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../features/history/presentation/screens/history_screen.dart';
 import '../features/scanner/presentation/screens/scanner_screen.dart';
@@ -12,7 +14,7 @@ import 'shell_controller.dart';
 ///
 /// Features:
 /// - 3 core destinations: Dashboard, Scan, History
-/// - Floating pill bar (`#212B2F`) with subtle border & glass effect
+/// - Floating pill bar with subtle border & glass effect
 /// - Center raised Deep Red button for Scan (`#CF4647`)
 class HomeShell extends StatelessWidget {
   const HomeShell({super.key});
@@ -22,7 +24,7 @@ class HomeShell extends StatelessWidget {
     final shell = context.watch<ShellController>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF2A363B),
+      backgroundColor: context.colors.ground,
       body: Stack(
         children: [
           // Screen pages kept alive in IndexedStack
@@ -58,15 +60,15 @@ class HomeShell extends StatelessWidget {
                         filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: const Color(0xF2212B2F),
+                            color: context.colors.surface.withValues(alpha: 0.94),
                             borderRadius: BorderRadius.circular(99),
                             border: Border.all(
-                              color: const Color(0xFF3E4E55),
+                              color: context.colors.outline,
                               width: 1.2,
                             ),
                             boxShadow: const [
                               BoxShadow(
-                                color: Color(0x66000000),
+                                color: Color(0x33000000),
                                 blurRadius: 24,
                                 offset: Offset(0, 8),
                               ),
@@ -78,7 +80,7 @@ class HomeShell extends StatelessWidget {
                               Expanded(
                                 child: _NavTab(
                                   icon: AppIcons.dashboard,
-                                  label: 'Dashboard',
+                                  label: context.trSafe('dashboard.title', 'Dashboard'),
                                   selected: shell.index == 0,
                                   onTap: () => shell.goIndex(0),
                                 ),
@@ -91,7 +93,7 @@ class HomeShell extends StatelessWidget {
                               Expanded(
                                 child: _NavTab(
                                   icon: AppIcons.history,
-                                  label: 'History',
+                                  label: context.trSafe('history.title', 'History'),
                                   selected: shell.index == 2,
                                   onTap: () => shell.goIndex(2),
                                 ),
@@ -136,7 +138,7 @@ class _NavTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? const Color(0xFFF5D061) : const Color(0xFFA3B1B7);
+    final color = selected ? const Color(0xFFF5D061) : context.colors.inkMuted;
 
     return InkWell(
       onTap: onTap,
@@ -197,7 +199,7 @@ class _ScanNavButton extends StatelessWidget {
                 ],
               ),
               border: Border.all(
-                color: selected ? const Color(0xFFF5D061) : const Color(0xFF212B2F),
+                color: selected ? const Color(0xFFF5D061) : context.colors.surface,
                 width: 3.5,
               ),
               boxShadow: [
@@ -210,7 +212,7 @@ class _ScanNavButton extends StatelessWidget {
             ),
             child: const Center(
               child: Icon(
-   AppIcons.qrScanner,
+                AppIcons.qrScanner,
                 size: 28,
                 color: Color(0xFFF8F6F6),
               ),
@@ -218,7 +220,7 @@ class _ScanNavButton extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text(
-            'Scan',
+            context.trSafe('scanner.navScan', 'Scan'),
             style: TextStyle(
               fontFamily: 'DMSans',
               fontSize: 10.5,

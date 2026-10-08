@@ -1,8 +1,10 @@
-import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_tix/core/constants/app_icons.dart';
 
 import '../../../../core/constants/ticket_status.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/utils/i18n_helper.dart';
 import '../../data/models/scan_outcome.dart';
 
 /// Full modal feedback sheet based on Screen 8 (Valid) & Screen 9 (Already Used).
@@ -65,6 +67,14 @@ class _ScanResultSheetState extends State<ScanResultSheet>
     super.dispose();
   }
 
+  String _instructionForStatus(BuildContext context, TicketStatus status) => switch (status) {
+    TicketStatus.valid => context.trSafe('ticket.instructionValid', status.instruction),
+    TicketStatus.alreadyUsed => context.trSafe('ticket.instructionAlreadyUsed', status.instruction),
+    TicketStatus.expired => context.trSafe('ticket.instructionExpired', status.instruction),
+    TicketStatus.notFound => context.trSafe('ticket.instructionNotFound', status.instruction),
+    TicketStatus.cancelled => context.trSafe('ticket.instructionCancelled', status.instruction),
+  };
+
   @override
   Widget build(BuildContext context) {
     final outcome = widget.outcome;
@@ -85,29 +95,31 @@ class _ScanResultSheetState extends State<ScanResultSheet>
       badgeColor = const Color(0xFF2ECC71);
       textColor = const Color(0xFF2ECC71);
       btnBgColor = const Color(0xFF2ECC71);
-      btnTextColor = const Color(0xFF2A363B);
-      statusTitle = 'VALID';
+      btnTextColor = Colors.white;
+      statusTitle = context.trSafe('ticket.valid', 'VALID');
       statusIcon = AppIcons.check;
     } else if (isUsed) {
       badgeColor = const Color(0xFFCF4647);
       textColor = const Color(0xFFCF4647);
       btnBgColor = const Color(0xFFCF4647);
       btnTextColor = const Color(0xFFF8F6F6);
-      statusTitle = 'ALREADY USED';
+      statusTitle = context.trSafe('ticket.alreadyUsed', 'ALREADY USED');
       statusIcon = AppIcons.close;
     } else if (isExpired) {
       badgeColor = const Color(0xFFF5D061);
       textColor = const Color(0xFFF5D061);
       btnBgColor = const Color(0xFFF5D061);
-      btnTextColor = const Color(0xFF2A363B);
-      statusTitle = 'EXPIRED';
+      btnTextColor = const Color(0xFF1E272B);
+      statusTitle = context.trSafe('ticket.expired', 'EXPIRED');
       statusIcon = AppIcons.schedule;
     } else {
       badgeColor = const Color(0xFFCF4647);
       textColor = const Color(0xFFCF4647);
       btnBgColor = const Color(0xFFCF4647);
       btnTextColor = const Color(0xFFF8F6F6);
-      statusTitle = status == TicketStatus.notFound ? 'INVALID TICKET' : 'CANCELLED';
+      statusTitle = status == TicketStatus.notFound
+          ? context.trSafe('ticket.invalid', 'INVALID TICKET')
+          : context.trSafe('ticket.cancelled', 'CANCELLED');
       statusIcon = AppIcons.errorOutline;
     }
 
@@ -115,12 +127,12 @@ class _ScanResultSheetState extends State<ScanResultSheet>
 
     return Container(
       height: screenHeight * 0.85,
-      decoration: const BoxDecoration(
-        color: Color(0xFF212B2F),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(36)),
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(36)),
         border: Border(
           top: BorderSide(
-            color: Color(0xFF3E4E55),
+            color: context.colors.outline,
             width: 1,
           ),
         ),
@@ -205,18 +217,18 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(
+                                Icon(
                                   AppIcons.people,
                                   size: 19,
-                                  color: Color(0xFFA3B1B7),
+                                  color: context.colors.inkMuted,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  '${outcome.category ?? "Adult"} · ${outcome.tickets} Visitor',
-                                  style: const TextStyle(
+                                  '${outcome.category ?? context.trSafe('ticket.defaultCategory', 'Tiket')} · ${context.trSafe('ticket.visitor', '${outcome.tickets} Visitor', namedArgs: {'count': '${outcome.tickets}'})}',
+                                  style: TextStyle(
                                     fontFamily: 'DMSans',
                                     fontSize: 15.5,
-                                    color: Color(0xFFF8F6F6),
+                                    color: context.colors.ink,
                                   ),
                                 ),
                               ],
@@ -227,18 +239,18 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(
+                                Icon(
                                   AppIcons.accessTime,
                                   size: 19,
-                                  color: Color(0xFFA3B1B7),
+                                  color: context.colors.inkMuted,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   Fmt.clockSeconds(outcome.at),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontFamily: 'DMSans',
                                     fontSize: 15.5,
-                                    color: Color(0xFFF8F6F6),
+                                    color: context.colors.ink,
                                     letterSpacing: 0.5,
                                   ),
                                 ),
@@ -250,18 +262,18 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(
+                                Icon(
                                   AppIcons.location,
                                   size: 19,
-                                  color: Color(0xFFA3B1B7),
+                                  color: context.colors.inkMuted,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   outcome.gate ?? 'Gate 1',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontFamily: 'DMSans',
                                     fontSize: 15.5,
-                                    color: Color(0xFFF8F6F6),
+                                    color: context.colors.ink,
                                   ),
                                 ),
                               ],
@@ -272,8 +284,11 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                               const SizedBox(height: 12),
                               Text(
                                 isUsed && outcome.previousUseAt != null
-                                    ? 'Dipakai sebelumnya: ${Fmt.clockSeconds(outcome.previousUseAt!)} (${outcome.previousUseGate ?? "Gate 1"})'
-                                    : outcome.status.instruction,
+                                    ? context.trSafe('ticket.previousUse', 'Dipakai sebelumnya: ${Fmt.clockSeconds(outcome.previousUseAt!)} (${outcome.previousUseGate ?? "Gate 1"})', namedArgs: {
+                                        'time': Fmt.clockSeconds(outcome.previousUseAt!),
+                                        'gate': outcome.previousUseGate ?? "Gate 1",
+                                      })
+                                    : _instructionForStatus(context, outcome.status),
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(
                                   fontSize: 13,
@@ -309,7 +324,7 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                             Navigator.of(context).maybePop();
                           },
                           child: Text(
-                            'Scan Next',
+                            context.trSafe('scanner.scanNext', 'Scan Next'),
                             style: TextStyle(
                               fontFamily: 'DMSans',
                               fontSize: 16,

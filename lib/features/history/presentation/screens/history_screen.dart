@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_tix/core/constants/app_icons.dart';
 
 import '../../../../core/constants/ticket_status.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/i18n_helper.dart';
 import '../../bloc/history_cubit.dart';
 import '../../bloc/history_state.dart';
 import '../../data/models/scan_record.dart';
@@ -10,10 +12,6 @@ import '../widgets/history_row.dart';
 import '../widgets/history_skeleton.dart';
 
 /// Screen 13: History All matching `newDesign/13._history_all/code.html`.
-///
-/// Seluruh isi layar berasal dari [HistoryCubit]: daftar, jumlah baris, halaman
-/// berikutnya, dan kegagalan. Layanan hanya menggulir; tidak ada angka atau baris
-/// yang dikarang di sini.
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
 
@@ -23,13 +21,9 @@ class HistoryScreen extends StatefulWidget {
 
 /// Penyaring yang tersedia di layar.
 enum _HistoryTab {
-  all('All'),
-  valid('Valid'),
-  rejected('Rejected');
-
-  const _HistoryTab(this.label);
-
-  final String label;
+  all,
+  valid,
+  rejected,
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
@@ -52,9 +46,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     super.dispose();
   }
 
-  /// Ambil halaman berikutnya sebelum petugas benar-benar mencapai dasar daftar,
-  /// supaya gulirnya terasa tidak terputus. Cubit sendiri yang menjaga agar tidak
-  /// ada dua permintaan berjalan sekaligus atau permintaan saat sudah habis.
   void _onScroll() {
     if (!_scrollController.hasClients) return;
     final position = _scrollController.position;
@@ -78,7 +69,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF2A363B),
+      backgroundColor: context.colors.ground,
       body: SafeArea(
         bottom: false,
         child: BlocBuilder<HistoryCubit, HistoryState>(
@@ -114,7 +105,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _body(HistoryState state, List<ScanRecord> records) {
-    // Pengambilan pertama belum selesai dan belum ada apa pun untuk digambar.
     if (records.isEmpty && state.isLoading) {
       return const HistorySkeleton();
     }
@@ -122,11 +112,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
     if (records.isEmpty) {
       final message = state is HistoryFailure
           ? state.message
-          : 'Tidak ada data tiket';
+          : context.trSafe('history.empty', 'Tidak ada data tiket');
       return RefreshIndicator(
         onRefresh: () => context.read<HistoryCubit>().refresh(),
         color: const Color(0xFFCF4647),
-        backgroundColor: const Color(0xFF212B2F),
+        backgroundColor: context.colors.surface,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
@@ -144,7 +134,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return RefreshIndicator(
       onRefresh: () => context.read<HistoryCubit>().refresh(),
       color: const Color(0xFFCF4647),
-      backgroundColor: const Color(0xFF212B2F),
+      backgroundColor: context.colors.surface,
       child: ListView.builder(
         controller: _scrollController,
         padding: const EdgeInsets.fromLTRB(24, 4, 24, 110),
@@ -158,14 +148,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   width: 22,
                   height: 22,
                   child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
+                    strokeWidth: 2,
                     color: Color(0xFFCF4647),
                   ),
                 ),
               ),
             );
           }
-          return HistoryRow(record: records[index]);
+
+          final record = records[index];
+          return HistoryRow(record: record);
         },
       ),
     );
@@ -184,21 +176,25 @@ class _Header extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'History',
+          Text(
+            context.trSafe('history.title', 'History'),
             style: TextStyle(
               fontFamily: 'DMSans',
               fontSize: 26,
               fontWeight: FontWeight.w700,
-              color: Color(0xFFF8F6F6),
+              color: context.colors.ink,
               letterSpacing: -0.2,
             ),
           ),
           Text(
-            '$count scans',
-            style: const TextStyle(
+            context.trSafe(
+              'history.scansCount',
+              '$count scans',
+              namedArgs: {'count': '$count'},
+            ),
+            style: TextStyle(
               fontSize: 12.5,
-              color: Color(0xFFA3B1B7),
+              color: context.colors.inkMuted,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -214,14 +210,20 @@ class _FilterTabs extends StatelessWidget {
   final _HistoryTab selected;
   final ValueChanged<_HistoryTab> onSelect;
 
+  String _tabLabel(BuildContext context, _HistoryTab tab) => switch (tab) {
+    _HistoryTab.all => context.trSafe('history.all', 'All'),
+    _HistoryTab.valid => context.trSafe('history.valid', 'Valid'),
+    _HistoryTab.rejected => context.trSafe('history.rejected', 'Rejected'),
+  };
+
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E272B),
+        color: context.colors.surfaceAlt,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF334147)),
+        border: Border.all(color: context.colors.outline),
       ),
       child: Row(
         children: [
@@ -239,7 +241,7 @@ class _FilterTabs extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    tab.label,
+                    _tabLabel(context, tab),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: 'DMSans',
@@ -247,7 +249,7 @@ class _FilterTabs extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                       color: selected == tab
                           ? const Color(0xFFF8F6F6)
-                          : const Color(0xFFA3B1B7),
+                          : context.colors.inkMuted,
                     ),
                   ),
                 ),
@@ -271,33 +273,33 @@ class _EmptyView extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(24, 80, 24, 24),
       child: Column(
         children: [
-          const Icon(
+          Icon(
             AppIcons.historyToggleOff,
             size: 48,
-            color: Color(0xFF4B5E66),
+            color: context.colors.inkMuted,
           ),
           const SizedBox(height: 12),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'DMSans',
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Color(0xFFA3B1B7),
+              color: context.colors.inkMuted,
             ),
           ),
           const SizedBox(height: 16),
           OutlinedButton(
             onPressed: onRetry,
             style: OutlinedButton.styleFrom(
-              side: const BorderSide(color: Color(0xFF3E4E55)),
-              foregroundColor: const Color(0xFFF8F6F6),
+              side: BorderSide(color: context.colors.outline),
+              foregroundColor: context.colors.ink,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Muat ulang'),
+            child: Text(context.trSafe('common.retry', 'Muat ulang')),
           ),
         ],
       ),
@@ -342,7 +344,7 @@ class _ErrorBanner extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8),
               minimumSize: const Size(44, 36),
             ),
-            child: const Text('COBA'),
+            child: Text(context.trSafe('common.retry', 'COBA').toUpperCase()),
           ),
         ],
       ),

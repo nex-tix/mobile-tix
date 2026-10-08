@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_tix/core/constants/app_icons.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../data/models/checkpoint.dart';
 
 /// Checkpoint option card based on `newDesign/2._checkpoint_selection/code.html`.
 ///
 /// Features:
-/// - Dark teal card surface (`#212B2F`)
+/// - Surface card (`context.colors.surface`)
 /// - Leading lock icon & gate title
 /// - Glowing Gold outline and custom radio button when selected
 class CheckpointTile extends StatelessWidget {
@@ -35,20 +36,20 @@ class CheckpointTile extends StatelessWidget {
             curve: Curves.easeOut,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
             decoration: BoxDecoration(
-              color: const Color(0xFF212B2F),
+              color: context.colors.surface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: selected ? const Color(0xFFF5D061) : const Color(0xFF3E4E55),
+                color: selected ? const Color(0xFFF5D061) : context.colors.outline,
                 width: selected ? 1.5 : 1.0,
               ),
             ),
             child: Row(
               children: [
                 // Leading Lock Icon
-                const Icon(
+                Icon(
                   AppIcons.lock,
                   size: 18,
-                  color: Color(0xFFA3B1B7),
+                  color: context.colors.inkMuted,
                 ),
                 const SizedBox(width: 14),
 
@@ -62,11 +63,11 @@ class CheckpointTile extends StatelessWidget {
                         children: [
                           Text(
                             checkpoint.gate,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'DMSans',
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFFF8F6F6),
+                              color: context.colors.ink,
                               letterSpacing: 0.2,
                             ),
                           ),
@@ -97,10 +98,10 @@ class CheckpointTile extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           checkpoint.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'DMSans',
                             fontSize: 12.5,
-                            color: Color(0xFFA3B1B7),
+                            color: context.colors.inkMuted,
                           ),
                         ),
                       ],
@@ -118,7 +119,7 @@ class CheckpointTile extends StatelessWidget {
                     border: Border.all(
                       color: selected
                           ? const Color(0xFFF5D061)
-                          : const Color(0xFF3E4E55),
+                          : context.colors.outline,
                       width: 1.5,
                     ),
                   ),

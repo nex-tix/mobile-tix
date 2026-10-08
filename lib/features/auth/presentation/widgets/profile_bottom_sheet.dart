@@ -1,11 +1,13 @@
-import 'package:mobile_tix/core/bloc/auth/auth_bloc.dart';
-import 'package:mobile_tix/core/bloc/auth/auth_event.dart';
-import 'package:mobile_tix/core/constants/app_icons.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/bloc/auth/auth_bloc.dart';
+import '../../../../core/bloc/auth/auth_event.dart';
 import '../../../../core/connectivity/demo_connectivity.dart';
+import '../../../../core/constants/app_icons.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../logic/session_state.dart';
 
@@ -30,11 +32,11 @@ class ProfileBottomSheet extends StatelessWidget {
     final checkpoint = session.checkpoint;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF212B2F),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(36)),
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(36)),
         border: Border(
-          top: BorderSide(color: Color(0xFF3E4E55), width: 1.2),
+          top: BorderSide(color: context.colors.outline, width: 1.2),
         ),
       ),
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
@@ -51,7 +53,7 @@ class ProfileBottomSheet extends StatelessWidget {
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 24),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4B5E66),
+                  color: context.colors.outline,
                   borderRadius: BorderRadius.circular(99),
                 ),
               ),
@@ -66,8 +68,8 @@ class ProfileBottomSheet extends StatelessWidget {
                   height: 56,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFF1E272B),
-                    border: Border.all(color: const Color(0xFF334147), width: 2),
+                    color: context.colors.surfaceAlt,
+                    border: Border.all(color: context.colors.outline, width: 2),
                   ),
                   child: ClipOval(
                     child: Center(
@@ -91,21 +93,19 @@ class ProfileBottomSheet extends StatelessWidget {
                     children: [
                       Text(
                         staff?.name ?? 'Raya',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'DMSans',
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFFF8F6F6),
+                          color: context.colors.ink,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        staff?.employeeId.isNotEmpty == true
-                            ? staff!.employeeId.toLowerCase()
-                            : 'raya23',
-                        style: const TextStyle(
+                        staff?.role ?? context.tr('profile.defaultRole'),
+                        style: TextStyle(
                           fontSize: 13,
-                          color: Color(0xFFA3B1B7),
+                          color: context.colors.inkMuted,
                         ),
                       ),
                     ],
@@ -118,43 +118,43 @@ class ProfileBottomSheet extends StatelessWidget {
             // Profile Settings List
             Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF1E272B),
+                color: context.colors.surfaceAlt,
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: const Color(0xFF334147)),
+                border: Border.all(color: context.colors.outline),
               ),
               child: Column(
                 children: [
-                  // Checkpoint Display Row (tidak bisa diklik)
+                  // Checkpoint Display Row
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Row(
-                          children: const [
-                            Icon(AppIcons.meetingRoom, size: 20, color: Color(0xFFA3B1B7)),
-                            SizedBox(width: 12),
+                          children: [
+                            Icon(AppIcons.meetingRoom, size: 20, color: context.colors.inkMuted),
+                            const SizedBox(width: 12),
                             Text(
-                              'Checkpoint',
+                              context.tr('profile.checkpoint'),
                               style: TextStyle(
                                 fontSize: 13.5,
-                                color: Color(0xFFA3B1B7),
+                                color: context.colors.inkMuted,
                               ),
                             ),
                           ],
                         ),
                         Text(
                           checkpoint?.gate ?? 'Gate 1',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13.5,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFFF8F6F6),
+                            color: context.colors.ink,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const Divider(height: 1, thickness: 1, color: Color(0xFF334147)),
+                  Divider(height: 1, thickness: 1, color: context.colors.outline),
 
                   // Connection Status Row
                   Padding(
@@ -163,14 +163,14 @@ class ProfileBottomSheet extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Row(
-                          children: const [
-                            Icon(AppIcons.wifi, size: 20, color: Color(0xFFA3B1B7)),
-                            SizedBox(width: 12),
+                          children: [
+                            Icon(AppIcons.wifi, size: 20, color: context.colors.inkMuted),
+                            const SizedBox(width: 12),
                             Text(
-                              'Connection',
+                              context.tr('profile.connection'),
                               style: TextStyle(
                                 fontSize: 13.5,
-                                color: Color(0xFFA3B1B7),
+                                color: context.colors.inkMuted,
                               ),
                             ),
                           ],
@@ -189,7 +189,9 @@ class ProfileBottomSheet extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              connectivity.online ? 'Online' : 'Offline',
+                              connectivity.online
+                                  ? context.tr('common.online')
+                                  : context.tr('common.offline'),
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
@@ -213,8 +215,8 @@ class ProfileBottomSheet extends StatelessWidget {
               height: 50,
               child: OutlinedButton(
                 style: OutlinedButton.styleFrom(
-                  backgroundColor: const Color(0xFF212B2F),
-                  side: const BorderSide(color: Color(0xFF3E4E55)),
+                  backgroundColor: context.colors.surface,
+                  side: BorderSide(color: context.colors.outline),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -222,24 +224,23 @@ class ProfileBottomSheet extends StatelessWidget {
                 onPressed: () async {
                   final ok = await showConfirmDialog(
                     context,
-                    title: 'Keluar dari akun?',
-                    message: 'Sesi saat ini akan diakhiri.',
-                    confirmLabel: 'LOGOUT',
+                    title: context.tr('auth.logoutTitle'),
+                    message: context.tr('auth.logoutMessage'),
+                    confirmLabel: context.tr('common.logout'),
                   );
                   if (!ok || !context.mounted) return;
-                                    Navigator.of(context).pop();
-                                    // Bersihkan sesi lokal, lalu logout via AuthBloc → kembali ke LoginScreen.
-                                    context.read<SessionState>().signOut();
-                                    context.read<AuthBloc>().add(const LogoutRequested());
+                  Navigator.of(context).pop();
+                  context.read<SessionState>().signOut();
+                  context.read<AuthBloc>().add(const LogoutRequested());
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(AppIcons.logout, size: 18, color: Color(0xFFCF4647)),
-                    SizedBox(width: 8),
+                  children: [
+                    const Icon(AppIcons.logout, size: 18, color: Color(0xFFCF4647)),
+                    const SizedBox(width: 8),
                     Text(
-                      'Logout',
-                      style: TextStyle(
+                      context.tr('common.logout'),
+                      style: const TextStyle(
                         fontFamily: 'DMSans',
                         fontSize: 14,
                         fontWeight: FontWeight.w600,

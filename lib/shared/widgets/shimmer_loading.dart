@@ -3,19 +3,21 @@
 
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_colors.dart';
+
 /// Membungkus widget anak dengan animasi kilau linear (shimmer).
 class ShimmerLoading extends StatefulWidget {
   const ShimmerLoading({
     super.key,
     required this.child,
-    this.baseColor = const Color(0xFF212B2F),
-    this.highlightColor = const Color(0xFF334147),
+    this.baseColor,
+    this.highlightColor,
     this.duration = const Duration(milliseconds: 1400),
   });
 
   final Widget child;
-  final Color baseColor;
-  final Color highlightColor;
+  final Color? baseColor;
+  final Color? highlightColor;
   final Duration duration;
 
   @override
@@ -41,6 +43,12 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
 
   @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final base = widget.baseColor ??
+        (isLight ? context.colors.surfaceAlt : const Color(0xFF212B2F));
+    final highlight = widget.highlightColor ??
+        (isLight ? Colors.white : const Color(0xFF334147));
+
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
@@ -57,9 +65,9 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
                 (value + 0.3).clamp(0.0, 1.0),
               ],
               colors: [
-                widget.baseColor,
-                widget.highlightColor,
-                widget.baseColor,
+                base,
+                highlight,
+                base,
               ],
             ).createShader(bounds);
           },
@@ -78,21 +86,23 @@ class ShimmerBox extends StatelessWidget {
     required this.width,
     required this.height,
     this.borderRadius = 8,
-    this.color = const Color(0xFF2A363B),
+    this.color,
   });
 
   final double? width;
   final double height;
   final double borderRadius;
-  final Color color;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
+    final effectiveColor = color ?? context.colors.surfaceAlt;
+
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: color,
+        color: effectiveColor,
         borderRadius: BorderRadius.circular(borderRadius),
       ),
     );
