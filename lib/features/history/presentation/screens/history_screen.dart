@@ -7,6 +7,7 @@ import '../../bloc/history_cubit.dart';
 import '../../bloc/history_state.dart';
 import '../../data/models/scan_record.dart';
 import '../widgets/history_row.dart';
+import '../widgets/history_skeleton.dart';
 
 /// Screen 13: History All matching `newDesign/13._history_all/code.html`.
 ///
@@ -115,12 +116,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _body(HistoryState state, List<ScanRecord> records) {
     // Pengambilan pertama belum selesai dan belum ada apa pun untuk digambar.
     if (records.isEmpty && state.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(
-          strokeWidth: 2.5,
-          color: Color(0xFFCF4647),
-        ),
-      );
+      return const HistorySkeleton();
     }
 
     if (records.isEmpty) {

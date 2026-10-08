@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/connectivity/demo_connectivity.dart';
 import '../../../auth/logic/session_state.dart';
-import '../../../../shared/widgets/loading_state.dart';
+import '../widgets/dashboard_skeleton.dart';
 import '../../bloc/dashboard_cubit.dart';
 import '../../bloc/dashboard_state.dart';
 
@@ -100,7 +100,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ];
       }
       return const [
-        LoadingState(rows: 3, label: 'Memuat metrik…', rowHeight: 64),
+        DashboardSkeleton(),
       ];
     }
 

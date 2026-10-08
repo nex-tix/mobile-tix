@@ -9,6 +9,7 @@ import '../../../auth/logic/session_state.dart';
 import '../../bloc/scanner_cubit.dart';
 import '../../bloc/scanner_state.dart';
 import '../../data/dummy_scans.dart';
+import '../../../../core/services/audio_feedback_service.dart';
 import '../widgets/scan_result_sheet.dart';
 import '../widgets/scanner_viewfinder.dart';
 
@@ -92,6 +93,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
     switch (state) {
       case ScannerSuccess(result: final result):
+        if (result.status == TicketStatus.valid) {
+          AudioFeedbackService.instance.playSuccess();
+        } else {
+          AudioFeedbackService.instance.playError();
+        }
         final gate = context.read<SessionState>().checkpoint?.gate;
         await ScanResultSheet.show(
           context,
@@ -108,6 +114,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
         cubit.acknowledgeResult();
 
       case ScannerQueued(ticketCode: final code):
+        AudioFeedbackService.instance.playSuccess();
         AppSnackbar.warning(
           context,
           'Offline — $code masuk antrean dan akan dikirim otomatis saat koneksi pulih.',
@@ -116,6 +123,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
         cubit.acknowledgeResult();
 
       case ScannerError(message: final message):
+        AudioFeedbackService.instance.playError();
         AppSnackbar.danger(context, message);
         cubit.acknowledgeResult();
 
