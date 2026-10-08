@@ -42,30 +42,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
         bottom: false,
         child: BlocBuilder<DashboardCubit, DashboardState>(
           builder: (context, state) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 12, 24, 110),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _Header(
-                    staffName: staff?.name ?? 'Raya',
-                    initials: staff?.initials ?? 'R',
-                    gate: checkpoint?.gate ?? 'Gate 1',
-                    online: connectivity.online,
-                    onProfileTap: () =>
-                        Navigator.of(context).pushNamed('/profile'),
-                  ),
-                  const SizedBox(height: 20),
-                  _Greeting(name: staff?.name ?? 'Raya'),
-                  const SizedBox(height: 18),
-                  _PeriodSwitch(
-                    period: state.period,
-                    onSelect: (period) =>
-                        context.read<DashboardCubit>().select(period),
-                  ),
-                  const SizedBox(height: 18),
-                  ..._content(state),
-                ],
+            return RefreshIndicator(
+              onRefresh: () => context.read<DashboardCubit>().refresh(),
+              color: const Color(0xFFCF4647),
+              backgroundColor: const Color(0xFF212B2F),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 110),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _Header(
+                      staffName: staff?.name ?? 'Raya',
+                      initials: staff?.initials ?? 'R',
+                      gate: checkpoint?.gate ?? 'Gate 1',
+                      online: connectivity.online,
+                      onProfileTap: () =>
+                          Navigator.of(context).pushNamed('/profile'),
+                    ),
+                    const SizedBox(height: 20),
+                    _Greeting(name: staff?.name ?? 'Raya'),
+                    const SizedBox(height: 18),
+                    _PeriodSwitch(
+                      period: state.period,
+                      onSelect: (period) =>
+                          context.read<DashboardCubit>().select(period),
+                    ),
+                    const SizedBox(height: 18),
+                    ..._content(state),
+                  ],
+                ),
               ),
             );
           },
