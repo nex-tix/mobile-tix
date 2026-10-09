@@ -56,8 +56,10 @@ class ScannerCubit extends Cubit<ScannerState> {
   int get pendingSyncCount => _queueDao.size;
 
   // Cooldown untuk mencegah duplikasi scan cepat (2 detik).
+  // Stopwatch monoton — tidak terpengaruh drift NTP/klock mundur seperti DateTime.now().
   String? _lastScannedCode;
-  DateTime? _lastScanTime;
+  int? _lastScanTick;
+  final Stopwatch _cooldownWatch = Stopwatch()..start();
   static const Duration _scanCooldown = Duration(seconds: 2);
 
   // ==================== MODE ====================
@@ -101,13 +103,12 @@ class ScannerCubit extends Cubit<ScannerState> {
       return;
     }
 
-    // Cegah duplikasi cepat: jika kode sama dipindai ulang dalam 2 detik,
-    // abaikan tanpa membuat duplikasi entri atau request.
-    final now = DateTime.now();
+    // Cegah duplikasi cepat: gunakan Stopwatch monotonic untuk selisih.
+    final currentTick = _cooldownWatch.elapsedMilliseconds;
     if (_lastScannedCode == code &&
-        _lastScanTime != null &&
-        now.difference(_lastScanTime!) < _scanCooldown) {
-      return; // diamkan — UI sudah menampilkan hasil sebelumnya
+        _lastScanTick != null &&
+        (currentTick - _lastScanTick!) < _scanCooldown.inMilliseconds) {
+      return; // duplikat dalam cooldown
     }
 
     // Cegah duplikasi: jika tiket sudah ada di antrean offline,
@@ -125,7 +126,7 @@ class ScannerCubit extends Cubit<ScannerState> {
 
     // Update cooldown tracker
     _lastScannedCode = code;
-    _lastScanTime = now;
+    _lastScanTick = currentTick;
 
     emit(
       ScannerProcessing(
@@ -198,7 +199,7 @@ class ScannerCubit extends Cubit<ScannerState> {
     if (state is ScannerIdle) return;
     // Reset cooldown tracker agar scan kode sama bisa diproses lagi
     _lastScannedCode = null;
-    _lastScanTime = null;
+    _lastScanTick = null;
     emit(ScannerIdle(mode: _mode, pendingSync: pendingSyncCount));
   }
 
@@ -222,6 +223,7 @@ class ScannerCubit extends Cubit<ScannerState> {
 
     _syncing = true;
     var synced = 0;
+    var failures = <String>[];
     try {
       for (final scan in _queueDao.getAll()) {
         final mode = ScanMode.fromWire(scan.mode);
@@ -234,9 +236,16 @@ class ScannerCubit extends Cubit<ScannerState> {
           await _queueDao.remove(scan.id);
           synced++;
         } on ApiFailure catch (failure) {
-          if (failure.isQueueable) break; // koneksi belum benar-benar pulih
+          if (failure.isQueueable) {
+            // koneksi belum benar-benar pulih — hentikan sync
+            failures.add('Connection failed');
+            break;
+          }
+          // kegagalan server — catat, teruskan ke item berikutnya
+          failures.add(failure.message);
           await _queueDao.incrementRetry(scan.id);
-        } catch (_) {
+        } catch (e) {
+          failures.add('Error: $e');
           await _queueDao.incrementRetry(scan.id);
         }
       }

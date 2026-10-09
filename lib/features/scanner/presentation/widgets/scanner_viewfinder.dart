@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_tix/core/constants/app_icons.dart';
+import 'package:mobile_tix/core/theme/app_colors.dart';
 import 'package:mobile_tix/core/utils/i18n_helper.dart';
 
 /// Camera Viewfinder card based on Screen 5 (`5._scan_check_in/code.html`).
@@ -50,19 +51,22 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
       child: Container(
         height: widget.height,
         decoration: BoxDecoration(
-          color: const Color(0xFF182023),
+          color: context.colors.surfaceAlt,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xFF334147), width: 1.2),
-          gradient: const RadialGradient(
-            center: Alignment.center,
-            radius: 0.9,
-            colors: [Color(0xFF212B2F), Color(0xFF141A1D)],
+          border: Border.all(color: context.colors.outline, width: 1.2),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              context.colors.surfaceAlt,
+              context.colors.surfaceAlt.withValues(alpha: 0.6),
+            ],
           ),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
-              color: Color(0x66000000),
+              color: context.colors.scrim.withValues(alpha: 0.25),
               blurRadius: 18,
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -104,12 +108,12 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
                   // Center QR Focus Crosshair Icon
                   Center(
                     child: widget.processing
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 36,
                             height: 36,
                             child: CircularProgressIndicator(
                               strokeWidth: 3,
-                              color: Color(0xFFCF4647),
+                              color: context.colors.primary,
                             ),
                           )
                         : AnimatedBuilder(
@@ -127,10 +131,10 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
                                 color: Colors.black.withValues(alpha: 0.25),
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 AppIcons.qrScanner,
                                 size: 36,
-                                color: Color(0xFFCF4647),
+                                color: context.colors.primary,
                               ),
                             ),
                           ),
@@ -152,12 +156,16 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
                             ),
                             child: Container(
                               height: 2,
-                              decoration: const BoxDecoration(
+                              decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
-                                    Color(0x00CF4647),
-                                    Color(0xFFCF4647),
-                                    Color(0x00CF4647),
+                                    context.colors.primary.withValues(
+                                      alpha: 0.0,
+                                    ),
+                                    context.colors.primary,
+                                    context.colors.primary.withValues(
+                                      alpha: 0.0,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -177,13 +185,13 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
                 widget.processing
                     ? context.trSafe('scanner.verifying', 'Verifying ticket…')
                     : context.trSafe('scanner.scanHint', 'Scan QR ticket'),
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'DMSans',
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFFF8F6F6),
+                  color: context.colors.ink,
                   letterSpacing: 0.2,
-                  shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+                  shadows: [Shadow(color: context.colors.scrim, blurRadius: 4)],
                 ),
               ),
             ),
@@ -212,16 +220,16 @@ class _ReticleCorner extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(
           top: top
-              ? const BorderSide(color: Color(0xFFCF4647), width: stroke)
+              ? BorderSide(color: context.colors.primary, width: stroke)
               : BorderSide.none,
           bottom: !top
-              ? const BorderSide(color: Color(0xFFCF4647), width: stroke)
+              ? BorderSide(color: context.colors.primary, width: stroke)
               : BorderSide.none,
           left: left
-              ? const BorderSide(color: Color(0xFFCF4647), width: stroke)
+              ? BorderSide(color: context.colors.primary, width: stroke)
               : BorderSide.none,
           right: !left
-              ? const BorderSide(color: Color(0xFFCF4647), width: stroke)
+              ? BorderSide(color: context.colors.primary, width: stroke)
               : BorderSide.none,
         ),
         borderRadius: BorderRadius.only(

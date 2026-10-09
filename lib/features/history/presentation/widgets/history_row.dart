@@ -16,24 +16,34 @@ class HistoryRow extends StatelessWidget {
 
   final ScanRecord record;
 
-  static String _statusText(BuildContext context, TicketStatus status) => switch (status) {
-    TicketStatus.valid => context.trSafe('ticket.valid', 'VALID'),
-    TicketStatus.alreadyUsed => context.trSafe('ticket.alreadyUsed', 'SUDAH DIPAKAI'),
-    TicketStatus.expired => context.trSafe('ticket.expired', 'KEDALUWARSA'),
-    TicketStatus.notFound => context.trSafe('ticket.invalid', 'TIKET TIDAK VALID'),
-    TicketStatus.cancelled => context.trSafe('ticket.cancelled', 'DIBATALKAN'),
-  };
+  static String _statusText(BuildContext context, TicketStatus status) =>
+      switch (status) {
+        TicketStatus.valid => context.trSafe('ticket.valid', 'VALID'),
+        TicketStatus.alreadyUsed => context.trSafe(
+          'ticket.alreadyUsed',
+          'SUDAH DIPAKAI',
+        ),
+        TicketStatus.expired => context.trSafe('ticket.expired', 'KEDALUWARSA'),
+        TicketStatus.notFound => context.trSafe(
+          'ticket.invalid',
+          'TIKET TIDAK VALID',
+        ),
+        TicketStatus.cancelled => context.trSafe(
+          'ticket.cancelled',
+          'DIBATALKAN',
+        ),
+      };
 
   @override
   Widget build(BuildContext context) {
     final isValid = record.isValid;
 
     final badgeOuterColor = isValid
-        ? const Color(0x332ECC71)
-        : const Color(0x33CF4647);
+        ? context.colors.validTint
+        : context.colors.usedTint;
     final badgeInnerColor = isValid
-        ? const Color(0xFF2ECC71)
-        : const Color(0xFFCF4647);
+        ? context.colors.valid
+        : context.colors.used;
     final badgeIcon = isValid ? AppIcons.check : AppIcons.close;
 
     return Padding(
@@ -76,7 +86,11 @@ class HistoryRow extends StatelessWidget {
                             shape: BoxShape.circle,
                             color: badgeInnerColor,
                           ),
-                          child: Icon(badgeIcon, size: 15, color: Colors.white),
+                          child: Icon(
+                            badgeIcon,
+                            size: 15,
+                            color: context.colors.onPrimary,
+                          ),
                         ),
                       ),
                     ),
@@ -149,13 +163,16 @@ class HistoryRow extends StatelessWidget {
   static void _showDetail(BuildContext context, ScanRecord record) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) {
         return Container(
           decoration: BoxDecoration(
             color: context.colors.surface,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-            border: Border(top: BorderSide(color: context.colors.outline, width: 1.2)),
+            border: Border(
+              top: BorderSide(color: context.colors.outline, width: 1.2),
+            ),
           ),
           padding: const EdgeInsets.fromLTRB(24, 14, 24, 28),
           child: SafeArea(
@@ -192,9 +209,7 @@ class HistoryRow extends StatelessWidget {
                   context,
                   context.trSafe('ticket.statusLabel', 'Status'),
                   _statusText(context, record.status),
-                  record.isValid
-                      ? const Color(0xFF2ECC71)
-                      : const Color(0xFFCF4647),
+                  record.isValid ? context.colors.valid : context.colors.used,
                 ),
                 _infoRow(
                   context,
@@ -210,7 +225,10 @@ class HistoryRow extends StatelessWidget {
                 ),
                 _infoRow(
                   context,
-                  context.trSafe('ticket.visitorsCountLabel', 'Jumlah Pengunjung'),
+                  context.trSafe(
+                    'ticket.visitorsCountLabel',
+                    'Jumlah Pengunjung',
+                  ),
                   context.trSafe(
                     'ticket.visitor',
                     '${record.visitorCount} visitor',
@@ -237,7 +255,7 @@ class HistoryRow extends StatelessWidget {
                     context,
                     context.trSafe('ticket.guestNameLabel', 'Nama Tamu'),
                     record.visitorName!,
-                    const Color(0xFFF5D061),
+                    context.colors.secondary,
                   ),
               ],
             ),
@@ -247,7 +265,12 @@ class HistoryRow extends StatelessWidget {
     );
   }
 
-  static Widget _infoRow(BuildContext context, String label, String value, Color valueColor) {
+  static Widget _infoRow(
+    BuildContext context,
+    String label,
+    String value,
+    Color valueColor,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(

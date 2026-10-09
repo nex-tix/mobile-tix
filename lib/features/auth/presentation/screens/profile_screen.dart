@@ -61,7 +61,10 @@ class ProfileScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: context.colors.surfaceAlt,
-                        border: Border.all(color: context.colors.outline, width: 2),
+                        border: Border.all(
+                          color: context.colors.outline,
+                          width: 2,
+                        ),
                       ),
                       child: ClipOval(
                         child: Center(
@@ -93,7 +96,10 @@ class ProfileScreen extends StatelessWidget {
                           const SizedBox(height: 3),
                           Text(
                             staff?.role ??
-                                context.trSafe('profile.defaultRole', 'Gate Staff · Shift Utama'),
+                                context.trSafe(
+                                  'profile.defaultRole',
+                                  'Gate Staff · Shift Utama',
+                                ),
                             style: TextStyle(
                               fontSize: 13,
                               color: context.colors.inkMuted,
@@ -118,11 +124,21 @@ class ProfileScreen extends StatelessWidget {
                   children: [
                     // Theme Row
                     ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                      leading: Icon(AppIcons.sun, size: 22, color: context.colors.inkMuted),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 8,
+                      ),
+                      leading: Icon(
+                        AppIcons.sun,
+                        size: 22,
+                        color: context.colors.inkMuted,
+                      ),
                       title: Text(
                         context.trSafe('profile.theme', 'Tema'),
-                        style: TextStyle(fontSize: 14, color: context.colors.inkMuted),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: context.colors.inkMuted,
+                        ),
                       ),
                       trailing: BlocBuilder<ThemeCubit, ThemeMode>(
                         builder: (context, themeMode) {
@@ -159,22 +175,39 @@ class ProfileScreen extends StatelessWidget {
                         }
                       },
                     ),
-                    Divider(height: 1, thickness: 1, color: context.colors.outline),
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: context.colors.outline,
+                    ),
 
                     // Language Row
                     ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                      leading: Icon(AppIcons.language, size: 22, color: context.colors.inkMuted),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 8,
+                      ),
+                      leading: Icon(
+                        AppIcons.language,
+                        size: 22,
+                        color: context.colors.inkMuted,
+                      ),
                       title: Text(
                         context.trSafe('profile.language', 'Bahasa'),
-                        style: TextStyle(fontSize: 14, color: context.colors.inkMuted),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: context.colors.inkMuted,
+                        ),
                       ),
                       trailing: BlocBuilder<LanguageCubit, Locale>(
                         builder: (context, state) {
                           return Text(
                             state.languageCode == 'en'
                                 ? context.trSafe('common.english', 'English')
-                                : context.trSafe('common.indonesian', 'Indonesia'),
+                                : context.trSafe(
+                                    'common.indonesian',
+                                    'Indonesia',
+                                  ),
                             style: TextStyle(
                               fontSize: 13.5,
                               fontWeight: FontWeight.w600,
@@ -208,16 +241,26 @@ class ProfileScreen extends StatelessWidget {
                   children: [
                     // Checkpoint Row
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 16,
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
-                              Icon(AppIcons.meetingRoom, size: 20, color: context.colors.inkMuted),
+                              Icon(
+                                AppIcons.meetingRoom,
+                                size: 20,
+                                color: context.colors.inkMuted,
+                              ),
                               const SizedBox(width: 12),
                               Text(
-                                context.trSafe('profile.checkpoint', 'Checkpoint'),
+                                context.trSafe(
+                                  'profile.checkpoint',
+                                  'Checkpoint',
+                                ),
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: context.colors.inkMuted,
@@ -236,16 +279,27 @@ class ProfileScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Divider(height: 1, thickness: 1, color: context.colors.outline),
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: context.colors.outline,
+                    ),
                     // Connection Row
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 16,
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
-                              Icon(AppIcons.wifi, size: 20, color: context.colors.inkMuted),
+                              Icon(
+                                AppIcons.wifi,
+                                size: 20,
+                                color: context.colors.inkMuted,
+                              ),
                               const SizedBox(width: 12),
                               Text(
                                 context.trSafe('profile.connection', 'Koneksi'),
@@ -272,7 +326,10 @@ class ProfileScreen extends StatelessWidget {
                               Text(
                                 connectivity.online
                                     ? context.trSafe('common.online', 'Online')
-                                    : context.trSafe('common.offline', 'Offline'),
+                                    : context.trSafe(
+                                        'common.offline',
+                                        'Offline',
+                                      ),
                                 style: TextStyle(
                                   fontSize: 13.5,
                                   fontWeight: FontWeight.w600,
@@ -305,8 +362,14 @@ class ProfileScreen extends StatelessWidget {
                   onPressed: () async {
                     final ok = await showConfirmDialog(
                       context,
-                      title: context.trSafe('auth.logoutTitle', 'Keluar dari akun?'),
-                      message: context.trSafe('auth.logoutMessage', 'Sesi saat ini akan diakhiri.'),
+                      title: context.trSafe(
+                        'auth.logoutTitle',
+                        'Keluar dari akun?',
+                      ),
+                      message: context.trSafe(
+                        'auth.logoutMessage',
+                        'Sesi saat ini akan diakhiri.',
+                      ),
                       confirmLabel: context.trSafe('common.logout', 'Logout'),
                     );
                     if (!ok || !context.mounted) return;
@@ -319,7 +382,11 @@ class ProfileScreen extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(AppIcons.logout, size: 18, color: context.colors.dangerRed),
+                      Icon(
+                        AppIcons.logout,
+                        size: 18,
+                        color: context.colors.dangerRed,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         context.trSafe('common.logout', 'Logout'),

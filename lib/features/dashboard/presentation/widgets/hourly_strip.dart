@@ -46,8 +46,8 @@ class HourlyStrip extends StatelessWidget {
                             height: (height - 4) * value + 3,
                             decoration: BoxDecoration(
                               color: i == stats.peakIndex
-                                  ? const Color(0xFFF5D061)
-                                  : const Color(0xFF334147),
+                                  ? c.secondary
+                                  : c.surfaceAlt,
                               borderRadius: const BorderRadius.vertical(
                                 top: Radius.circular(3),
                               ),

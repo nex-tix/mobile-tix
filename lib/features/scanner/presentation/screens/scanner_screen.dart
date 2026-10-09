@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -58,8 +59,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       return;
     }
 
-    final checkpointId =
-        context.read<SessionState>().checkpoint?.id ?? '';
+    final checkpointId = context.read<SessionState>().checkpoint?.id ?? '';
     if (checkpointId.isEmpty) {
       AppSnackbar.warning(
         context,
@@ -116,10 +116,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
         cubit.acknowledgeResult();
 
       case ScannerQueued(ticketCode: final code):
-              AudioFeedbackService.instance.playError();
-              AppSnackbar.warning(
+        AudioFeedbackService.instance.playError();
+        AppSnackbar.warning(
           context,
-          'Offline — $code masuk antrean dan akan dikirim otomatis saat koneksi pulih.',
+          '${context.trSafe('scanner.offlineQueued', 'Offline — {code} masuk antrean dan akan dikirim otomatis saat koneksi pulih.', namedArgs: {'code': code})}',
           duration: const Duration(seconds: 4),
         );
         cubit.acknowledgeResult();
@@ -190,8 +190,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
                     const SizedBox(height: 14),
 
                     _manualInputSection(),
-                    const SizedBox(height: 18),
-                    _DemoOutcomes(onPick: _pickStatus),
+                    // Demo outcomes hanya di debug — tidak visible di release
+                    if (kDebugMode) ...[
+                      const SizedBox(height: 18),
+                      _DemoOutcomes(onPick: _pickStatus),
+                    ],
                   ],
                 ),
               );
@@ -254,8 +257,14 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 color: context.colors.ink,
               ),
               decoration: InputDecoration(
-                hintText: context.trSafe('scanner.codeHint', 'e.g. TKT-2026-001245'),
-                hintStyle: TextStyle(fontSize: 13, color: context.colors.inkMuted),
+                hintText: context.trSafe(
+                  'scanner.codeHint',
+                  'e.g. TKT-2026-001245',
+                ),
+                hintStyle: TextStyle(
+                  fontSize: 13,
+                  color: context.colors.inkMuted,
+                ),
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
@@ -266,7 +275,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
             ),
           ),
           IconButton(
-            icon: const Icon(AppIcons.arrowForward, color: Color(0xFFF5D061)),
+            icon: Icon(AppIcons.arrowForward, color: context.colors.secondary),
             onPressed: () => _submit(_codeController.text),
           ),
           IconButton(
@@ -329,9 +338,11 @@ class _Header extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: const Color(0x3310B981),
+              color: context.colors.validTint,
               borderRadius: BorderRadius.circular(99),
-              border: Border.all(color: const Color(0x6610B981)),
+              border: Border.all(
+                color: context.colors.valid.withValues(alpha: 0.4),
+              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -342,8 +353,8 @@ class _Header extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: online
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFFCF4647),
+                        ? context.colors.valid
+                        : context.colors.primary,
                   ),
                 ),
                 const SizedBox(width: 6),
@@ -356,8 +367,8 @@ class _Header extends StatelessWidget {
                     fontSize: 11.5,
                     fontWeight: FontWeight.w600,
                     color: online
-                        ? const Color(0xFF34D399)
-                        : const Color(0xFFCF4647),
+                        ? context.colors.valid
+                        : context.colors.primary,
                   ),
                 ),
               ],
@@ -380,13 +391,15 @@ class _PendingBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0x33F5D061),
+        color: context.colors.secondaryTint,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0x66F5D061)),
+        border: Border.all(
+          color: context.colors.secondary.withValues(alpha: 0.4),
+        ),
       ),
       child: Row(
         children: [
-          const Icon(AppIcons.wifiOff, size: 18, color: Color(0xFFF5D061)),
+          Icon(AppIcons.wifiOff, size: 18, color: context.colors.secondary),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -395,11 +408,11 @@ class _PendingBanner extends StatelessWidget {
                 '$count tiket menunggu dikirim ke server',
                 namedArgs: {'count': '$count'},
               ),
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'DMSans',
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFFF5D061),
+                color: context.colors.onSecondaryTint,
               ),
             ),
           ),
@@ -436,8 +449,11 @@ class _ModeSwitch extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
                     gradient: mode == option
-                        ? const LinearGradient(
-                            colors: [Color(0xFFCF4647), Color(0xFFB83A3B)],
+                        ? LinearGradient(
+                            colors: [
+                              context.colors.primary,
+                              context.colors.primaryPressed,
+                            ],
                           )
                         : null,
                     borderRadius: BorderRadius.circular(99),
@@ -452,7 +468,7 @@ class _ModeSwitch extends StatelessWidget {
                       fontSize: 12.5,
                       fontWeight: FontWeight.w700,
                       color: mode == option
-                          ? const Color(0xFFF8F6F6)
+                          ? context.colors.onPrimary
                           : context.colors.inkMuted,
                     ),
                   ),
@@ -486,7 +502,10 @@ class _DemoOutcomes extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 4, bottom: 6),
             child: Text(
-              context.trSafe('scanner.demoOutcomes', 'DEMO OUTCOMES (SIMULASI)'),
+              context.trSafe(
+                'scanner.demoOutcomes',
+                'DEMO OUTCOMES (SIMULASI)',
+              ),
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
@@ -501,17 +520,17 @@ class _DemoOutcomes extends StatelessWidget {
             children: [
               _chip(
                 label: context.trSafe('ticket.valid', 'Valid'),
-                color: const Color(0xFF2ECC71),
+                color: context.colors.valid,
                 onTap: () => onPick(TicketStatus.valid),
               ),
               _chip(
                 label: context.trSafe('ticket.alreadyUsed', 'Already Used'),
-                color: const Color(0xFFCF4647),
+                color: context.colors.used,
                 onTap: () => onPick(TicketStatus.alreadyUsed),
               ),
               _chip(
                 label: context.trSafe('ticket.expired', 'Expired'),
-                color: const Color(0xFFF5D061),
+                color: context.colors.expired,
                 onTap: () => onPick(TicketStatus.expired),
               ),
               _chip(
@@ -521,7 +540,7 @@ class _DemoOutcomes extends StatelessWidget {
               ),
               _chip(
                 label: context.trSafe('ticket.cancelled', 'Cancelled'),
-                color: const Color(0xFFCF4647),
+                color: context.colors.cancelled,
                 onTap: () => onPick(TicketStatus.cancelled),
               ),
             ],

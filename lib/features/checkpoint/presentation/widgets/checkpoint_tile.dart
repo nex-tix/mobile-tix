@@ -39,18 +39,16 @@ class CheckpointTile extends StatelessWidget {
               color: context.colors.surface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: selected ? const Color(0xFFF5D061) : context.colors.outline,
+                color: selected
+                    ? context.colors.secondary
+                    : context.colors.outline,
                 width: selected ? 1.5 : 1.0,
               ),
             ),
             child: Row(
               children: [
                 // Leading Lock Icon
-                Icon(
-                  AppIcons.lock,
-                  size: 18,
-                  color: context.colors.inkMuted,
-                ),
+                Icon(AppIcons.lock, size: 18, color: context.colors.inkMuted),
                 const SizedBox(width: 14),
 
                 // Gate Title & Details
@@ -79,15 +77,15 @@ class CheckpointTile extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0x33CF4647),
+                                color: context.colors.primaryTint,
                                 borderRadius: BorderRadius.circular(6),
                               ),
-                              child: const Text(
+                              child: Text(
                                 'DITUTUP',
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFFCF4647),
+                                  color: context.colors.primary,
                                 ),
                               ),
                             ),
@@ -118,7 +116,7 @@ class CheckpointTile extends StatelessWidget {
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: selected
-                          ? const Color(0xFFF5D061)
+                          ? context.colors.secondary
                           : context.colors.outline,
                       width: 1.5,
                     ),
@@ -128,8 +126,8 @@ class CheckpointTile extends StatelessWidget {
                       duration: const Duration(milliseconds: 180),
                       width: selected ? 10 : 0,
                       height: selected ? 10 : 0,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF5D061),
+                      decoration: BoxDecoration(
+                        color: context.colors.secondary,
                         shape: BoxShape.circle,
                       ),
                     ),

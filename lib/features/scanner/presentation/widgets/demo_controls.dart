@@ -52,9 +52,7 @@ class DemoControls extends StatelessWidget {
               ),
             _DemoChip(
               label: 'IZIN KAMERA',
-              icon: cameraBlocked
-                  ? AppIcons.noCamera
-                  : AppIcons.camera,
+              icon: cameraBlocked ? AppIcons.noCamera : AppIcons.camera,
               color: cameraBlocked ? c.used : c.inkMuted,
               active: cameraBlocked,
               onTap: onToggleCamera,

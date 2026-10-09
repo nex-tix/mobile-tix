@@ -88,11 +88,7 @@ class UluwatuCliffPainter extends CustomPainter {
     final cliffGrad = const LinearGradient(
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
-      colors: [
-        Color(0x33212B2F),
-        Color(0xCC1A2327),
-        Color(0xFF141C1F),
-      ],
+      colors: [Color(0x33212B2F), Color(0xCC1A2327), Color(0xFF141C1F)],
       stops: [0.0, 0.6, 1.0],
     ).createShader(cliffRect);
 

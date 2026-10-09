@@ -29,6 +29,10 @@ class OfflineQueueDAO {
   // Reference ke Hive box bertipe QueuedScan
   Box<QueuedScan>? _queueBox;
 
+  // O(1) lookup untuk ticketCode → Set<String> kode tiket aktif di antrean.
+  // Diisi saat getAll() / initialize, di-maintain saat enqueue/remove/clear.
+  final Set<String> _ticketCodeIndex = <String>{};
+
   // Stempel waktu terakhir yang sudah dipakai untuk sebuah item antrean.
   // Dipakai penjaga monotonik di [_monotonicStamp].
   DateTime _lastStamp = DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
@@ -61,8 +65,23 @@ class OfflineQueueDAO {
   Future<void> initialize() async {
     try {
       await _getBox();
+      // Bangun index O(1) dari item yang valid (belum expired).
+      _rebuildIndex();
     } catch (e) {
       throw Exception('Failed to initialize OfflineQueueDAO: $e');
+    }
+  }
+
+  void _rebuildIndex() {
+    _ticketCodeIndex.clear();
+    final box = _queueBox;
+    if (box == null || !box.isOpen) return;
+    final now = DateTime.now().toUtc();
+    for (final key in box.keys) {
+      final scan = box.get(key);
+      if (scan != null && scan.ageFrom(now) <= _queueTtl) {
+        _ticketCodeIndex.add(scan.ticketCode);
+      }
     }
   }
 
@@ -70,7 +89,7 @@ class OfflineQueueDAO {
   bool containsTicket(String ticketCode) {
     final code = ticketCode.trim();
     if (code.isEmpty) return false;
-    return getAll().any((scan) => scan.ticketCode == code);
+    return _ticketCodeIndex.contains(code);
   }
 
   /// Masukkan satu scan ke antrean offline.
@@ -91,14 +110,13 @@ class OfflineQueueDAO {
       final code = ticketCode.trim();
       final box = await _getBox();
 
-      // Cegah duplikasi: jika tiket dengan kode yang sama sudah ada di antrean
-      // aktif (belum expired), kembalikan item yang sudah ada tanpa menambah baru.
-      final existing = getAll().cast<QueuedScan?>().firstWhere(
-        (scan) => scan?.ticketCode == code,
-        orElse: () => null,
-      );
-      if (existing != null) {
-        return existing;
+      // Cegah duplikasi via index O(1)
+      if (_ticketCodeIndex.contains(code)) {
+        final existing = getAll().cast<QueuedScan?>().firstWhere(
+          (scan) => scan?.ticketCode == code,
+          orElse: () => null,
+        );
+        if (existing != null) return existing;
       }
 
       // Waktu scan (UTC) — dipakai sebagai urutan FIFO dan dasar TTL
@@ -113,6 +131,7 @@ class OfflineQueueDAO {
 
       // Simpan per-item (key = id) — tidak menulis ulang seluruh antrean
       await box.put(scan.id, scan);
+      _ticketCodeIndex.add(code);
       return scan;
     } catch (e) {
       throw Exception('Failed to enqueue scan: $e');
@@ -176,8 +195,12 @@ class OfflineQueueDAO {
         }
       }
 
-      // Bersihkan item kedaluwarsa
+      // Bersihkan item kedaluwarsa + index-nya
       if (expiredKeys.isNotEmpty) {
+        for (final key in expiredKeys) {
+          final scan = box.get(key);
+          if (scan != null) _ticketCodeIndex.remove(scan.ticketCode);
+        }
         box.deleteAll(expiredKeys);
       }
 
@@ -199,6 +222,8 @@ class OfflineQueueDAO {
   Future<void> remove(String id) async {
     try {
       final box = await _getBox();
+      final scan = box.get(id);
+      if (scan != null) _ticketCodeIndex.remove(scan.ticketCode);
       await box.delete(id);
     } catch (e) {
       throw Exception('Failed to remove queued scan: $e');
@@ -227,6 +252,7 @@ class OfflineQueueDAO {
   Future<void> clear() async {
     try {
       final box = await _getBox();
+      _ticketCodeIndex.clear();
       await box.clear();
     } catch (e) {
       throw Exception('Failed to clear offline queue: $e');

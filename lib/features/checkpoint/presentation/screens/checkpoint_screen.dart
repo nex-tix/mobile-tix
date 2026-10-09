@@ -36,7 +36,9 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
     super.initState();
     // Default seleksi ke checkpoint yang sedang aktif di session (jika ada)
     final current = context.read<SessionState>().checkpoint;
-    _selected = current ?? (dummyCheckpoints.isNotEmpty ? dummyCheckpoints.first : null);
+    _selected =
+        current ??
+        (dummyCheckpoints.isNotEmpty ? dummyCheckpoints.first : null);
   }
 
   void _confirm() {
@@ -78,7 +80,11 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
                     const SizedBox(width: 48),
                   const Spacer(),
                   IconButton(
-                    icon: Icon(AppIcons.logout, color: context.colors.inkMuted, size: 20),
+                    icon: Icon(
+                      AppIcons.logout,
+                      color: context.colors.inkMuted,
+                      size: 20,
+                    ),
                     onPressed: _signOut,
                     tooltip: context.trSafe('common.logout', 'Logout'),
                   ),
@@ -95,7 +101,10 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      context.trSafe('checkpoint.selectTitle', 'Pilih checkpoint'),
+                      context.trSafe(
+                        'checkpoint.selectTitle',
+                        'Pilih checkpoint',
+                      ),
                       style: TextStyle(
                         fontFamily: 'DMSans',
                         fontSize: 26,
@@ -149,10 +158,10 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
                     height: 52,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
+                        gradient: LinearGradient(
                           colors: [
-                            Color(0xFFCF4647),
-                            Color(0xFFB83A3B),
+                            context.colors.primary,
+                            context.colors.primaryPressed,
                           ],
                         ),
                         borderRadius: BorderRadius.circular(14),
@@ -164,12 +173,15 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
                           onTap: _selected != null ? _confirm : null,
                           child: Center(
                             child: Text(
-                              context.trSafe('checkpoint.enterGate', 'Masuk ke Gate'),
-                              style: const TextStyle(
+                              context.trSafe(
+                                'checkpoint.enterGate',
+                                'Masuk ke Gate',
+                              ),
+                              style: TextStyle(
                                 fontFamily: 'DMSans',
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFFF8F6F6),
+                                color: context.colors.onPrimary,
                                 letterSpacing: 0.3,
                               ),
                             ),

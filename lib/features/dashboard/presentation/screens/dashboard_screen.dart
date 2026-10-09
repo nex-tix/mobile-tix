@@ -95,9 +95,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ];
       }
-      return const [
-        DashboardSkeleton(),
-      ];
+      return const [DashboardSkeleton()];
     }
 
     return [
@@ -221,7 +219,9 @@ class _Header extends StatelessWidget {
           decoration: BoxDecoration(
             color: context.colors.validTint,
             borderRadius: BorderRadius.circular(99),
-            border: Border.all(color: context.colors.valid.withValues(alpha: 0.4)),
+            border: Border.all(
+              color: context.colors.valid.withValues(alpha: 0.4),
+            ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -231,9 +231,7 @@ class _Header extends StatelessWidget {
                 height: 6,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: online
-                      ? context.colors.valid
-                      : context.colors.primary,
+                  color: online ? context.colors.valid : context.colors.primary,
                 ),
               ),
               const SizedBox(width: 6),
@@ -245,9 +243,7 @@ class _Header extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w600,
-                  color: online
-                      ? context.colors.valid
-                      : context.colors.primary,
+                  color: online ? context.colors.valid : context.colors.primary,
                 ),
               ),
             ],
@@ -333,7 +329,10 @@ class _PeriodSwitch extends StatelessWidget {
                   child: Text(
                     option == StatsPeriod.today
                         ? context.trSafe('dashboard.today', option.shortLabel)
-                        : context.trSafe('dashboard.thisMonth', option.shortLabel),
+                        : context.trSafe(
+                            'dashboard.thisMonth',
+                            option.shortLabel,
+                          ),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: 'DMSans',
@@ -366,11 +365,11 @@ class _VisitorsCard extends StatelessWidget {
         color: context.colors.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: context.colors.outline),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x1A000000),
+            color: context.colors.scrim.withValues(alpha: 0.25),
             blurRadius: 16,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -384,11 +383,7 @@ class _VisitorsCard extends StatelessWidget {
               color: context.colors.surfaceAlt,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              AppIcons.group,
-              color: context.colors.ink,
-              size: 22,
-            ),
+            child: Icon(AppIcons.group, color: context.colors.ink, size: 22),
           ),
           const SizedBox(height: 16),
           Text(
@@ -440,7 +435,12 @@ class _MetricCard extends StatelessWidget {
         color: context.colors.surface,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: context.colors.outline),
-        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 12)],
+        boxShadow: [
+          BoxShadow(
+            color: context.colors.scrim.withValues(alpha: 0.25),
+            blurRadius: 12,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -492,7 +492,9 @@ class _ErrorBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.colors.primaryTint,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.colors.primary.withValues(alpha: 0.30)),
+        border: Border.all(
+          color: context.colors.primary.withValues(alpha: 0.30),
+        ),
       ),
       child: Row(
         children: [
@@ -540,11 +542,7 @@ class _FailureView extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(
-            AppIcons.wifiOff,
-            size: 40,
-            color: context.colors.inkMuted,
-          ),
+          Icon(AppIcons.wifiOff, size: 40, color: context.colors.inkMuted),
           const SizedBox(height: 12),
           Text(
             context.trSafe('dashboard.loadFailed', 'Metrik tidak dapat dimuat'),

@@ -113,7 +113,7 @@ class _ScanResultSheetState extends State<ScanResultSheet>
       badgeColor = context.colors.valid;
       textColor = context.colors.valid;
       btnBgColor = context.colors.valid;
-      btnTextColor = Colors.white;
+      btnTextColor = context.colors.onPrimary;
       statusTitle = context.trSafe('ticket.valid', 'VALID');
       statusIcon = AppIcons.check;
     } else if (isUsed) {
@@ -128,7 +128,7 @@ class _ScanResultSheetState extends State<ScanResultSheet>
       textColor = context.colors.expired;
       btnBgColor = context.colors.expired;
       btnTextColor = Theme.of(context).brightness == Brightness.light
-          ? const Color(0xFF1E272B)
+          ? context.colors.ink
           : context.colors.onPrimary;
       statusTitle = context.trSafe('ticket.expired', 'EXPIRED');
       statusIcon = AppIcons.schedule;
@@ -155,6 +155,8 @@ class _ScanResultSheetState extends State<ScanResultSheet>
         borderRadius: const BorderRadius.vertical(top: Radius.circular(36)),
         border: Border(
           top: BorderSide(color: context.colors.outline, width: 1),
+          left: BorderSide(color: context.colors.outline, width: 0.5),
+          right: BorderSide(color: context.colors.outline, width: 0.5),
         ),
       ),
       child: SafeArea(
@@ -168,7 +170,7 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                 height: 4,
                 margin: const EdgeInsets.only(top: 12, bottom: 8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.25),
+                  color: context.colors.outlineStrong.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(99),
                 ),
               ),
@@ -188,10 +190,10 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                     builder: (context, _) => LinearProgressIndicator(
                       value: (1 - _dwell!.value).clamp(0.0, 1.0),
                       minHeight: 2.5,
-                      backgroundColor: Colors.white.withValues(alpha: 0.08),
-                      valueColor: const AlwaysStoppedAnimation(
-                        Color(0xFF2ECC71),
+                      backgroundColor: context.colors.outlineStrong.withValues(
+                        alpha: 0.08,
                       ),
+                      valueColor: AlwaysStoppedAnimation(context.colors.valid),
                     ),
                   ),
                 ),
@@ -229,13 +231,13 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                   ),
                   const SizedBox(height: 24),
 
-                  // Meta Details Block
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Column(
-                      children: [
-                        // Ticket Type / Pax count
-                        Row(
+                                    // Meta Details Block
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                                      child: Column(
+                                        children: [
+                                          // Ticket Type / Pax count
+                                          Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
@@ -301,44 +303,44 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                         ),
 
                         // Rejection note / reason if not valid
-                                                if (!isValid) ...[
-                                                  const SizedBox(height: 12),
-                                                  Builder(
-                                                    builder: (context) {
-                                                      String note;
-                                                      if (isUsed && outcome.previousUseAt != null) {
-                                                        note = context.trSafe(
-                                                          'ticket.previousUse',
-                                                          'Dipakai sebelumnya: ${Fmt.clockSeconds(outcome.previousUseAt!)} (${outcome.previousUseGate ?? "(gate tidak tercatat)"})',
-                                                          namedArgs: {
-                                                            'time': Fmt.clockSeconds(
-                                                              outcome.previousUseAt!,
-                                                            ),
-                                                            'gate':
-                                                                outcome.previousUseGate ??
-                                                                    "(gate tidak tercatat)",
-                                                          },
-                                                        );
-                                                      } else if (outcome.message != null &&
-                                                          outcome.message!.isNotEmpty) {
-                                                        note = outcome.message!;
-                                                      } else {
-                                                        note = _instructionForStatus(
-                                                          context,
-                                                          outcome.status,
-                                                        );
-                                                      }
-                                                      return Text(
-                                                        note,
-                                                        textAlign: TextAlign.center,
-                                                        style: TextStyle(
-                                                          fontSize: 13,
-                                                          color: context.colors.inkMuted,
-                                                        ),
-                                                      );
-                                                    },
-                                                  ),
-                                                ],
+                        if (!isValid) ...[
+                          const SizedBox(height: 12),
+                          Builder(
+                            builder: (context) {
+                              String note;
+                              if (isUsed && outcome.previousUseAt != null) {
+                                note = context.trSafe(
+                                  'ticket.previousUse',
+                                  'Dipakai sebelumnya: ${Fmt.clockSeconds(outcome.previousUseAt!)} (${outcome.previousUseGate ?? "(gate tidak tercatat)"})',
+                                  namedArgs: {
+                                    'time': Fmt.clockSeconds(
+                                      outcome.previousUseAt!,
+                                    ),
+                                    'gate':
+                                        outcome.previousUseGate ??
+                                        "(gate tidak tercatat)",
+                                  },
+                                );
+                              } else if (outcome.message != null &&
+                                  outcome.message!.isNotEmpty) {
+                                note = outcome.message!;
+                              } else {
+                                note = _instructionForStatus(
+                                  context,
+                                  outcome.status,
+                                );
+                              }
+                              return Text(
+                                note,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: context.colors.inkMuted,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ],
                     ),
                   ),

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/config/app_config.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 
 /// Splash Screen reflecting `newDesign` Gate Validator brand.
@@ -30,7 +31,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF2A363B),
+      backgroundColor: context.colors.ground,
       body: AnimatedOpacity(
         opacity: _opacity,
         duration: AppSpacing.base,
@@ -55,21 +56,21 @@ class _SplashScreenState extends State<SplashScreen> {
                     const SizedBox(height: 20),
                     Text(
                       context.tr('auth.appTitle'),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'DMSans',
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFFF8F6F6),
+                        color: context.colors.ink,
                         letterSpacing: 0.3,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       context.tr('splash.subtitle'),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'DMSans',
                         fontSize: 13,
-                        color: Color(0xFFA3B1B7),
+                        color: context.colors.inkMuted,
                       ),
                     ),
                   ],
@@ -88,9 +89,9 @@ class _SplashScreenState extends State<SplashScreen> {
                         'build': 'Demo UI',
                       },
                     ),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: Color(0xFF6B7E86),
+                      color: context.colors.inkFaint,
                     ),
                   ),
                 ),

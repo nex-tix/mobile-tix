@@ -57,11 +57,11 @@ class HomeShell extends StatelessWidget {
                 border: Border(
                   top: BorderSide(color: context.colors.outline, width: 1.2),
                 ),
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
-                    color: Color(0x26000000),
+                    color: context.colors.scrim,
                     blurRadius: 28,
-                    offset: Offset(0, -6),
+                    offset: const Offset(0, -6),
                   ),
                 ],
               ),

@@ -343,11 +343,7 @@ class _Controls extends StatelessWidget {
                 color: colors.inkMuted,
               ),
               suffixIcon: IconButton(
-                icon: Icon(
-                  AppIcons.close,
-                  size: 18,
-                  color: colors.inkMuted,
-                ),
+                icon: Icon(AppIcons.close, size: 18, color: colors.inkMuted),
                 splashRadius: 18,
                 onPressed: () {
                   searchController.clear();
@@ -478,6 +474,7 @@ class _DropdownChip<T> extends StatelessWidget {
         borderRadius: BorderRadius.circular(_radius),
         onTap: () => showModalBottomSheet<void>(
           context: context,
+          isScrollControlled: true,
           backgroundColor: colors.surface,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
