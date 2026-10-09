@@ -70,22 +70,22 @@ class DashboardSkeleton extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: context.colors.surface,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: context.colors.outline),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ShimmerBox(
-            width: 28,
-            height: 28,
-            borderRadius: 14,
+            width: 18,
+            height: 18,
+            borderRadius: 4,
             color: context.colors.surfaceAlt,
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           ShimmerBox(
             width: 70,
-            height: 32,
+            height: 30,
             borderRadius: 6,
             color: context.colors.surfaceAlt,
           ),

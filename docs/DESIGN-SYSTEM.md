@@ -97,3 +97,42 @@ Implementasi warna dikemas di dalam `AppColors` (`ThemeExtension`):
   2. **Scan** (tombol lingkaran Deep Red `#CF4647` raised dengan ikon Off-White `#F8F6F6` di tengah)
   3. **History** (ikon & label Gold `#F5D061` saat aktif)
 
+---
+
+## 9. Refinement Pass — Distill + Quieter
+
+Bagian 1–8 merekam build awal. Pass refinement berikut menenangkan sistem tanpa
+mengganti dunia visualnya; bila ada pernyataan lama yang bertabrakan, yang berlaku
+adalah bagian ini.
+
+- **Verdict = stamp.** Sheet hasil pindai memakai `StampMark` (rangka ganda, sudut
+  tangan, ghost pass) sebagai *satu-satunya* elemen jenuh; lingkaran status besar dan
+  tombol berwarna status dihapus. Kedaluwarsa dicetak sebagai blok mustar penuh
+  (kontras teks), sisanya tinta status di atas kertas. Tombol bawah netral (outline).
+- **Satu `ConnectionPill`** (`shared/widgets/inline_status.dart`) untuk indikasi koneksi
+  di header scanner, dashboard, dan baris Koneksi profil: hairline, titik status
+  berwarna, kata tetap ink. Pill bisa diketuk untuk memutar state demo koneksi.
+- **Aturan flat ditegakkan:** nol `BoxShadow` di seluruh `lib/`. Nav bar, kartu
+  dashboard, dan viewfinder bergantung pada hairline `outline` dan langkah tonal.
+- **Emas hanya untuk KEDALUWARSA.** Tab aktif nav, inisial avatar, ikon kirim manual,
+  dan nama tamu detail berpindah ke ink/primary. Seleksi tab = `primary` +
+  `primaryTint` lembut.
+- **Gradient → flat:** segmen mode scanner, tombol Login, dan tombol hero pindai kini
+  solid `primary`. Ring emas 4px dan glow merah hero dihapus; sweep laser di
+  viewfinder tetap satu-satunya motion di layar itu.
+- **History = hairline list.** Baris riwayat tidak lagi kartu berbingkai; dipisah
+  hairline dengan satu disc status 34px. Chip filter netral (state terpilih = border
+  kuat + teks ink, bukan merah permanen); error banner netral dengan ikon primary.
+  Warna nilai Status di sheet detail mengikuti status sebenarnya (`TicketStatus.ink`).
+- **Login menyesuaikan tema:** judul dan teks memakai token (`ink`), field obsidian
+  memakai `surfaceField`/`onField`, feather foto 4-stop, SnackBar lewat `AppSnackbar`.
+- **Baris demo "SIMULASI HASIL (DEMO)" dihapus** dari scanner; kelima verdict tetap
+  bisa diperiksa dengan mengetuk pratinjau viewfinder (siklus dummy).
+- **Radius & bobot:** literal radius di luar skala (6/10/20/22/28/36) dinormalkan ke
+  token `AppSpacing`; diet bobot w700/w800 → w600/w700 kecuali angka tally dan stamp.
+- **Dead code dihapus:** `demo_controls`, `mode_switch`, `manual_input_bar`,
+  `tally_board`, `hourly_strip`, `profile_bottom_sheet`, `uluwatu_cliff_painter`,
+  `dummy_stats`, `gate_stats`. `checkpoint_screen`/`checkpoint_tile` dipertahankan
+  (tercantum di brief produk).
+
+

@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_tix/core/constants/app_icons.dart';
 
 import '../../../../core/constants/ticket_status.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/i18n_helper.dart';
+import '../../../../shared/widgets/stamp_mark.dart';
 import '../../data/models/scan_outcome.dart';
 
 /// Full modal feedback sheet based on Screen 8 (Valid) & Screen 9 (Already Used).
+///
+/// Satu sinyal verdict saja: [StampMark] mendarat di tengah sheet. Warna status
+/// tidak diulang di circle, judul, dan tombol — tombol bawah sengaja netral
+/// supaya stamp tetap satu-satunya kejadian jenuh di layar ini.
 class ScanResultSheet extends StatefulWidget {
   const ScanResultSheet({
     super.key,
@@ -99,51 +104,18 @@ class _ScanResultSheetState extends State<ScanResultSheet>
     final status = outcome.status;
     final isValid = status == TicketStatus.valid;
     final isUsed = status == TicketStatus.alreadyUsed;
-    final isExpired = status == TicketStatus.expired;
 
-    // Semantic visual configuration
-    final Color badgeColor;
-    final Color textColor;
-    final Color btnBgColor;
-    final Color btnTextColor;
     final String statusTitle;
-    final IconData statusIcon;
-
     if (isValid) {
-      badgeColor = context.colors.valid;
-      textColor = context.colors.valid;
-      btnBgColor = context.colors.valid;
-      btnTextColor = context.colors.onPrimary;
       statusTitle = context.trSafe('ticket.valid', 'VALID');
-      statusIcon = AppIcons.check;
     } else if (isUsed) {
-      badgeColor = context.colors.used;
-      textColor = context.colors.used;
-      btnBgColor = context.colors.used;
-      btnTextColor = context.colors.onPrimary;
       statusTitle = context.trSafe('ticket.alreadyUsed', 'ALREADY USED');
-      statusIcon = AppIcons.close;
-    } else if (isExpired) {
-      badgeColor = context.colors.expired;
-      textColor = context.colors.expired;
-      btnBgColor = context.colors.expired;
-      btnTextColor = Theme.of(context).brightness == Brightness.light
-          ? context.colors.ink
-          : context.colors.onPrimary;
+    } else if (status == TicketStatus.expired) {
       statusTitle = context.trSafe('ticket.expired', 'EXPIRED');
-      statusIcon = AppIcons.schedule;
+    } else if (status == TicketStatus.notFound) {
+      statusTitle = context.trSafe('ticket.invalid', 'INVALID TICKET');
     } else {
-      final statusColor = status == TicketStatus.notFound
-          ? context.colors.notFound
-          : context.colors.cancelled;
-      badgeColor = statusColor;
-      textColor = statusColor;
-      btnBgColor = statusColor;
-      btnTextColor = context.colors.onPrimary;
-      statusTitle = status == TicketStatus.notFound
-          ? context.trSafe('ticket.invalid', 'INVALID TICKET')
-          : context.trSafe('ticket.cancelled', 'CANCELLED');
-      statusIcon = AppIcons.errorOutline;
+      statusTitle = context.trSafe('ticket.cancelled', 'CANCELLED');
     }
 
     final screenHeight = MediaQuery.sizeOf(context).height;
@@ -152,12 +124,10 @@ class _ScanResultSheetState extends State<ScanResultSheet>
       height: screenHeight * 0.85,
       decoration: BoxDecoration(
         color: context.colors.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(36)),
-        border: Border(
-          top: BorderSide(color: context.colors.outline, width: 1),
-          left: BorderSide(color: context.colors.outline, width: 0.5),
-          right: BorderSide(color: context.colors.outline, width: 0.5),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.radiusSheet),
         ),
+        border: Border(top: BorderSide(color: context.colors.outline)),
       ),
       child: SafeArea(
         top: false,
@@ -199,188 +169,97 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                 ),
               ),
 
-            // Center Feedback Block
+            // Center: satu sinyal verdict — stamp.
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Clean Solid Badge (no blur glow)
-                  Container(
-                    width: 96,
-                    height: 96,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: badgeColor,
-                    ),
-                    child: Center(
-                      child: Icon(statusIcon, size: 48, color: Colors.white),
-                    ),
+                  StampMark(
+                    status: status,
+                    word: statusTitle,
+                    subline:
+                        '${outcome.gate ?? 'Gate 1'} · ${Fmt.clock(outcome.at)}',
                   ),
-                  const SizedBox(height: 24),
-
-                  // Status Title
+                  const SizedBox(height: 22),
                   Text(
-                    statusTitle,
+                    '${outcome.category ?? context.trSafe('ticket.defaultCategory', 'Tiket')} · ${context.trSafe('ticket.visitor', '${outcome.tickets} Visitor', namedArgs: {'count': '${outcome.tickets}'})}',
                     style: TextStyle(
                       fontFamily: 'DMSans',
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      color: textColor,
-                      letterSpacing: 1.5,
+                      fontSize: 15.5,
+                      color: context.colors.ink,
                     ),
                   ),
-                  const SizedBox(height: 24),
 
-                                    // Meta Details Block
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                                      child: Column(
-                                        children: [
-                                          // Ticket Type / Pax count
-                                          Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              AppIcons.people,
-                              size: 19,
-                              color: context.colors.inkMuted,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '${outcome.category ?? context.trSafe('ticket.defaultCategory', 'Tiket')} · ${context.trSafe('ticket.visitor', '${outcome.tickets} Visitor', namedArgs: {'count': '${outcome.tickets}'})}',
-                              style: TextStyle(
-                                fontFamily: 'DMSans',
-                                fontSize: 15.5,
-                                color: context.colors.ink,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-
-                        // Timestamp
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              AppIcons.accessTime,
-                              size: 19,
-                              color: context.colors.inkMuted,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              Fmt.clockSeconds(outcome.at),
-                              style: TextStyle(
-                                fontFamily: 'DMSans',
-                                fontSize: 15.5,
-                                color: context.colors.ink,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-
-                        // Gate Location
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              AppIcons.location,
-                              size: 19,
-                              color: context.colors.inkMuted,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              outcome.gate ?? 'Gate 1',
-                              style: TextStyle(
-                                fontFamily: 'DMSans',
-                                fontSize: 15.5,
-                                color: context.colors.ink,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        // Rejection note / reason if not valid
-                        if (!isValid) ...[
-                          const SizedBox(height: 12),
-                          Builder(
-                            builder: (context) {
-                              String note;
-                              if (isUsed && outcome.previousUseAt != null) {
-                                note = context.trSafe(
-                                  'ticket.previousUse',
-                                  'Dipakai sebelumnya: ${Fmt.clockSeconds(outcome.previousUseAt!)} (${outcome.previousUseGate ?? "(gate tidak tercatat)"})',
-                                  namedArgs: {
-                                    'time': Fmt.clockSeconds(
-                                      outcome.previousUseAt!,
-                                    ),
-                                    'gate':
-                                        outcome.previousUseGate ??
-                                        "(gate tidak tercatat)",
-                                  },
-                                );
-                              } else if (outcome.message != null &&
-                                  outcome.message!.isNotEmpty) {
-                                note = outcome.message!;
-                              } else {
-                                note = _instructionForStatus(
-                                  context,
-                                  outcome.status,
-                                );
-                              }
-                              return Text(
-                                note,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: context.colors.inkMuted,
-                                ),
-                              );
+                  // Rejection note / reason if not valid
+                  if (!isValid) ...[
+                    const SizedBox(height: 12),
+                    Builder(
+                      builder: (context) {
+                        String note;
+                        if (isUsed && outcome.previousUseAt != null) {
+                          note = context.trSafe(
+                            'ticket.previousUse',
+                            'Dipakai sebelumnya: ${Fmt.clockSeconds(outcome.previousUseAt!)} (${outcome.previousUseGate ?? "(gate tidak tercatat)"})',
+                            namedArgs: {
+                              'time': Fmt.clockSeconds(outcome.previousUseAt!),
+                              'gate':
+                                  outcome.previousUseGate ??
+                                  "(gate tidak tercatat)",
                             },
+                          );
+                        } else if (outcome.message != null &&
+                            outcome.message!.isNotEmpty) {
+                          note = outcome.message!;
+                        } else {
+                          note = _instructionForStatus(context, outcome.status);
+                        }
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 32),
+                          child: Text(
+                            note,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: context.colors.inkMuted,
+                            ),
                           ),
-                        ],
-                      ],
+                        );
+                      },
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
 
-            // Bottom Action: Scan Next Button
+            // Bottom action: netral, lebih tenang daripada verdict.
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: btnBgColor,
-                        foregroundColor: btnTextColor,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      onPressed: () {
-                        Navigator.of(context).maybePop();
-                      },
-                      child: Text(
-                        context.trSafe('scanner.scanNext', 'Scan Next'),
-                        style: TextStyle(
-                          fontFamily: 'DMSans',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: btnTextColor,
-                          letterSpacing: 0.2,
-                        ),
-                      ),
+              child: SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: context.colors.surface,
+                    side: BorderSide(color: context.colors.outlineStrong),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                     ),
                   ),
-                ],
+                  onPressed: () {
+                    Navigator.of(context).maybePop();
+                  },
+                  child: Text(
+                    context.trSafe('scanner.scanNext', 'Scan Next'),
+                    style: TextStyle(
+                      fontFamily: 'DMSans',
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.w600,
+                      color: context.colors.ink,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ),
               ),
             ),
           ],

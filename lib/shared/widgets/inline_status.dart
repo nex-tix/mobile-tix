@@ -4,6 +4,71 @@ import 'package:mobile_tix/core/constants/app_icons.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/utils/i18n_helper.dart';
+
+/// The connection state as one quiet pill — shared by the scanner header,
+/// dashboard and profile so the app carries exactly one connection affordance.
+/// The dot carries the status colour; the word stays ink, so the pill adds one
+/// accent instead of four.
+class ConnectionPill extends StatelessWidget {
+  const ConnectionPill({super.key, required this.online, this.onToggle});
+
+  final bool online;
+  final VoidCallback? onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final text = AppText.of(context);
+
+    final pill = Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xs + 2,
+        vertical: 5,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(99),
+        border: Border.all(color: c.outline),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: online ? c.valid : c.primary,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            context.trSafe(
+              online ? 'common.online' : 'common.offline',
+              online ? 'Online' : 'Offline',
+            ),
+            style: text.label.copyWith(
+              color: c.ink,
+              letterSpacing: 0.6,
+              fontSize: 11.5,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (onToggle == null) return pill;
+
+    return InkWell(
+      onTap: onToggle,
+      borderRadius: BorderRadius.circular(99),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs / 2),
+        child: pill,
+      ),
+    );
+  }
+}
 
 /// The connection / shift indicator: a dot and a word.
 class InlineStatus extends StatelessWidget {
@@ -45,17 +110,7 @@ class InlineStatus extends StatelessWidget {
           Container(
             width: 7,
             height: 7,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.28),
-                  blurRadius: 0,
-                  spreadRadius: 2.5,
-                ),
-              ],
-            ),
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
         const SizedBox(width: AppSpacing.xs),
         word,

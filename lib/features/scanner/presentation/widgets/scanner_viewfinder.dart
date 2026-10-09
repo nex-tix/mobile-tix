@@ -53,22 +53,7 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
         decoration: BoxDecoration(
           color: context.colors.surfaceAlt,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: context.colors.outline, width: 1.2),
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              context.colors.surfaceAlt,
-              context.colors.surfaceAlt.withValues(alpha: 0.6),
-            ],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: context.colors.scrim.withValues(alpha: 0.25),
-              blurRadius: 18,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          border: Border.all(color: context.colors.outline),
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(
@@ -116,27 +101,10 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
                               color: context.colors.primary,
                             ),
                           )
-                        : AnimatedBuilder(
-                            animation: _sweep,
-                            builder: (context, child) {
-                              return Opacity(
-                                opacity: 0.6 + (_sweep.value * 0.4),
-                                child: child,
-                              );
-                            },
-                            child: Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.25),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                AppIcons.qrScanner,
-                                size: 36,
-                                color: context.colors.primary,
-                              ),
-                            ),
+                        : Icon(
+                            AppIcons.qrScanner,
+                            size: 36,
+                            color: context.colors.primary,
                           ),
                   ),
 
@@ -190,8 +158,6 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: context.colors.ink,
-                  letterSpacing: 0.2,
-                  shadows: [Shadow(color: context.colors.scrim, blurRadius: 4)],
                 ),
               ),
             ),
@@ -211,7 +177,7 @@ class _ReticleCorner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const size = 32.0;
-    const stroke = 4.0;
+    const stroke = 2.5;
     const radius = Radius.circular(12);
 
     return Container(

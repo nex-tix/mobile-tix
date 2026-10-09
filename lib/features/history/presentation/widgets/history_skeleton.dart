@@ -18,9 +18,10 @@ class HistorySkeleton extends StatelessWidget {
       child: ListView.separated(
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
-        padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
         itemCount: itemCount,
-        separatorBuilder: (_, _) => const SizedBox(height: 12),
+        separatorBuilder: (_, _) =>
+            Divider(height: 1, color: context.colors.outline),
         itemBuilder: (_, _) => _historyRowSkeleton(context),
       ),
     );
@@ -28,19 +29,14 @@ class HistorySkeleton extends StatelessWidget {
 
   Widget _historyRowSkeleton(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: context.colors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.colors.outline),
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 14),
       child: Row(
         children: [
           // Status Icon Circle
           ShimmerBox(
-            width: 36,
-            height: 36,
-            borderRadius: 18,
+            width: 34,
+            height: 34,
+            borderRadius: 17,
             color: context.colors.surfaceAlt,
           ),
           const SizedBox(width: 14),

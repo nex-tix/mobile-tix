@@ -59,9 +59,8 @@ class _SplashScreenState extends State<SplashScreen> {
                       style: TextStyle(
                         fontFamily: 'DMSans',
                         fontSize: 24,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w600,
                         color: context.colors.ink,
-                        letterSpacing: 0.3,
                       ),
                     ),
                     const SizedBox(height: 6),

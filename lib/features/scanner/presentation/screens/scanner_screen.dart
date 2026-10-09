@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -10,9 +9,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/ui/widgets/app_snackbar.dart';
 import '../../../../core/utils/i18n_helper.dart';
 import '../../../auth/logic/session_state.dart';
+import '../../../../shared/widgets/inline_status.dart';
 import '../../bloc/scanner_cubit.dart';
 import '../../bloc/scanner_state.dart';
-import '../../data/dummy_scans.dart';
 import '../widgets/scan_result_sheet.dart';
 import '../widgets/scanner_viewfinder.dart';
 
@@ -84,14 +83,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
     _submit(code);
   }
 
-  /// Tombol pratinjau: memaksa satu verdict supaya kelima tampilan hasil bisa
-  /// diperiksa tanpa backend. Datanya dibuat lokal dan tidak pernah dikirim.
-  void _pickStatus(TicketStatus status) {
-    final mode = context.read<ScannerCubit>().state.mode;
-    final outcome = DummyScanner.demo(status, mode);
-    ScanResultSheet.show(context, outcome: outcome, autoDismiss: false);
-  }
-
   /// Reaksi terhadap hasil yang tidak lagi menunggu.
   Future<void> _onScanOutcome(ScannerState state) async {
     final cubit = context.read<ScannerCubit>();
@@ -119,7 +110,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
         AudioFeedbackService.instance.playError();
         AppSnackbar.warning(
           context,
-          '${context.trSafe('scanner.offlineQueued', 'Offline — {code} masuk antrean dan akan dikirim otomatis saat koneksi pulih.', namedArgs: {'code': code})}',
+          context.trSafe(
+            'scanner.offlineQueued',
+            'Offline — {code} masuk antrean dan akan dikirim otomatis saat koneksi pulih.',
+            namedArgs: {'code': code},
+          ),
           duration: const Duration(seconds: 4),
         );
         cubit.acknowledgeResult();
@@ -190,11 +185,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
                     const SizedBox(height: 14),
 
                     _manualInputSection(),
-                    // Demo outcomes hanya di debug — tidak visible di release
-                    if (kDebugMode) ...[
-                      const SizedBox(height: 18),
-                      _DemoOutcomes(onPick: _pickStatus),
-                    ],
                   ],
                 ),
               );
@@ -275,7 +265,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
             ),
           ),
           IconButton(
-            icon: Icon(AppIcons.arrowForward, color: context.colors.secondary),
+            icon: Icon(AppIcons.arrowForward, color: context.colors.inkMuted),
             onPressed: () => _submit(_codeController.text),
           ),
           IconButton(
@@ -317,9 +307,8 @@ class _Header extends StatelessWidget {
               style: TextStyle(
                 fontFamily: 'DMSans',
                 fontSize: 22,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: context.colors.ink,
-                letterSpacing: 0.2,
               ),
             ),
             const SizedBox(height: 2),
@@ -333,48 +322,7 @@ class _Header extends StatelessWidget {
             ),
           ],
         ),
-        GestureDetector(
-          onTap: onToggleConnectivity,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: context.colors.validTint,
-              borderRadius: BorderRadius.circular(99),
-              border: Border.all(
-                color: context.colors.valid.withValues(alpha: 0.4),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: online
-                        ? context.colors.valid
-                        : context.colors.primary,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  context.trSafe(
-                    online ? 'common.online' : 'common.offline',
-                    online ? 'Online' : 'Offline',
-                  ),
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w600,
-                    color: online
-                        ? context.colors.valid
-                        : context.colors.primary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        ConnectionPill(online: online, onToggle: onToggleConnectivity),
       ],
     );
   }
@@ -448,14 +396,7 @@ class _ModeSwitch extends StatelessWidget {
                   duration: const Duration(milliseconds: 150),
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
-                    gradient: mode == option
-                        ? LinearGradient(
-                            colors: [
-                              context.colors.primary,
-                              context.colors.primaryPressed,
-                            ],
-                          )
-                        : null,
+                    color: mode == option ? context.colors.primary : null,
                     borderRadius: BorderRadius.circular(99),
                   ),
                   child: Text(
@@ -466,7 +407,7 @@ class _ModeSwitch extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: 'DMSans',
                       fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: mode == option
                           ? context.colors.onPrimary
                           : context.colors.inkMuted,
@@ -476,103 +417,6 @@ class _ModeSwitch extends StatelessWidget {
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-/// Pratinjau kelima verdict + mode cek, jelas ditandai sebagai simulasi.
-class _DemoOutcomes extends StatelessWidget {
-  const _DemoOutcomes({required this.onPick});
-
-  final ValueChanged<TicketStatus> onPick;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-      decoration: BoxDecoration(
-        color: context.colors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.colors.outline),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 6),
-            child: Text(
-              context.trSafe(
-                'scanner.demoOutcomes',
-                'DEMO OUTCOMES (SIMULASI)',
-              ),
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.8,
-                color: context.colors.inkMuted,
-              ),
-            ),
-          ),
-          Wrap(
-            spacing: 8,
-            runSpacing: 6,
-            children: [
-              _chip(
-                label: context.trSafe('ticket.valid', 'Valid'),
-                color: context.colors.valid,
-                onTap: () => onPick(TicketStatus.valid),
-              ),
-              _chip(
-                label: context.trSafe('ticket.alreadyUsed', 'Already Used'),
-                color: context.colors.used,
-                onTap: () => onPick(TicketStatus.alreadyUsed),
-              ),
-              _chip(
-                label: context.trSafe('ticket.expired', 'Expired'),
-                color: context.colors.expired,
-                onTap: () => onPick(TicketStatus.expired),
-              ),
-              _chip(
-                label: context.trSafe('ticket.invalid', 'Invalid'),
-                color: context.colors.inkMuted,
-                onTap: () => onPick(TicketStatus.notFound),
-              ),
-              _chip(
-                label: context.trSafe('ticket.cancelled', 'Cancelled'),
-                color: context.colors.cancelled,
-                onTap: () => onPick(TicketStatus.cancelled),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _chip({
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(8),
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: color,
-          ),
-        ),
       ),
     );
   }

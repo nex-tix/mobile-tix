@@ -61,7 +61,6 @@
     "scanHint": "Pindai QR ticket",
     "verifying": "Memverifikasi tiket…",
     "offlineDisabled": "Pindai dinonaktifkan saat offline.",
-    "demoOutcomes": "SIMULASI HASIL (DEMO)",
     "scanNext": "Pindai Berikutnya",
     "pendingSync": "{count} tiket menunggu dikirim ke server"
   },

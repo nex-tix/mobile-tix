@@ -4,12 +4,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/connectivity/demo_connectivity.dart';
 import '../../../../core/constants/app_icons.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/bloc/auth/auth_bloc.dart';
 import '../../../../core/bloc/auth/auth_event.dart';
 import '../../../../core/bloc/language/language_cubit.dart';
 import '../../../../core/bloc/theme/theme_cubit.dart';
 import '../../../../core/utils/i18n_helper.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
+import '../../../../shared/widgets/inline_status.dart';
 import '../../logic/session_state.dart';
 
 /// Full-screen profile screen conforming to `newDesign/15._profile_bottom_sheet/code.html`.
@@ -33,7 +35,7 @@ class ProfileScreen extends StatelessWidget {
           context.trSafe('profile.title', 'Profil Petugas'),
           style: TextStyle(
             fontFamily: 'DMSans',
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             fontSize: 20,
             color: context.colors.ink,
           ),
@@ -50,7 +52,7 @@ class ProfileScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: context.colors.surface,
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSheet),
                   border: Border.all(color: context.colors.outline),
                 ),
                 child: Row(
@@ -61,10 +63,7 @@ class ProfileScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: context.colors.surfaceAlt,
-                        border: Border.all(
-                          color: context.colors.outline,
-                          width: 2,
-                        ),
+                        border: Border.all(color: context.colors.outline),
                       ),
                       child: ClipOval(
                         child: Center(
@@ -72,8 +71,8 @@ class ProfileScreen extends StatelessWidget {
                             staff?.initials ?? 'R',
                             style: TextStyle(
                               fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                              color: context.colors.secondary,
+                              fontWeight: FontWeight.w600,
+                              color: context.colors.ink,
                             ),
                           ),
                         ),
@@ -89,7 +88,7 @@ class ProfileScreen extends StatelessWidget {
                             style: TextStyle(
                               fontFamily: 'DMSans',
                               fontSize: 18,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                               color: context.colors.ink,
                             ),
                           ),
@@ -117,7 +116,7 @@ class ProfileScreen extends StatelessWidget {
               Container(
                 decoration: BoxDecoration(
                   color: context.colors.surface,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
                   border: Border.all(color: context.colors.outline),
                 ),
                 child: Column(
@@ -234,7 +233,7 @@ class ProfileScreen extends StatelessWidget {
               Container(
                 decoration: BoxDecoration(
                   color: context.colors.surface,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
                   border: Border.all(color: context.colors.outline),
                 ),
                 child: Column(
@@ -310,35 +309,10 @@ class ProfileScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-                          Row(
-                            children: [
-                              Container(
-                                width: 7,
-                                height: 7,
-                                margin: const EdgeInsets.only(right: 6),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: connectivity.online
-                                      ? context.colors.valid
-                                      : context.colors.dangerRed,
-                                ),
-                              ),
-                              Text(
-                                connectivity.online
-                                    ? context.trSafe('common.online', 'Online')
-                                    : context.trSafe(
-                                        'common.offline',
-                                        'Offline',
-                                      ),
-                                style: TextStyle(
-                                  fontSize: 13.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: connectivity.online
-                                      ? context.colors.valid
-                                      : context.colors.dangerRed,
-                                ),
-                              ),
-                            ],
+                          ConnectionPill(
+                            online: connectivity.online,
+                            onToggle: () =>
+                                context.read<DemoConnectivity>().toggle(),
                           ),
                         ],
                       ),

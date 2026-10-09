@@ -4,6 +4,7 @@ import 'package:mobile_tix/core/constants/app_icons.dart';
 
 import '../../../../core/constants/ticket_status.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/i18n_helper.dart';
 import '../../bloc/history_cubit.dart';
 import '../../bloc/history_state.dart';
@@ -242,7 +243,7 @@ class _Header extends StatelessWidget {
             style: TextStyle(
               fontFamily: 'DMSans',
               fontSize: 20,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: context.colors.ink,
               letterSpacing: -0.2,
             ),
@@ -358,19 +359,15 @@ class _Controls extends StatelessWidget {
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(24),
-                borderSide: BorderSide(
-                  color: colors.outline.withValues(alpha: 0.5),
-                ),
+                borderSide: BorderSide(color: colors.outline),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(24),
-                borderSide: BorderSide(
-                  color: colors.outline.withValues(alpha: 0.5),
-                ),
+                borderSide: BorderSide(color: colors.outline),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(24),
-                borderSide: BorderSide(color: colors.primary, width: 1.2),
+                borderSide: BorderSide(color: colors.primary),
               ),
             ),
           ),
@@ -385,7 +382,7 @@ class _Controls extends StatelessWidget {
                   items: _HistoryStatus.values,
                   labelOf: (value) => _statusLabel(context, value),
                   onSelect: onSelectStatus,
-                  isSelected: true,
+                  isSelected: selectedStatus != _HistoryStatus.all,
                   showArrow: false,
                 ),
               ),
@@ -477,7 +474,9 @@ class _DropdownChip<T> extends StatelessWidget {
           isScrollControlled: true,
           backgroundColor: colors.surface,
           shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(AppSpacing.radiusSheet),
+            ),
           ),
           builder: (sheetContext) => SafeArea(
             child: Column(
@@ -492,13 +491,13 @@ class _DropdownChip<T> extends StatelessWidget {
                         fontFamily: 'DMSans',
                         fontSize: 14,
                         fontWeight: option == value
-                            ? FontWeight.w700
+                            ? FontWeight.w600
                             : FontWeight.w500,
-                        color: option == value ? colors.primary : colors.ink,
+                        color: option == value ? colors.ink : colors.inkMuted,
                       ),
                     ),
                     trailing: option == value
-                        ? Icon(AppIcons.check, size: 18, color: colors.primary)
+                        ? Icon(AppIcons.check, size: 18, color: colors.ink)
                         : null,
                     onTap: () {
                       Navigator.of(sheetContext).pop();
@@ -515,13 +514,10 @@ class _DropdownChip<T> extends StatelessWidget {
           curve: Curves.easeOutCubic,
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8.5),
           decoration: BoxDecoration(
-            color: isSelected ? colors.primaryTint : colors.surface,
+            color: colors.surface,
             borderRadius: BorderRadius.circular(_radius),
             border: Border.all(
-              color: isSelected
-                  ? colors.primary
-                  : colors.outline.withValues(alpha: 0.7),
-              width: 1.0,
+              color: isSelected ? colors.outlineStrong : colors.outline,
             ),
           ),
           child: Row(
@@ -536,17 +532,13 @@ class _DropdownChip<T> extends StatelessWidget {
                     fontFamily: 'DMSans',
                     fontSize: 12.5,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                    color: isSelected ? colors.primary : colors.ink,
+                    color: isSelected ? colors.ink : colors.inkMuted,
                   ),
                 ),
               ),
               if (showArrow) ...[
                 const SizedBox(width: 4),
-                Icon(
-                  AppIcons.arrowDown,
-                  size: 13,
-                  color: isSelected ? colors.primary : colors.inkMuted,
-                ),
+                Icon(AppIcons.arrowDown, size: 13, color: colors.inkMuted),
               ],
             ],
           ),
@@ -614,13 +606,13 @@ class _ErrorBanner extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: context.colors.cancelledTint,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.colors.cancelled),
+        color: context.colors.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        border: Border.all(color: context.colors.outline),
       ),
       child: Row(
         children: [
-          Icon(AppIcons.error, size: 18, color: context.colors.cancelled),
+          Icon(AppIcons.error, size: 18, color: context.colors.primary),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -628,14 +620,14 @@ class _ErrorBanner extends StatelessWidget {
               style: TextStyle(
                 fontFamily: 'DMSans',
                 fontSize: 12.5,
-                color: context.colors.cancelled,
+                color: context.colors.ink,
               ),
             ),
           ),
           TextButton(
             onPressed: onRetry,
             style: TextButton.styleFrom(
-              foregroundColor: context.colors.onPrimary,
+              foregroundColor: context.colors.primary,
               padding: const EdgeInsets.symmetric(horizontal: 8),
               minimumSize: const Size(44, 36),
             ),

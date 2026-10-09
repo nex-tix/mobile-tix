@@ -61,7 +61,6 @@
     "scanHint": "Scan QR ticket",
     "verifying": "Verifying ticket…",
     "offlineDisabled": "Scanning is disabled while offline.",
-    "demoOutcomes": "DEMO OUTCOMES (SIMULATION)",
     "scanNext": "Scan Next",
     "pendingSync": "{count} tickets pending sync to server"
   },

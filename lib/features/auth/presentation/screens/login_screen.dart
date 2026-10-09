@@ -8,6 +8,7 @@ import '../../../../core/bloc/auth/auth_event.dart';
 import '../../../../core/bloc/auth/auth_state.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/config/app_config.dart';
+import '../../../../core/ui/widgets/app_snackbar.dart';
 import '../../../checkpoint/data/dummy_checkpoints.dart';
 import '../../../checkpoint/data/models/checkpoint.dart';
 import '../../logic/session_state.dart';
@@ -89,12 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: context.colors.primary,
-            ),
-          );
+          AppSnackbar.danger(context, state.message);
         }
       },
       builder: (context, state) {
@@ -127,32 +123,19 @@ class _LoginScreenState extends State<LoginScreen> {
                       Container(
                         color: context.colors.ground.withValues(alpha: 0.15),
                       ),
-                      // Ultra-smooth multi-stop feathered gradient to seamlessly blend into ground
+                      // Feathered gradient to blend the photo into ground
                       Positioned.fill(
                         child: DecoratedBox(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
-                              stops: const [
-                                0.0,
-                                0.15,
-                                0.30,
-                                0.48,
-                                0.68,
-                                0.88,
-                                1.0,
-                              ],
+                              stops: const [0.0, 0.3, 0.7, 1.0],
                               colors: [
-                                context.colors.ground, // 100% solid at the top
-                                context
-                                    .colors
-                                    .ground, // solid to guarantee no edge
-                                context.colors.ground.withValues(alpha: 0.92),
-                                context.colors.ground.withValues(alpha: 0.70),
-                                context.colors.ground.withValues(alpha: 0.40),
-                                context.colors.ground.withValues(alpha: 0.12),
-                                Colors.transparent, // vivid fire and sparks
+                                context.colors.ground,
+                                context.colors.ground.withValues(alpha: 0.85),
+                                context.colors.ground.withValues(alpha: 0.35),
+                                Colors.transparent,
                               ],
                             ),
                           ),
@@ -194,12 +177,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 // App Title
                                 Text(
                                   context.tr('auth.appTitle'),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontFamily: 'DMSans',
                                     fontSize: 22,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFFF8F6F6),
-                                    letterSpacing: 0.2,
+                                    fontWeight: FontWeight.w600,
+                                    color: context.colors.ink,
                                   ),
                                 ),
                                 const SizedBox(height: 28),
@@ -228,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       _obscured
                                           ? AppIcons.visibilityOff
                                           : AppIcons.visibility,
-                                      color: const Color(0xFFA3B1B7),
+                                      color: context.colors.onFieldMuted,
                                       size: 20,
                                     ),
                                     onPressed: () {
@@ -242,18 +224,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                 _buildGateDropdown(),
                                 const SizedBox(height: 20),
 
-                                // Deep Red Gradient Login Button (Clean, no glow)
+                                // Primary Login Button (flat, clean, no glow)
                                 SizedBox(
                                   width: double.infinity,
                                   height: 52,
                                   child: DecoratedBox(
                                     decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [
-                                          Color(0xFFCF4647),
-                                          Color(0xFFB83A3B),
-                                        ],
-                                      ),
+                                      color: context.colors.primary,
                                       borderRadius: BorderRadius.circular(14),
                                     ),
                                     child: Material(
@@ -269,19 +246,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                                   child:
                                                       CircularProgressIndicator(
                                                         strokeWidth: 2.2,
-                                                        color: Color(
-                                                          0xFFF8F6F6,
-                                                        ),
+                                                        color: Colors.white,
                                                       ),
                                                 )
                                               : Text(
                                                   context.tr('auth.login'),
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                     fontFamily: 'DMSans',
                                                     fontSize: 16,
-                                                    fontWeight: FontWeight.w700,
-                                                    color: Color(0xFFF8F6F6),
-                                                    letterSpacing: 0.3,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: context
+                                                        .colors
+                                                        .onPrimary,
                                                   ),
                                                 ),
                                         ),
@@ -299,9 +275,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                       'username': AppConfig.demoUsername,
                                     },
                                   ),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
-                                    color: Color(0xFFA3B1B7),
+                                    color: context.colors.inkMuted,
                                   ),
                                 ),
                                 const SizedBox(
@@ -338,14 +314,14 @@ class _LoginScreenState extends State<LoginScreen> {
         Container(
           height: 52,
           decoration: BoxDecoration(
-            color: const Color(0xFF212B2F),
+            color: context.colors.surfaceField,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: error != null
-                  ? const Color(0xFFCF4647)
+                  ? context.colors.primary
                   : focusNode.hasFocus
-                  ? const Color(0xFFF5D061)
-                  : const Color(0xFF3E4E55),
+                  ? context.colors.secondary
+                  : context.colors.onFieldMuted.withValues(alpha: 0.45),
               width: 1.2,
             ),
           ),
@@ -353,24 +329,24 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(left: 14, right: 10),
-                child: Icon(icon, size: 20, color: const Color(0xFFA3B1B7)),
+                child: Icon(icon, size: 20, color: context.colors.onFieldMuted),
               ),
               Expanded(
                 child: TextField(
                   controller: controller,
                   focusNode: focusNode,
                   obscureText: obscure,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'DMSans',
                     fontSize: 15,
-                    color: Color(0xFFF8F6F6),
+                    color: context.colors.onField,
                   ),
                   decoration: InputDecoration(
                     hintText: hint,
-                    hintStyle: const TextStyle(
+                    hintStyle: TextStyle(
                       fontFamily: 'DMSans',
                       fontSize: 15,
-                      color: Color(0xFF8B9FA8),
+                      color: context.colors.onFieldMuted,
                     ),
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
@@ -390,9 +366,9 @@ class _LoginScreenState extends State<LoginScreen> {
             padding: const EdgeInsets.only(left: 4),
             child: Text(
               error,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: Color(0xFFCF4647),
+                color: context.colors.primary,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -409,12 +385,12 @@ class _LoginScreenState extends State<LoginScreen> {
         Container(
           height: 52,
           decoration: BoxDecoration(
-            color: const Color(0xFF212B2F),
+            color: context.colors.surfaceField,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: _gateError != null
-                  ? const Color(0xFFCF4647)
-                  : const Color(0xFF3E4E55),
+                  ? context.colors.primary
+                  : context.colors.onFieldMuted.withValues(alpha: 0.45),
               width: 1.2,
             ),
           ),
@@ -425,7 +401,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Icon(
                   AppIcons.door,
                   size: 20,
-                  color: const Color(0xFFA3B1B7),
+                  color: context.colors.onFieldMuted,
                 ),
               ),
               Expanded(
@@ -435,10 +411,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     isExpanded: true,
                     hint: Text(
                       context.tr('auth.selectGate'),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'DMSans',
                         fontSize: 15,
-                        color: Color(0xFF8B9FA8),
+                        color: context.colors.onFieldMuted,
                       ),
                     ),
                     items: dummyCheckpoints.map((checkpoint) {
@@ -446,10 +422,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         value: checkpoint,
                         child: Text(
                           checkpoint.label,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'DMSans',
                             fontSize: 15,
-                            color: Color(0xFFF8F6F6),
+                            color: context.colors.onField,
                           ),
                         ),
                       );
@@ -460,10 +436,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         _gateError = null;
                       });
                     },
-                    dropdownColor: const Color(0xFF212B2F),
-                    icon: const Icon(
+                    dropdownColor: context.colors.surfaceField,
+                    icon: Icon(
                       AppIcons.arrowDropDown,
-                      color: Color(0xFFA3B1B7),
+                      color: context.colors.onFieldMuted,
                     ),
                   ),
                 ),
@@ -478,9 +454,9 @@ class _LoginScreenState extends State<LoginScreen> {
             padding: const EdgeInsets.only(left: 4),
             child: Text(
               _gateError!,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: Color(0xFFCF4647),
+                color: context.colors.primary,
                 fontWeight: FontWeight.w500,
               ),
             ),

@@ -4,8 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/connectivity/demo_connectivity.dart';
 import '../../../../core/constants/app_icons.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/i18n_helper.dart';
 import '../../../auth/logic/session_state.dart';
+import '../../../../shared/widgets/inline_status.dart';
 import '../../bloc/dashboard_cubit.dart';
 import '../../bloc/dashboard_state.dart';
 import '../widgets/dashboard_skeleton.dart';
@@ -55,15 +57,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _Header(
-                      staffName: staff?.name ?? 'Raya',
                       initials: staff?.initials ?? 'R',
-                      gate: checkpoint?.gate ?? 'Gate 1',
                       online: connectivity.online,
+                      onToggleConnectivity: () =>
+                          context.read<DemoConnectivity>().toggle(),
                       onProfileTap: () =>
                           Navigator.of(context).pushNamed('/profile'),
                     ),
                     const SizedBox(height: 20),
-                    _Greeting(name: staff?.name ?? 'Raya'),
+                    _Greeting(
+                      name: staff?.name ?? 'Raya',
+                      gate: checkpoint?.gate ?? 'Gate 1',
+                    ),
                     const SizedBox(height: 18),
                     _PeriodSwitch(
                       period: state.period,
@@ -117,8 +122,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               value: stats.validTickets,
               icon: AppIcons.check,
               accent: context.colors.valid,
-              tint: context.colors.validTint,
-              border: context.colors.valid.withValues(alpha: 0.30),
             ),
           ),
           const SizedBox(width: 12),
@@ -128,8 +131,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               value: stats.rejectedTickets,
               icon: AppIcons.close,
               accent: context.colors.primary,
-              tint: context.colors.primaryTint,
-              border: context.colors.primary.withValues(alpha: 0.30),
             ),
           ),
         ],
@@ -140,17 +141,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
 class _Header extends StatelessWidget {
   const _Header({
-    required this.staffName,
     required this.initials,
-    required this.gate,
     required this.online,
+    required this.onToggleConnectivity,
     required this.onProfileTap,
   });
 
-  final String staffName;
   final String initials;
-  final String gate;
   final bool online;
+  final VoidCallback onToggleConnectivity;
   final VoidCallback onProfileTap;
 
   @override
@@ -171,7 +170,7 @@ class _Header extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: context.colors.surfaceAlt,
-                    border: Border.all(color: context.colors.outline, width: 2),
+                    border: Border.all(color: context.colors.outline),
                   ),
                   child: ClipOval(
                     child: Center(
@@ -179,85 +178,28 @@ class _Header extends StatelessWidget {
                         initials,
                         style: TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: context.colors.secondary,
+                          fontWeight: FontWeight.w600,
+                          color: context.colors.ink,
                         ),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      staffName,
-                      style: TextStyle(
-                        fontFamily: 'DMSans',
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w700,
-                        color: context.colors.ink,
-                      ),
-                    ),
-                    const SizedBox(height: 1),
-                    Text(
-                      gate,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: context.colors.inkMuted,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
               ],
             ),
           ),
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(
-            color: context.colors.validTint,
-            borderRadius: BorderRadius.circular(99),
-            border: Border.all(
-              color: context.colors.valid.withValues(alpha: 0.4),
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: online ? context.colors.valid : context.colors.primary,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                context.trSafe(
-                  online ? 'common.online' : 'common.offline',
-                  online ? 'Online' : 'Offline',
-                ),
-                style: TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w600,
-                  color: online ? context.colors.valid : context.colors.primary,
-                ),
-              ),
-            ],
-          ),
-        ),
+        ConnectionPill(online: online, onToggle: onToggleConnectivity),
       ],
     );
   }
 }
 
 class _Greeting extends StatelessWidget {
-  const _Greeting({required this.name});
+  const _Greeting({required this.name, required this.gate});
 
   final String name;
+  final String gate;
 
   String _greetingKey() {
     final hour = DateTime.now().hour;
@@ -286,9 +228,18 @@ class _Greeting extends StatelessWidget {
           style: TextStyle(
             fontFamily: 'DMSans',
             fontSize: 26,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             color: context.colors.ink,
             letterSpacing: -0.3,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          gate,
+          style: TextStyle(
+            fontSize: 12.5,
+            color: context.colors.inkMuted,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
@@ -337,7 +288,7 @@ class _PeriodSwitch extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: 'DMSans',
                       fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       color: period == option
                           ? context.colors.onPrimary
                           : context.colors.inkMuted,
@@ -363,15 +314,8 @@ class _VisitorsCard extends StatelessWidget {
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: context.colors.surface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSheet),
         border: Border.all(color: context.colors.outline),
-        boxShadow: [
-          BoxShadow(
-            color: context.colors.scrim.withValues(alpha: 0.25),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -381,7 +325,7 @@ class _VisitorsCard extends StatelessWidget {
             height: 40,
             decoration: BoxDecoration(
               color: context.colors.surfaceAlt,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
             ),
             child: Icon(AppIcons.group, color: context.colors.ink, size: 22),
           ),
@@ -390,7 +334,7 @@ class _VisitorsCard extends StatelessWidget {
             '$value',
             style: TextStyle(
               fontFamily: 'DMSans',
-              fontSize: 42,
+              fontSize: 36,
               fontWeight: FontWeight.w800,
               color: context.colors.ink,
               letterSpacing: -0.5,
@@ -416,16 +360,12 @@ class _MetricCard extends StatelessWidget {
     required this.value,
     required this.icon,
     required this.accent,
-    required this.tint,
-    required this.border,
   });
 
   final String label;
   final int value;
   final IconData icon;
   final Color accent;
-  final Color tint;
-  final Color border;
 
   @override
   Widget build(BuildContext context) {
@@ -433,35 +373,20 @@ class _MetricCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: context.colors.surface,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
         border: Border.all(color: context.colors.outline),
-        boxShadow: [
-          BoxShadow(
-            color: context.colors.scrim.withValues(alpha: 0.25),
-            blurRadius: 12,
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: tint,
-              border: Border.all(color: border),
-            ),
-            child: Icon(icon, size: 16, color: accent),
-          ),
-          const SizedBox(height: 14),
+          Icon(icon, size: 18, color: accent),
+          const SizedBox(height: 12),
           Text(
             '$value',
             style: TextStyle(
               fontFamily: 'DMSans',
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
+              fontSize: 30,
+              fontWeight: FontWeight.w700,
               color: context.colors.ink,
             ),
           ),
@@ -490,15 +415,13 @@ class _ErrorBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: context.colors.primaryTint,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: context.colors.primary.withValues(alpha: 0.30),
-        ),
+        color: context.colors.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        border: Border.all(color: context.colors.outline),
       ),
       child: Row(
         children: [
-          Icon(AppIcons.error, size: 18, color: context.colors.onPrimaryTint),
+          Icon(AppIcons.error, size: 18, color: context.colors.primary),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -506,14 +429,14 @@ class _ErrorBanner extends StatelessWidget {
               style: TextStyle(
                 fontFamily: 'DMSans',
                 fontSize: 12.5,
-                color: context.colors.onPrimaryTint,
+                color: context.colors.ink,
               ),
             ),
           ),
           TextButton(
             onPressed: onRetry,
             style: TextButton.styleFrom(
-              foregroundColor: context.colors.onPrimary,
+              foregroundColor: context.colors.primary,
               padding: const EdgeInsets.symmetric(horizontal: 8),
               minimumSize: const Size(44, 36),
             ),
@@ -537,7 +460,7 @@ class _FailureView extends StatelessWidget {
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: context.colors.surface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSheet),
         border: Border.all(color: context.colors.outline),
       ),
       child: Column(
@@ -549,7 +472,7 @@ class _FailureView extends StatelessWidget {
             style: TextStyle(
               fontFamily: 'DMSans',
               fontSize: 16,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: context.colors.ink,
             ),
           ),

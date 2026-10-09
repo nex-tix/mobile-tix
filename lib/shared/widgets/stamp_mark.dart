@@ -25,11 +25,15 @@ class StampMark extends StatefulWidget {
   const StampMark({
     super.key,
     required this.status,
+    this.word,
     this.subline,
     this.animate = true,
   });
 
   final TicketStatus status;
+
+  /// Localized stamped word; falls back to [TicketStatus.label].
+  final String? word;
 
   /// Gate and time, printed under the word like the sub-line of a real stamp.
   final String? subline;
@@ -79,7 +83,11 @@ class _StampMarkState extends State<StampMark>
   Widget build(BuildContext context) {
     final c = context.colors;
     final status = widget.status;
-    final mark = _MarkBody(status: status, subline: widget.subline);
+    final mark = _MarkBody(
+      status: status,
+      word: widget.word,
+      subline: widget.subline,
+    );
 
     return AnimatedBuilder(
       animation: _controller,
@@ -131,9 +139,10 @@ class _StampMarkState extends State<StampMark>
 }
 
 class _MarkBody extends StatelessWidget {
-  const _MarkBody({required this.status, this.subline});
+  const _MarkBody({required this.status, this.word, this.subline});
 
   final TicketStatus status;
+  final String? word;
   final String? subline;
 
   @override
@@ -170,7 +179,7 @@ class _MarkBody extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              status.label,
+              word ?? status.label,
               style: text.stamp.copyWith(color: wordColor),
               maxLines: 1,
             ),

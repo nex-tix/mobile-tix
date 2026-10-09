@@ -3,6 +3,7 @@ import 'package:mobile_tix/core/constants/app_icons.dart';
 
 import '../../../../core/constants/ticket_status.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/i18n_helper.dart';
 import '../../data/models/scan_record.dart';
@@ -38,122 +39,93 @@ class HistoryRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final isValid = record.isValid;
 
-    final badgeOuterColor = isValid
-        ? context.colors.validTint
-        : context.colors.usedTint;
-    final badgeInnerColor = isValid
-        ? context.colors.valid
-        : context.colors.used;
+    final badgeColor = isValid ? context.colors.valid : context.colors.used;
     final badgeIcon = isValid ? AppIcons.check : AppIcons.close;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _showDetail(context, record),
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: context.colors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: context.colors.outline),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Left: Icon Badge & Ticket Info
-                Row(
-                  children: [
-                    // Outer Ring Badge
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: badgeOuterColor,
-                        border: Border.all(
-                          color: badgeInnerColor.withValues(alpha: 0.3),
-                          width: 1.2,
-                        ),
-                      ),
-                      child: Center(
-                        child: Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: badgeInnerColor,
-                          ),
-                          child: Icon(
-                            badgeIcon,
-                            size: 15,
-                            color: context.colors.onPrimary,
-                          ),
-                        ),
-                      ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _showDetail(context, record),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: context.colors.outline)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Left: Icon Badge & Ticket Info
+              Row(
+                children: [
+                  // Satu disc status — tanpa ring bertingkat.
+                  Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: badgeColor,
                     ),
-                    const SizedBox(width: 14),
+                    child: Icon(badgeIcon, size: 17, color: Colors.white),
+                  ),
+                  const SizedBox(width: 14),
 
-                    // Ticket Serial Code & Time
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          record.ticketCode,
-                          style: TextStyle(
-                            fontFamily: 'DMSans',
-                            fontSize: 14.5,
-                            fontWeight: FontWeight.w700,
-                            color: context.colors.ink,
-                            letterSpacing: 0.3,
-                          ),
+                  // Ticket Serial Code & Time
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        record.ticketCode,
+                        style: TextStyle(
+                          fontFamily: 'DMSans',
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w600,
+                          color: context.colors.ink,
+                          letterSpacing: 0.3,
                         ),
-                        const SizedBox(height: 3),
-                        Text(
-                          Fmt.clockSeconds(record.scannedAt),
-                          style: TextStyle(
-                            fontFamily: 'DMSans',
-                            fontSize: 12,
-                            color: context.colors.inkMuted,
-                          ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        Fmt.clockSeconds(record.scannedAt),
+                        style: TextStyle(
+                          fontFamily: 'DMSans',
+                          fontSize: 12,
+                          color: context.colors.inkMuted,
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
 
-                // Right: Meta details (Visitor count & Gate)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      context.trSafe(
-                        'ticket.visitor',
-                        '${record.visitorCount} visitor',
-                        namedArgs: {'count': '${record.visitorCount}'},
-                      ),
-                      style: TextStyle(
-                        fontFamily: 'DMSans',
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w500,
-                        color: context.colors.ink,
-                      ),
+              // Right: Meta details (Visitor count & Gate)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    context.trSafe(
+                      'ticket.visitor',
+                      '${record.visitorCount} visitor',
+                      namedArgs: {'count': '${record.visitorCount}'},
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      record.checkpoint ?? '—',
-                      style: TextStyle(
-                        fontFamily: 'DMSans',
-                        fontSize: 12,
-                        color: context.colors.inkMuted,
-                      ),
+                    style: TextStyle(
+                      fontFamily: 'DMSans',
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                      color: context.colors.ink,
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    record.checkpoint ?? '—',
+                    style: TextStyle(
+                      fontFamily: 'DMSans',
+                      fontSize: 12,
+                      color: context.colors.inkMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -169,10 +141,10 @@ class HistoryRow extends StatelessWidget {
         return Container(
           decoration: BoxDecoration(
             color: context.colors.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-            border: Border(
-              top: BorderSide(color: context.colors.outline, width: 1.2),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppSpacing.radiusSheet),
             ),
+            border: Border(top: BorderSide(color: context.colors.outline)),
           ),
           padding: const EdgeInsets.fromLTRB(24, 14, 24, 28),
           child: SafeArea(
@@ -200,7 +172,7 @@ class HistoryRow extends StatelessWidget {
                   style: TextStyle(
                     fontFamily: 'DMSans',
                     fontSize: 18,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: context.colors.ink,
                   ),
                 ),
@@ -209,7 +181,7 @@ class HistoryRow extends StatelessWidget {
                   context,
                   context.trSafe('ticket.statusLabel', 'Status'),
                   _statusText(context, record.status),
-                  record.isValid ? context.colors.valid : context.colors.used,
+                  record.status.ink(context.colors),
                 ),
                 _infoRow(
                   context,
@@ -255,7 +227,7 @@ class HistoryRow extends StatelessWidget {
                     context,
                     context.trSafe('ticket.guestNameLabel', 'Nama Tamu'),
                     record.visitorName!,
-                    context.colors.secondary,
+                    context.colors.ink,
                   ),
               ],
             ),

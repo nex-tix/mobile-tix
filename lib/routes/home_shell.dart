@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../core/constants/app_icons.dart';
 import '../core/theme/app_colors.dart';
+import '../core/theme/app_spacing.dart';
 import '../core/utils/i18n_helper.dart';
 import '../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../features/history/presentation/screens/history_screen.dart';
@@ -52,18 +53,9 @@ class HomeShell extends StatelessWidget {
               decoration: BoxDecoration(
                 color: context.colors.surface,
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(28),
+                  top: Radius.circular(AppSpacing.radiusSheet),
                 ),
-                border: Border(
-                  top: BorderSide(color: context.colors.outline, width: 1.2),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: context.colors.scrim,
-                    blurRadius: 28,
-                    offset: const Offset(0, -6),
-                  ),
-                ],
+                border: Border(top: BorderSide(color: context.colors.outline)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -147,9 +139,9 @@ class _NavTabState extends State<_NavTab> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final active = widget.selected;
-    final color = active || _hovered ? colors.secondary : colors.ink;
+    final color = active || _hovered ? colors.primary : colors.ink;
     final background = active
-        ? colors.secondaryTint
+        ? colors.primaryTint
         : _hovered
         ? colors.surfaceAlt.withValues(alpha: 0.55)
         : Colors.transparent;
@@ -174,9 +166,9 @@ class _NavTabState extends State<_NavTab> {
             curve: Curves.easeOutCubic,
             child: InkWell(
               onTap: widget.onTap,
-              borderRadius: BorderRadius.circular(20),
-              hoverColor: colors.secondaryTint,
-              splashColor: colors.secondaryTint,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+              hoverColor: colors.primaryTint,
+              splashColor: colors.primaryTint,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
                 curve: Curves.easeOutCubic,
@@ -187,7 +179,7 @@ class _NavTabState extends State<_NavTab> {
                 ),
                 decoration: BoxDecoration(
                   color: background,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -223,7 +215,7 @@ class _NavTabState extends State<_NavTab> {
                                   style: TextStyle(
                                     fontFamily: 'DMSans',
                                     fontSize: 9,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w700,
                                     color: context.colors.onPrimary,
                                   ),
                                 ),
@@ -239,7 +231,7 @@ class _NavTabState extends State<_NavTab> {
                       style: TextStyle(
                         fontFamily: 'DMSans',
                         fontSize: 12,
-                        fontWeight: active ? FontWeight.w800 : FontWeight.w600,
+                        fontWeight: active ? FontWeight.w600 : FontWeight.w500,
                         color: color,
                       ),
                       child: Text(widget.label),
@@ -309,26 +301,7 @@ class _ScanNavButtonState extends State<_ScanNavButton> {
                   height: 76,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [colors.primary, colors.primaryPressed],
-                    ),
-                    border: Border.all(
-                      color: widget.selected || _hovered
-                          ? colors.secondary
-                          : colors.surface,
-                      width: 4,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: colors.primary.withValues(
-                          alpha: elevated ? 0.58 : 0.36,
-                        ),
-                        blurRadius: elevated ? 24 : 16,
-                        offset: Offset(0, elevated ? 7 : 4),
-                      ),
-                    ],
+                    color: colors.primary,
                   ),
                   child: Center(
                     child: Icon(
@@ -346,11 +319,8 @@ class _ScanNavButtonState extends State<_ScanNavButton> {
                 style: TextStyle(
                   fontFamily: 'DMSans',
                   fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  color: widget.selected || _hovered
-                      ? colors.secondary
-                      : colors.primary,
-                  letterSpacing: 0.2,
+                  fontWeight: FontWeight.w600,
+                  color: colors.primary,
                 ),
                 child: Text(label),
               ),
