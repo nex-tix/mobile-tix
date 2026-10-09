@@ -6,7 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 /// Centralized app icons using Iconsax design system
-/// 
+///
 /// Usage:
 /// ```dart
 /// Icon(AppIcons.qrScanner)
@@ -81,13 +81,14 @@ class AppIcons {
   static const IconData keyboard = Iconsax.keyboard;
 
   // Other
-    static const IconData replay = Iconsax.refresh;
-    static const IconData refresh = Iconsax.refresh;
-    static const IconData searchOff = Iconsax.search_normal_1;
-    static const IconData science = Iconsax.mobile;
+  static const IconData replay = Iconsax.refresh;
+  static const IconData refresh = Iconsax.refresh;
+  static const IconData search = Iconsax.search_normal_1;
+  static const IconData searchOff = Iconsax.search_normal_1;
+  static const IconData science = Iconsax.mobile;
 
-    // Settings
-    static const IconData sun = Iconsax.sun;
-    static const IconData moon = Iconsax.moon;
-    static const IconData language = Iconsax.global;
-  }
+  // Settings
+  static const IconData sun = Iconsax.sun;
+  static const IconData moon = Iconsax.moon;
+  static const IconData language = Iconsax.global;
+}

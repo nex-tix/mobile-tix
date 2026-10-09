@@ -106,7 +106,13 @@
     "valid": "Valid",
     "rejected": "Ditolak",
     "scansCount": "{count} pemindaian",
-    "empty": "Tidak ada data tiket"
+    "empty": "Tidak ada data tiket",
+    "searchHint": "Cari kode tiket, nama tamu…",
+    "sortNewest": "Terbaru",
+    "sortMostGuests": "Tamu terbanyak",
+    "sortOldest": "Tanggal/jam terlama",
+    "allGates": "Semua gate",
+    "gateNamed": "Gate: {name}"
   },
   "checkpoint": {
     "selectTitle": "Pilih checkpoint",

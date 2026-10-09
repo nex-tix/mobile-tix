@@ -1,6 +1,7 @@
 // File: history_screen_test.dart
 // Widget test HistoryScreen ↔ HistoryCubit (daftar, filter, kosong, gagal).
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,12 +15,7 @@ import 'package:mobile_tix/features/history/data/models/scan_record_page.dart';
 import 'package:mobile_tix/features/history/presentation/screens/history_screen.dart';
 
 /// Satu permintaan riwayat yang diterima repository palsu.
-typedef _Call = ({
-  int page,
-  String? checkpoint,
-  String? status,
-  String? date,
-});
+typedef _Call = ({int page, String? checkpoint, String? status, String? date});
 
 class _FakeHistoryRepository implements DashboardRepository {
   final List<_Call> calls = <_Call>[];
@@ -36,12 +32,7 @@ class _FakeHistoryRepository implements DashboardRepository {
     String? status,
     String? date,
   }) async {
-    calls.add((
-      page: page,
-      checkpoint: checkpoint,
-      status: status,
-      date: date,
-    ));
+    calls.add((page: page, checkpoint: checkpoint, status: status, date: date));
 
     final error = failure;
     if (error != null) throw error;
@@ -65,9 +56,8 @@ class _FakeHistoryRepository implements DashboardRepository {
   }
 
   @override
-  Future<DashboardStats> getSummary({
-    StatsPeriod period = StatsPeriod.today,
-  }) => throw UnimplementedError('dashboard tidak dipakai di test riwayat');
+  Future<DashboardStats> getSummary({StatsPeriod period = StatsPeriod.today}) =>
+      throw UnimplementedError('dashboard tidak dipakai di test riwayat');
 }
 
 ScanRecord record(String code, {TicketStatus status = TicketStatus.valid}) =>
@@ -92,9 +82,16 @@ void main() {
   late HistoryCubit cubit;
 
   Widget wrap(Widget child) {
-    return BlocProvider<HistoryCubit>.value(
-      value: cubit,
-      child: MaterialApp(home: child),
+    return EasyLocalization(
+      supportedLocales: const [Locale('id'), Locale('en')],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('id'),
+      startLocale: const Locale('id'),
+      assetLoader: const RootBundleAssetLoader(),
+      child: BlocProvider<HistoryCubit>.value(
+        value: cubit,
+        child: MaterialApp(home: child),
+      ),
     );
   }
 
@@ -132,26 +129,32 @@ void main() {
     expect(find.text('0 scans'), findsOneWidget);
   });
 
-  testWidgets('tab Rejected memakai nilai kelompok ke API', (tester) async {
+  testWidgets('dropdown Rejected memakai nilai kelompok ke API', (
+    tester,
+  ) async {
     repository.dataset = [record('TKT-1')];
 
     await tester.pumpWidget(wrap(const HistoryScreen()));
     await settle(tester);
 
-    await tester.tap(find.text('Rejected'));
+    await tester.tap(find.byKey(const Key('history-status-filter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Rejected').last);
     await settle(tester);
 
     expect(repository.calls.last.status, 'rejected');
     expect(repository.calls.last.page, 1);
   });
 
-  testWidgets('tab Valid menyaring dengan verdict pasti', (tester) async {
+  testWidgets('dropdown Valid menyaring dengan verdict pasti', (tester) async {
     repository.dataset = [record('TKT-1')];
 
     await tester.pumpWidget(wrap(const HistoryScreen()));
     await settle(tester);
 
-    await tester.tap(find.text('Valid'));
+    await tester.tap(find.byKey(const Key('history-status-filter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Valid').last);
     await settle(tester);
 
     expect(repository.calls.last.status, 'valid');
@@ -163,12 +166,65 @@ void main() {
     await tester.pumpWidget(wrap(const HistoryScreen()));
     await settle(tester);
 
-    await tester.tap(find.text('Valid'));
+    await tester.tap(find.byKey(const Key('history-status-filter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Valid').last);
     await settle(tester);
-    await tester.tap(find.text('All'));
+    await tester.tap(find.byKey(const Key('history-status-filter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('All').last);
     await settle(tester);
 
     expect(repository.calls.last.status, isNull);
+  });
+
+  testWidgets('search bar menyaring riwayat dari kode tiket', (tester) async {
+    repository.dataset = [record('TKT-ALPHA'), record('TKT-BETA')];
+
+    await tester.pumpWidget(wrap(const HistoryScreen()));
+    await settle(tester);
+
+    await tester.enterText(
+      find.byKey(const Key('history-search-field')),
+      'ALPHA',
+    );
+    await tester.pump();
+
+    expect(find.text('TKT-ALPHA'), findsOneWidget);
+    expect(find.text('TKT-BETA'), findsNothing);
+  });
+
+  testWidgets('sort tamu terbanyak menaruh visitorCount terbesar di atas', (
+    tester,
+  ) async {
+    repository.dataset = [
+      ScanRecord(
+        ticketCode: 'TKT-SMALL',
+        status: TicketStatus.valid,
+        scannedAt: DateTime(2026, 10, 8, 9, 30),
+        checkpoint: 'Gate A',
+        visitorCount: 1,
+      ),
+      ScanRecord(
+        ticketCode: 'TKT-BIG',
+        status: TicketStatus.valid,
+        scannedAt: DateTime(2026, 10, 8, 9, 30),
+        checkpoint: 'Gate A',
+        visitorCount: 5,
+      ),
+    ];
+
+    await tester.pumpWidget(wrap(const HistoryScreen()));
+    await settle(tester);
+
+    await tester.tap(find.byKey(const Key('history-sort-filter')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tamu terbanyak').last);
+    await tester.pump();
+
+    final bigTop = tester.getTopLeft(find.text('TKT-BIG')).dy;
+    final smallTop = tester.getTopLeft(find.text('TKT-SMALL')).dy;
+    expect(bigTop, lessThan(smallTop));
   });
 
   testWidgets('kegagalan tanpa data menampilkan pesan error dan tombol muat', (

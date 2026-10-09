@@ -11,7 +11,14 @@ import '../../data/models/scan_record.dart';
 import '../widgets/history_row.dart';
 import '../widgets/history_skeleton.dart';
 
-/// Screen 13: History All matching `newDesign/13._history_all/code.html`.
+/// Screen 13: History All.
+///
+/// Fitur:
+/// - Dropdown status: All / Valid / Rejected
+/// - Dropdown urutan: Terbaru / Tamu terbanyak / Tanggal/jam terlama
+/// - Dropdown gate (dinamis dari data yang sudah dimuat)
+/// - Search bar untuk filter lokal (API riwayat tidak punya parameter `q`)
+/// - Pull-to-refresh; infinite scroll otomatis dimatikan bila search/sort aktif
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
 
@@ -19,16 +26,24 @@ class HistoryScreen extends StatefulWidget {
   State<HistoryScreen> createState() => _HistoryScreenState();
 }
 
-/// Penyaring yang tersedia di layar.
-enum _HistoryTab {
-  all,
-  valid,
-  rejected,
-}
+/// Pilihan status di dropdown filter riwayat.
+enum _HistoryStatus { all, valid, rejected }
+
+/// Opsi urutan daftar riwayat.
+///
+/// [newest] adalah urutan bawaan server (terbaru di atas). Dua opsi lainnya
+/// disusun di sisi klien dari baris yang sudah dimuat.
+enum _HistorySort { newest, mostGuests, oldest }
 
 class _HistoryScreenState extends State<HistoryScreen> {
   final ScrollController _scrollController = ScrollController();
-  _HistoryTab _tab = _HistoryTab.all;
+  final TextEditingController _searchController = TextEditingController();
+
+  _HistoryStatus _status = _HistoryStatus.all;
+  _HistorySort _sort = _HistorySort.newest;
+
+  /// Hasil pencarian lokal — API riwayat tidak punya parameter `q`.
+  String _query = '';
 
   @override
   void initState() {
@@ -43,6 +58,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -54,16 +70,55 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
   }
 
-  static HistoryFilter _filterFor(_HistoryTab tab) => switch (tab) {
-    _HistoryTab.all => HistoryFilter.none,
-    _HistoryTab.valid => const HistoryFilter(status: TicketStatus.valid),
-    _HistoryTab.rejected => HistoryFilter.rejected,
+  static HistoryFilter _filterFor(_HistoryStatus status) => switch (status) {
+    _HistoryStatus.all => HistoryFilter.none,
+    _HistoryStatus.valid => const HistoryFilter(status: TicketStatus.valid),
+    _HistoryStatus.rejected => HistoryFilter.rejected,
   };
 
-  void _selectTab(_HistoryTab tab) {
-    if (_tab == tab) return;
-    setState(() => _tab = tab);
-    context.read<HistoryCubit>().applyFilter(_filterFor(tab));
+  void _selectStatus(_HistoryStatus status) {
+    if (_status == status) return;
+    setState(() => _status = status);
+    context.read<HistoryCubit>().applyFilter(_filterFor(status));
+  }
+
+  void _selectSort(_HistorySort sort) {
+    if (_sort == sort) return;
+    setState(() => _sort = sort);
+  }
+
+  void _onQueryChanged(String value) {
+    setState(() => _query = value);
+  }
+
+  /// Terapkan pencarian lalu urutan di atas baris yang sudah dimuat.
+  ///
+  /// Filter status/gate/tanggal tetap berlaku di server; dua langkah ini
+  /// murni sisi klien sehingga tidak memicu request baru.
+  List<ScanRecord> _apply(List<ScanRecord> records) {
+    final query = _query.trim().toLowerCase();
+    final List<ScanRecord> filtered;
+    if (query.isEmpty) {
+      filtered = List<ScanRecord>.of(records);
+    } else {
+      filtered = records.where((record) {
+        return record.ticketCode.toLowerCase().contains(query) ||
+            (record.visitorName?.toLowerCase().contains(query) ?? false) ||
+            (record.checkpoint?.toLowerCase().contains(query) ?? false);
+      }).toList();
+    }
+
+    final sorted = List<ScanRecord>.of(filtered);
+    switch (_sort) {
+      case _HistorySort.newest:
+        // Urutan server sudah terbaru di atas — tidak disentuh.
+        break;
+      case _HistorySort.oldest:
+        sorted.sort((a, b) => a.scannedAt.compareTo(b.scannedAt));
+      case _HistorySort.mostGuests:
+        sorted.sort((a, b) => b.visitorCount.compareTo(a.visitorCount));
+    }
+    return sorted;
   }
 
   @override
@@ -74,21 +129,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
         bottom: false,
         child: BlocBuilder<HistoryCubit, HistoryState>(
           builder: (context, state) {
-            final records = state.records;
+            final records = _apply(state.records);
             final count = state.totalItems > 0
                 ? state.totalItems
-                : records.length;
+                : state.records.length;
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _Header(count: count),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 4, 24, 16),
-                  child: _FilterTabs(
-                    selected: _tab,
-                    onSelect: _selectTab,
-                  ),
+                _Controls(
+                  selectedStatus: _status,
+                  onSelectStatus: _selectStatus,
+                  selectedSort: _sort,
+                  onSelectSort: _selectSort,
+                  searchController: _searchController,
+                  onQueryChanged: _onQueryChanged,
+                  state: state,
                 ),
                 if (state is HistoryFailure && state.hasRecords)
                   _ErrorBanner(
@@ -110,12 +167,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
 
     if (records.isEmpty) {
-      final message = state is HistoryFailure
+      final bool searching = _query.trim().isNotEmpty;
+      final message = state is HistoryFailure && !searching
           ? state.message
           : context.trSafe('history.empty', 'Tidak ada data tiket');
       return RefreshIndicator(
         onRefresh: () => context.read<HistoryCubit>().refresh(),
-        color: const Color(0xFFCF4647),
+        color: context.colors.primary,
         backgroundColor: context.colors.surface,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -129,14 +187,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
       );
     }
 
-    final itemCount = records.length + (state.hasMore ? 1 : 0);
+    // Search/sort klien menonaktifkan infinite scroll agar posisi scroll
+    // tidak melompat tengah daftar.
+    final manualMode = _query.trim().isNotEmpty || _sort != _HistorySort.newest;
+    final showLoadingMore = state.hasMore && state.loadingMore;
+    final itemCount = records.length + (showLoadingMore ? 1 : 0);
 
     return RefreshIndicator(
       onRefresh: () => context.read<HistoryCubit>().refresh(),
-      color: const Color(0xFFCF4647),
+      color: context.colors.primary,
       backgroundColor: context.colors.surface,
       child: ListView.builder(
         controller: _scrollController,
+        physics: manualMode ? const AlwaysScrollableScrollPhysics() : null,
         padding: const EdgeInsets.fromLTRB(24, 4, 24, 110),
         itemCount: itemCount,
         itemBuilder: (context, index) {
@@ -147,10 +210,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 child: SizedBox(
                   width: 22,
                   height: 22,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Color(0xFFCF4647),
-                  ),
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               ),
             );
@@ -204,58 +264,277 @@ class _Header extends StatelessWidget {
   }
 }
 
-class _FilterTabs extends StatelessWidget {
-  const _FilterTabs({required this.selected, required this.onSelect});
+/// Baris kontrol: search bar penuh lebar + tiga dropdown dalam satu baris.
+class _Controls extends StatelessWidget {
+  const _Controls({
+    required this.selectedStatus,
+    required this.onSelectStatus,
+    required this.selectedSort,
+    required this.onSelectSort,
+    required this.searchController,
+    required this.onQueryChanged,
+    required this.state,
+  });
 
-  final _HistoryTab selected;
-  final ValueChanged<_HistoryTab> onSelect;
+  final _HistoryStatus selectedStatus;
+  final ValueChanged<_HistoryStatus> onSelectStatus;
+  final _HistorySort selectedSort;
+  final ValueChanged<_HistorySort> onSelectSort;
+  final TextEditingController searchController;
+  final ValueChanged<String> onQueryChanged;
+  final HistoryState state;
 
-  String _tabLabel(BuildContext context, _HistoryTab tab) => switch (tab) {
-    _HistoryTab.all => context.trSafe('history.all', 'All'),
-    _HistoryTab.valid => context.trSafe('history.valid', 'Valid'),
-    _HistoryTab.rejected => context.trSafe('history.rejected', 'Rejected'),
+  String _statusLabel(BuildContext context, _HistoryStatus status) =>
+      switch (status) {
+        _HistoryStatus.all => context.trSafe('history.all', 'All'),
+        _HistoryStatus.valid => context.trSafe('history.valid', 'Valid'),
+        _HistoryStatus.rejected => context.trSafe(
+          'history.rejected',
+          'Rejected',
+        ),
+      };
+
+  String _sortLabel(BuildContext context, _HistorySort sort) => switch (sort) {
+    _HistorySort.newest => context.trSafe('history.sortNewest', 'Terbaru'),
+    _HistorySort.mostGuests => context.trSafe(
+      'history.sortMostGuests',
+      'Tamu terbanyak',
+    ),
+    _HistorySort.oldest => context.trSafe(
+      'history.sortOldest',
+      'Tanggal/jam terlama',
+    ),
   };
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: context.colors.surfaceAlt,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.colors.outline),
-      ),
-      child: Row(
+    final colors = context.colors;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+      child: Column(
         children: [
-          for (final tab in _HistoryTab.values)
-            Expanded(
-              child: GestureDetector(
-                onTap: () => onSelect(tab),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  decoration: BoxDecoration(
-                    color: selected == tab
-                        ? const Color(0xFFCF4647)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    _tabLabel(context, tab),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'DMSans',
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
-                      color: selected == tab
-                          ? const Color(0xFFF8F6F6)
-                          : context.colors.inkMuted,
+          // Search bar — pencarian lokal atas baris yang sudah dimuat.
+          TextField(
+            key: const Key('history-search-field'),
+            controller: searchController,
+            onChanged: onQueryChanged,
+            style: TextStyle(
+              fontFamily: 'DMSans',
+              fontSize: 13.5,
+              color: colors.ink,
+            ),
+            decoration: InputDecoration(
+              isDense: true,
+              hintText: context.trSafe(
+                'history.searchHint',
+                'Cari kode tiket, nama tamu…',
+              ),
+              hintStyle: TextStyle(
+                fontFamily: 'DMSans',
+                fontSize: 13.5,
+                color: colors.inkMuted,
+              ),
+              prefixIcon: Icon(
+                AppIcons.search,
+                size: 19,
+                color: colors.inkMuted,
+              ),
+              suffixIcon: searchController.text.isEmpty
+                  ? null
+                  : IconButton(
+                      icon: Icon(
+                        AppIcons.close,
+                        size: 17,
+                        color: colors.inkMuted,
+                      ),
+                      onPressed: () {
+                        searchController.clear();
+                        onQueryChanged('');
+                      },
                     ),
+              filled: true,
+              fillColor: colors.surfaceAlt,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 11,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: colors.outline),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: colors.outline),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: colors.primary, width: 1.4),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              // Dropdown status: All / Valid / Rejected.
+              Expanded(
+                child: _DropdownChip<_HistoryStatus>(
+                  key: const Key('history-status-filter'),
+                  value: selectedStatus,
+                  items: _HistoryStatus.values,
+                  labelOf: (value) => _statusLabel(context, value),
+                  onSelect: onSelectStatus,
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Dropdown urutan: terbaru / tamu terbanyak / terlama.
+              Expanded(
+                child: _DropdownChip<_HistorySort>(
+                  key: const Key('history-sort-filter'),
+                  value: selectedSort,
+                  items: _HistorySort.values,
+                  labelOf: (value) => _sortLabel(context, value),
+                  onSelect: onSelectSort,
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Dropdown gate — nilainya dari checkpoint baris yang dimuat.
+              Expanded(
+                child: Builder(
+                  builder: (context) {
+                    final gates = <String>{
+                      for (final record in state.records)
+                        if (record.checkpoint != null) record.checkpoint!,
+                    }.toList()..sort();
+                    final selected = state.filter.checkpoint ?? 'all';
+                    return _DropdownChip<String>(
+                      key: const Key('history-gate-filter'),
+                      value: selected,
+                      items: ['all', ...gates],
+                      labelOf: (value) => value == 'all'
+                          ? context.trSafe('history.allGates', 'Semua gate')
+                          : context.trSafe(
+                              'history.gateNamed',
+                              'Gate: {name}',
+                              namedArgs: {'name': value},
+                            ),
+                      onSelect: (value) =>
+                          context.read<HistoryCubit>().applyFilter(
+                            state.filter.withCheckpoint(
+                              value == 'all' ? null : value,
+                            ),
+                          ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Chip dropdown: tombol dengan panah, opsi muncul sebagai bottom sheet.
+class _DropdownChip<T> extends StatelessWidget {
+  const _DropdownChip({
+    super.key,
+    required this.value,
+    required this.items,
+    required this.labelOf,
+    required this.onSelect,
+  });
+
+  final T value;
+  final List<T> items;
+  final String Function(T value) labelOf;
+  final ValueChanged<T> onSelect;
+
+  static const _radius = 16.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final selected = value != null;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(_radius),
+        onTap: () => showModalBottomSheet<void>(
+          context: context,
+          backgroundColor: colors.surface,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          builder: (sheetContext) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final option in items)
+                  ListTile(
+                    dense: true,
+                    title: Text(
+                      labelOf(option),
+                      style: TextStyle(
+                        fontFamily: 'DMSans',
+                        fontSize: 14,
+                        fontWeight: option == value
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: option == value ? colors.primary : colors.ink,
+                      ),
+                    ),
+                    trailing: option == value
+                        ? Icon(AppIcons.check, size: 18, color: colors.primary)
+                        : null,
+                    onTap: () {
+                      Navigator.of(sheetContext).pop();
+                      onSelect(option);
+                    },
+                  ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        ),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: selected ? colors.primaryTint : colors.surfaceAlt,
+            borderRadius: BorderRadius.circular(_radius),
+            border: Border.all(
+              color: selected ? colors.primary : colors.outline,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: Text(
+                  labelOf(value),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: 'DMSans',
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    color: selected ? colors.primary : colors.inkMuted,
                   ),
                 ),
               ),
-            ),
-        ],
+              const SizedBox(width: 4),
+              Icon(
+                AppIcons.arrowDown,
+                size: 14,
+                color: selected ? colors.primary : colors.inkMuted,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -319,28 +598,28 @@ class _ErrorBanner extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(24, 0, 24, 12),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0x26CF4647),
+        color: context.colors.cancelledTint,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0x4DCF4647)),
+        border: Border.all(color: context.colors.cancelled),
       ),
       child: Row(
         children: [
-          const Icon(AppIcons.error, size: 18, color: Color(0xFFFFB3AF)),
+          Icon(AppIcons.error, size: 18, color: context.colors.cancelled),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'DMSans',
                 fontSize: 12.5,
-                color: Color(0xFFFFB3AF),
+                color: context.colors.cancelled,
               ),
             ),
           ),
           TextButton(
             onPressed: onRetry,
             style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFFF8F6F6),
+              foregroundColor: context.colors.onPrimary,
               padding: const EdgeInsets.symmetric(horizontal: 8),
               minimumSize: const Size(44, 36),
             ),
