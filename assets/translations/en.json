@@ -107,7 +107,7 @@
     "rejected": "Rejected",
     "scansCount": "{count} scans",
     "empty": "No ticket data",
-    "searchHint": "Search ticket code, guest name…",
+    "searchHint": "Search ID or guest name",
     "sortNewest": "Newest",
     "sortMostGuests": "Most guests",
     "sortOldest": "Oldest date/time",

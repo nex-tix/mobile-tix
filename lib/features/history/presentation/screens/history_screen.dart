@@ -200,7 +200,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       child: ListView.builder(
         controller: _scrollController,
         physics: manualMode ? const AlwaysScrollableScrollPhysics() : null,
-        padding: const EdgeInsets.fromLTRB(24, 4, 24, 110),
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 110),
         itemCount: itemCount,
         itemBuilder: (context, index) {
           if (index >= records.length) {
@@ -232,15 +232,15 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            context.trSafe('history.title', 'History'),
+            context.trSafe('history.title', 'Riwayat'),
             style: TextStyle(
               fontFamily: 'DMSans',
-              fontSize: 26,
+              fontSize: 20,
               fontWeight: FontWeight.w700,
               color: context.colors.ink,
               letterSpacing: -0.2,
@@ -253,9 +253,10 @@ class _Header extends StatelessWidget {
               namedArgs: {'count': '$count'},
             ),
             style: TextStyle(
-              fontSize: 12.5,
+              fontFamily: 'DMSans',
+              fontSize: 13,
               color: context.colors.inkMuted,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w400,
             ),
           ),
         ],
@@ -311,7 +312,7 @@ class _Controls extends StatelessWidget {
     final colors = context.colors;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
       child: Column(
         children: [
           // Search bar — pencarian lokal atas baris yang sudah dimuat.
@@ -328,7 +329,7 @@ class _Controls extends StatelessWidget {
               isDense: true,
               hintText: context.trSafe(
                 'history.searchHint',
-                'Cari kode tiket, nama tamu…',
+                'Cari ID atau nama tamu',
               ),
               hintStyle: TextStyle(
                 fontFamily: 'DMSans',
@@ -340,40 +341,43 @@ class _Controls extends StatelessWidget {
                 size: 19,
                 color: colors.inkMuted,
               ),
-              suffixIcon: searchController.text.isEmpty
-                  ? null
-                  : IconButton(
-                      icon: Icon(
-                        AppIcons.close,
-                        size: 17,
-                        color: colors.inkMuted,
-                      ),
-                      onPressed: () {
-                        searchController.clear();
-                        onQueryChanged('');
-                      },
-                    ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  AppIcons.close,
+                  size: 18,
+                  color: colors.inkMuted,
+                ),
+                splashRadius: 18,
+                onPressed: () {
+                  searchController.clear();
+                  onQueryChanged('');
+                },
+              ),
               filled: true,
-              fillColor: colors.surfaceAlt,
+              fillColor: colors.surface,
               contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
+                horizontal: 16,
                 vertical: 11,
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(color: colors.outline),
+                borderRadius: BorderRadius.circular(24),
+                borderSide: BorderSide(
+                  color: colors.outline.withValues(alpha: 0.5),
+                ),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(color: colors.outline),
+                borderRadius: BorderRadius.circular(24),
+                borderSide: BorderSide(
+                  color: colors.outline.withValues(alpha: 0.5),
+                ),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(color: colors.primary, width: 1.4),
+                borderRadius: BorderRadius.circular(24),
+                borderSide: BorderSide(color: colors.primary, width: 1.2),
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Row(
             children: [
               // Dropdown status: All / Valid / Rejected.
@@ -384,6 +388,8 @@ class _Controls extends StatelessWidget {
                   items: _HistoryStatus.values,
                   labelOf: (value) => _statusLabel(context, value),
                   onSelect: onSelectStatus,
+                  isSelected: true,
+                  showArrow: false,
                 ),
               ),
               const SizedBox(width: 8),
@@ -395,6 +401,8 @@ class _Controls extends StatelessWidget {
                   items: _HistorySort.values,
                   labelOf: (value) => _sortLabel(context, value),
                   onSelect: onSelectSort,
+                  isSelected: selectedSort != _HistorySort.newest,
+                  showArrow: true,
                 ),
               ),
               const SizedBox(width: 8),
@@ -424,6 +432,8 @@ class _Controls extends StatelessWidget {
                               value == 'all' ? null : value,
                             ),
                           ),
+                      isSelected: selected != 'all',
+                      showArrow: true,
                     );
                   },
                 ),
@@ -436,7 +446,7 @@ class _Controls extends StatelessWidget {
   }
 }
 
-/// Chip dropdown: tombol dengan panah, opsi muncul sebagai bottom sheet.
+/// Chip dropdown: tombol dengan bentuk pill, opsi muncul sebagai bottom sheet.
 class _DropdownChip<T> extends StatelessWidget {
   const _DropdownChip({
     super.key,
@@ -444,19 +454,22 @@ class _DropdownChip<T> extends StatelessWidget {
     required this.items,
     required this.labelOf,
     required this.onSelect,
+    this.isSelected = false,
+    this.showArrow = true,
   });
 
   final T value;
   final List<T> items;
   final String Function(T value) labelOf;
   final ValueChanged<T> onSelect;
+  final bool isSelected;
+  final bool showArrow;
 
-  static const _radius = 16.0;
+  static const _radius = 24.0;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final selected = value != null;
 
     return Material(
       color: Colors.transparent,
@@ -502,12 +515,15 @@ class _DropdownChip<T> extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 160),
           curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8.5),
           decoration: BoxDecoration(
-            color: selected ? colors.primaryTint : colors.surfaceAlt,
+            color: isSelected ? colors.primaryTint : colors.surface,
             borderRadius: BorderRadius.circular(_radius),
             border: Border.all(
-              color: selected ? colors.primary : colors.outline,
+              color: isSelected
+                  ? colors.primary
+                  : colors.outline.withValues(alpha: 0.7),
+              width: 1.0,
             ),
           ),
           child: Row(
@@ -520,18 +536,20 @@ class _DropdownChip<T> extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontFamily: 'DMSans',
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w700,
-                    color: selected ? colors.primary : colors.inkMuted,
+                    fontSize: 12.5,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected ? colors.primary : colors.ink,
                   ),
                 ),
               ),
-              const SizedBox(width: 4),
-              Icon(
-                AppIcons.arrowDown,
-                size: 14,
-                color: selected ? colors.primary : colors.inkMuted,
-              ),
+              if (showArrow) ...[
+                const SizedBox(width: 4),
+                Icon(
+                  AppIcons.arrowDown,
+                  size: 13,
+                  color: isSelected ? colors.primary : colors.inkMuted,
+                ),
+              ],
             ],
           ),
         ),
@@ -595,7 +613,7 @@ class _ErrorBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: context.colors.cancelledTint,

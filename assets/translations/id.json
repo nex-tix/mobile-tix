@@ -107,7 +107,7 @@
     "rejected": "Ditolak",
     "scansCount": "{count} pemindaian",
     "empty": "Tidak ada data tiket",
-    "searchHint": "Cari kode tiket, nama tamu…",
+    "searchHint": "Cari ID atau nama tamu",
     "sortNewest": "Terbaru",
     "sortMostGuests": "Tamu terbanyak",
     "sortOldest": "Tanggal/jam terlama",
