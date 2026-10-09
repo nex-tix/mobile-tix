@@ -23,6 +23,7 @@ class ScanOutcome {
     this.tickets = 1,
     this.previousUseAt,
     this.previousUseGate,
+    this.message,
     this.simulated = true,
   });
 
@@ -39,6 +40,9 @@ class ScanOutcome {
   /// For ALREADY_USED: when and where the ticket was first used.
   final DateTime? previousUseAt;
   final String? previousUseGate;
+
+  /// Operator-facing note from the server for non-valid tickets.
+  final String? message;
 
   /// Marks the record as prototype data on screen.
   final bool simulated;

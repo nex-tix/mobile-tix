@@ -301,32 +301,44 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                         ),
 
                         // Rejection note / reason if not valid
-                        if (!isValid) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            isUsed && outcome.previousUseAt != null
-                                ? context.trSafe(
-                                    'ticket.previousUse',
-                                    'Dipakai sebelumnya: ${Fmt.clockSeconds(outcome.previousUseAt!)} (${outcome.previousUseGate ?? "Gate 1"})',
-                                    namedArgs: {
-                                      'time': Fmt.clockSeconds(
-                                        outcome.previousUseAt!,
-                                      ),
-                                      'gate':
-                                          outcome.previousUseGate ?? "Gate 1",
-                                    },
-                                  )
-                                : _instructionForStatus(
-                                    context,
-                                    outcome.status,
-                                  ),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFFFFB3AF),
-                            ),
-                          ),
-                        ],
+                                                if (!isValid) ...[
+                                                  const SizedBox(height: 12),
+                                                  Builder(
+                                                    builder: (context) {
+                                                      String note;
+                                                      if (isUsed && outcome.previousUseAt != null) {
+                                                        note = context.trSafe(
+                                                          'ticket.previousUse',
+                                                          'Dipakai sebelumnya: ${Fmt.clockSeconds(outcome.previousUseAt!)} (${outcome.previousUseGate ?? "(gate tidak tercatat)"})',
+                                                          namedArgs: {
+                                                            'time': Fmt.clockSeconds(
+                                                              outcome.previousUseAt!,
+                                                            ),
+                                                            'gate':
+                                                                outcome.previousUseGate ??
+                                                                    "(gate tidak tercatat)",
+                                                          },
+                                                        );
+                                                      } else if (outcome.message != null &&
+                                                          outcome.message!.isNotEmpty) {
+                                                        note = outcome.message!;
+                                                      } else {
+                                                        note = _instructionForStatus(
+                                                          context,
+                                                          outcome.status,
+                                                        );
+                                                      }
+                                                      return Text(
+                                                        note,
+                                                        textAlign: TextAlign.center,
+                                                        style: TextStyle(
+                                                          fontSize: 13,
+                                                          color: context.colors.inkMuted,
+                                                        ),
+                                                      );
+                                                    },
+                                                  ),
+                                                ],
                       ],
                     ),
                   ),

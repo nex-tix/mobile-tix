@@ -131,6 +131,7 @@ class ScanResult {
       previousUseGate: status == TicketStatus.alreadyUsed
           ? usedAtCheckpoint
           : null,
+      message: message,
       simulated: false,
     );
   }

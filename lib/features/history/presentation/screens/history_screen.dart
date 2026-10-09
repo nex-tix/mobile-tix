@@ -115,6 +115,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         break;
       case _HistorySort.oldest:
         sorted.sort((a, b) => a.scannedAt.compareTo(b.scannedAt));
+        break;
       case _HistorySort.mostGuests:
         sorted.sort((a, b) => b.visitorCount.compareTo(a.visitorCount));
     }

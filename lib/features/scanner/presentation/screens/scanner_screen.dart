@@ -116,8 +116,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
         cubit.acknowledgeResult();
 
       case ScannerQueued(ticketCode: final code):
-        AudioFeedbackService.instance.playSuccess();
-        AppSnackbar.warning(
+              AudioFeedbackService.instance.playError();
+              AppSnackbar.warning(
           context,
           'Offline — $code masuk antrean dan akan dikirim otomatis saat koneksi pulih.',
           duration: const Duration(seconds: 4),

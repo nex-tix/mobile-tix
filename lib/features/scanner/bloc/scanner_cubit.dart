@@ -55,6 +55,11 @@ class ScannerCubit extends Cubit<ScannerState> {
   /// Jumlah scan yang masih menunggu dikirim, dibaca langsung dari DAO.
   int get pendingSyncCount => _queueDao.size;
 
+  // Cooldown untuk mencegah duplikasi scan cepat (2 detik).
+  String? _lastScannedCode;
+  DateTime? _lastScanTime;
+  static const Duration _scanCooldown = Duration(seconds: 2);
+
   // ==================== MODE ====================
 
   /// Ganti mode kerja.
@@ -96,6 +101,15 @@ class ScannerCubit extends Cubit<ScannerState> {
       return;
     }
 
+    // Cegah duplikasi cepat: jika kode sama dipindai ulang dalam 2 detik,
+    // abaikan tanpa membuat duplikasi entri atau request.
+    final now = DateTime.now();
+    if (_lastScannedCode == code &&
+        _lastScanTime != null &&
+        now.difference(_lastScanTime!) < _scanCooldown) {
+      return; // diamkan — UI sudah menampilkan hasil sebelumnya
+    }
+
     // Cegah duplikasi: jika tiket sudah ada di antrean offline,
     // beritahukan status antrean tanpa membuat duplikasi entri atau request.
     if (_queueDao.containsTicket(code)) {
@@ -108,6 +122,10 @@ class ScannerCubit extends Cubit<ScannerState> {
       );
       return;
     }
+
+    // Update cooldown tracker
+    _lastScannedCode = code;
+    _lastScanTime = now;
 
     emit(
       ScannerProcessing(
@@ -178,6 +196,9 @@ class ScannerCubit extends Cubit<ScannerState> {
   /// hasil lama saat petugas memindai tiket berikutnya.
   void acknowledgeResult() {
     if (state is ScannerIdle) return;
+    // Reset cooldown tracker agar scan kode sama bisa diproses lagi
+    _lastScannedCode = null;
+    _lastScanTime = null;
     emit(ScannerIdle(mode: _mode, pendingSync: pendingSyncCount));
   }
 

@@ -46,7 +46,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           builder: (context, state) {
             return RefreshIndicator(
               onRefresh: () => context.read<DashboardCubit>().refresh(),
-              color: const Color(0xFFCF4647),
+              color: context.colors.primary,
               backgroundColor: context.colors.surface,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -118,9 +118,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               label: context.trSafe('dashboard.valid', 'Valid'),
               value: stats.validTickets,
               icon: AppIcons.check,
-              accent: const Color(0xFF34D399),
-              tint: const Color(0x2610B981),
-              border: const Color(0x4D10B981),
+              accent: context.colors.valid,
+              tint: context.colors.validTint,
+              border: context.colors.valid.withValues(alpha: 0.30),
             ),
           ),
           const SizedBox(width: 12),
@@ -129,9 +129,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               label: context.trSafe('dashboard.rejected', 'Rejected'),
               value: stats.rejectedTickets,
               icon: AppIcons.close,
-              accent: const Color(0xFFCF4647),
-              tint: const Color(0x26CF4647),
-              border: const Color(0x4DCF4647),
+              accent: context.colors.primary,
+              tint: context.colors.primaryTint,
+              border: context.colors.primary.withValues(alpha: 0.30),
             ),
           ),
         ],
@@ -179,10 +179,10 @@ class _Header extends StatelessWidget {
                     child: Center(
                       child: Text(
                         initials,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFFF5D061),
+                          color: context.colors.secondary,
                         ),
                       ),
                     ),
@@ -219,9 +219,9 @@ class _Header extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: const Color(0x3310B981),
+            color: context.colors.validTint,
             borderRadius: BorderRadius.circular(99),
-            border: Border.all(color: const Color(0x6610B981)),
+            border: Border.all(color: context.colors.valid.withValues(alpha: 0.4)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -232,8 +232,8 @@ class _Header extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: online
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFFCF4647),
+                      ? context.colors.valid
+                      : context.colors.primary,
                 ),
               ),
               const SizedBox(width: 6),
@@ -246,8 +246,8 @@ class _Header extends StatelessWidget {
                   fontSize: 11.5,
                   fontWeight: FontWeight.w600,
                   color: online
-                      ? const Color(0xFF34D399)
-                      : const Color(0xFFCF4647),
+                      ? context.colors.valid
+                      : context.colors.primary,
                 ),
               ),
             ],
@@ -326,7 +326,7 @@ class _PeriodSwitch extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
                     color: period == option
-                        ? const Color(0xFFCF4647)
+                        ? context.colors.primary
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -340,7 +340,7 @@ class _PeriodSwitch extends StatelessWidget {
                       fontSize: 12.5,
                       fontWeight: FontWeight.w700,
                       color: period == option
-                          ? const Color(0xFFF8F6F6)
+                          ? context.colors.onPrimary
                           : context.colors.inkMuted,
                     ),
                   ),
@@ -490,28 +490,28 @@ class _ErrorBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0x26CF4647),
+        color: context.colors.primaryTint,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0x4DCF4647)),
+        border: Border.all(color: context.colors.primary.withValues(alpha: 0.30)),
       ),
       child: Row(
         children: [
-          const Icon(AppIcons.error, size: 18, color: Color(0xFFFFB3AF)),
+          Icon(AppIcons.error, size: 18, color: context.colors.onPrimaryTint),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'DMSans',
                 fontSize: 12.5,
-                color: Color(0xFFFFB3AF),
+                color: context.colors.onPrimaryTint,
               ),
             ),
           ),
           TextButton(
             onPressed: onRetry,
             style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFFF8F6F6),
+              foregroundColor: context.colors.onPrimary,
               padding: const EdgeInsets.symmetric(horizontal: 8),
               minimumSize: const Size(44, 36),
             ),
@@ -569,8 +569,8 @@ class _FailureView extends StatelessWidget {
           ElevatedButton(
             onPressed: onRetry,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFCF4647),
-              foregroundColor: const Color(0xFFF8F6F6),
+              backgroundColor: context.colors.primary,
+              foregroundColor: context.colors.onPrimary,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
