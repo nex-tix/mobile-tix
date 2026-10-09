@@ -1,9 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 import 'core/connectivity/demo_connectivity.dart';
+import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'core/bloc/auth/auth_bloc.dart';
 import 'core/bloc/auth/auth_state.dart';
@@ -127,14 +129,14 @@ class _MobileTixAppState extends State<MobileTixApp> {
       context: navContext,
       barrierDismissible: false,
       builder: (dialogCtx) => AlertDialog(
-        backgroundColor: const Color(0xFF18202C),
+        backgroundColor: dialogCtx.colors.surface,
         title: Text(
           dialogCtx.tr('auth.sessionExpiringTitle'),
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: dialogCtx.colors.ink),
         ),
         content: Text(
           dialogCtx.tr('auth.sessionExpiringMessage'),
-          style: const TextStyle(color: Color(0xFF94A3B8)),
+          style: TextStyle(color: dialogCtx.colors.inkMuted),
         ),
         actions: [
           TextButton(
@@ -144,18 +146,20 @@ class _MobileTixAppState extends State<MobileTixApp> {
             },
             child: Text(
               dialogCtx.tr('auth.signOut'),
-              style: const TextStyle(color: Color(0xFFCF4647)),
+              style: TextStyle(color: dialogCtx.colors.primary),
             ),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE5A93C)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: dialogCtx.colors.secondary,
+            ),
             onPressed: () {
               Navigator.of(dialogCtx, rootNavigator: true).pop();
               authAutoLogoutService.stayLoggedIn();
             },
             child: Text(
               dialogCtx.tr('auth.stayLoggedIn'),
-              style: const TextStyle(color: Colors.black),
+              style: TextStyle(color: dialogCtx.colors.onSecondary),
             ),
           ),
         ],
@@ -252,11 +256,19 @@ class _MobileTixAppState extends State<MobileTixApp> {
                       supportedLocales: context.supportedLocales,
                       localizationsDelegates: context.localizationDelegates,
                       onGenerateRoute: onGenerateRoute,
-                      home: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 260),
-                        switchInCurve: Curves.easeOut,
-                        switchOutCurve: Curves.easeIn,
-                        child: KeyedSubtree(key: ValueKey(key), child: phase),
+                      home: AnnotatedRegion<SystemUiOverlayStyle>(
+                        value: SystemUiOverlayStyle(
+                          statusBarColor: Theme.of(context).colorScheme.surface,
+                          statusBarIconBrightness: Theme.of(context).brightness == Brightness.dark
+                              ? Brightness.light
+                              : Brightness.dark,
+                        ),
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 260),
+                          switchInCurve: Curves.easeOut,
+                          switchOutCurve: Curves.easeIn,
+                          child: KeyedSubtree(key: ValueKey(key), child: phase),
+                        ),
                       ),
                     ),
                   );

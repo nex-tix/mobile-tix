@@ -67,10 +67,10 @@ class ProfileScreen extends StatelessWidget {
                         child: Center(
                           child: Text(
                             staff?.initials ?? 'R',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFFF5D061),
+                              color: context.colors.secondary,
                             ),
                           ),
                         ),
@@ -265,8 +265,8 @@ class ProfileScreen extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   color: connectivity.online
-                                      ? const Color(0xFF10B981)
-                                      : const Color(0xFFCF4647),
+                                      ? context.colors.valid
+                                      : context.colors.dangerRed,
                                 ),
                               ),
                               Text(
@@ -277,8 +277,8 @@ class ProfileScreen extends StatelessWidget {
                                   fontSize: 13.5,
                                   fontWeight: FontWeight.w600,
                                   color: connectivity.online
-                                      ? const Color(0xFF10B981)
-                                      : const Color(0xFFCF4647),
+                                      ? context.colors.valid
+                                      : context.colors.dangerRed,
                                 ),
                               ),
                             ],
@@ -319,15 +319,15 @@ class ProfileScreen extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(AppIcons.logout, size: 18, color: Color(0xFFCF4647)),
+                      Icon(AppIcons.logout, size: 18, color: context.colors.dangerRed),
                       const SizedBox(width: 8),
                       Text(
                         context.trSafe('common.logout', 'Logout'),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'DMSans',
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFFCF4647),
+                          color: context.colors.dangerRed,
                         ),
                       ),
                     ],

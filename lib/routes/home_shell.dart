@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 import '../core/constants/app_icons.dart';
@@ -6,6 +7,7 @@ import '../core/theme/app_colors.dart';
 import '../core/utils/i18n_helper.dart';
 import '../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../features/history/presentation/screens/history_screen.dart';
+import '../features/scanner/bloc/scanner_cubit.dart';
 import '../features/scanner/presentation/screens/scanner_screen.dart';
 import 'shell_controller.dart';
 
@@ -22,6 +24,7 @@ class HomeShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final shell = context.watch<ShellController>();
+    final pendingSync = context.watch<ScannerCubit>().pendingSyncCount;
     final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
@@ -77,6 +80,7 @@ class HomeShell extends StatelessWidget {
                         'dashboard.title',
                         'Dashboard',
                       ),
+                      badgeCount: pendingSync > 0 ? pendingSync : null,
                     ),
                   ),
 
@@ -121,6 +125,7 @@ class _NavTab extends StatefulWidget {
     required this.selected,
     required this.onTap,
     required this.semanticsLabel,
+    this.badgeCount,
   });
 
   final IconData icon;
@@ -128,6 +133,7 @@ class _NavTab extends StatefulWidget {
   final bool selected;
   final VoidCallback onTap;
   final String semanticsLabel;
+  final int? badgeCount;
 
   @override
   State<_NavTab> createState() => _NavTabState();
@@ -187,7 +193,45 @@ class _NavTabState extends State<_NavTab> {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(widget.icon, size: 26, color: color),
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Icon(widget.icon, size: 26, color: color),
+                        if (widget.badgeCount != null && widget.badgeCount! > 0)
+                          Positioned(
+                            right: -6,
+                            top: -6,
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: context.colors.primary,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: context.colors.surface,
+                                  width: 1.5,
+                                ),
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 16,
+                                minHeight: 16,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  widget.badgeCount! > 9
+                                      ? '9+'
+                                      : widget.badgeCount.toString(),
+                                  style: TextStyle(
+                                    fontFamily: 'DMSans',
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w800,
+                                    color: context.colors.onPrimary,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                     const SizedBox(height: 5),
                     AnimatedDefaultTextStyle(
                       duration: const Duration(milliseconds: 180),
