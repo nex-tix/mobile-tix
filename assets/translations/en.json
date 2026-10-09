@@ -58,6 +58,8 @@
     "enterCode": "Enter code manually",
     "codeHint": "e.g. TKT-2026-001245",
     "codeRequired": "Please enter a ticket code",
+    "scanHint": "Scan QR ticket",
+    "verifying": "Verifying ticket…",
     "offlineDisabled": "Scanning is disabled while offline.",
     "demoOutcomes": "DEMO OUTCOMES (SIMULATION)",
     "scanNext": "Scan Next",

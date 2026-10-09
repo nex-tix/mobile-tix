@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_tix/core/constants/app_icons.dart';
-
+import 'package:mobile_tix/core/utils/i18n_helper.dart';
 
 /// Camera Viewfinder card based on Screen 5 (`5._scan_check_in/code.html`).
 ///
@@ -56,10 +56,7 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
           gradient: const RadialGradient(
             center: Alignment.center,
             radius: 0.9,
-            colors: [
-              Color(0xFF212B2F),
-              Color(0xFF141A1D),
-            ],
+            colors: [Color(0xFF212B2F), Color(0xFF141A1D)],
           ),
           boxShadow: const [
             BoxShadow(
@@ -83,37 +80,25 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
                   const Positioned(
                     top: 0,
                     left: 0,
-                    child: _ReticleCorner(
-                      top: true,
-                      left: true,
-                    ),
+                    child: _ReticleCorner(top: true, left: true),
                   ),
                   // Top-Right Corner
                   const Positioned(
                     top: 0,
                     right: 0,
-                    child: _ReticleCorner(
-                      top: true,
-                      left: false,
-                    ),
+                    child: _ReticleCorner(top: true, left: false),
                   ),
                   // Bottom-Left Corner
                   const Positioned(
                     bottom: 0,
                     left: 0,
-                    child: _ReticleCorner(
-                      top: false,
-                      left: true,
-                    ),
+                    child: _ReticleCorner(top: false, left: true),
                   ),
                   // Bottom-Right Corner
                   const Positioned(
                     bottom: 0,
                     right: 0,
-                    child: _ReticleCorner(
-                      top: false,
-                      left: false,
-                    ),
+                    child: _ReticleCorner(top: false, left: false),
                   ),
 
                   // Center QR Focus Crosshair Icon
@@ -161,7 +146,10 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
                         animation: _sweep,
                         builder: (context, _) {
                           return Transform.translate(
-                            offset: Offset(0, 16 + (_sweep.value * (frameSize - 36))),
+                            offset: Offset(
+                              0,
+                              16 + (_sweep.value * (frameSize - 36)),
+                            ),
                             child: Container(
                               height: 2,
                               decoration: const BoxDecoration(
@@ -186,19 +174,16 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
             Positioned(
               bottom: 18,
               child: Text(
-                widget.processing ? 'Memverifikasi tiket…' : 'Scan QR ticket',
+                widget.processing
+                    ? context.trSafe('scanner.verifying', 'Verifying ticket…')
+                    : context.trSafe('scanner.scanHint', 'Scan QR ticket'),
                 style: const TextStyle(
                   fontFamily: 'DMSans',
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: Color(0xFFF8F6F6),
                   letterSpacing: 0.2,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black,
-                      blurRadius: 4,
-                    ),
-                  ],
+                  shadows: [Shadow(color: Colors.black, blurRadius: 4)],
                 ),
               ),
             ),
@@ -210,10 +195,7 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
 }
 
 class _ReticleCorner extends StatelessWidget {
-  const _ReticleCorner({
-    required this.top,
-    required this.left,
-  });
+  const _ReticleCorner({required this.top, required this.left});
 
   final bool top;
   final bool left;
@@ -229,10 +211,18 @@ class _ReticleCorner extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         border: Border(
-          top: top ? const BorderSide(color: Color(0xFFCF4647), width: stroke) : BorderSide.none,
-          bottom: !top ? const BorderSide(color: Color(0xFFCF4647), width: stroke) : BorderSide.none,
-          left: left ? const BorderSide(color: Color(0xFFCF4647), width: stroke) : BorderSide.none,
-          right: !left ? const BorderSide(color: Color(0xFFCF4647), width: stroke) : BorderSide.none,
+          top: top
+              ? const BorderSide(color: Color(0xFFCF4647), width: stroke)
+              : BorderSide.none,
+          bottom: !top
+              ? const BorderSide(color: Color(0xFFCF4647), width: stroke)
+              : BorderSide.none,
+          left: left
+              ? const BorderSide(color: Color(0xFFCF4647), width: stroke)
+              : BorderSide.none,
+          right: !left
+              ? const BorderSide(color: Color(0xFFCF4647), width: stroke)
+              : BorderSide.none,
         ),
         borderRadius: BorderRadius.only(
           topLeft: (top && left) ? radius : Radius.zero,

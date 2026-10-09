@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -10,18 +9,20 @@ import '../features/history/presentation/screens/history_screen.dart';
 import '../features/scanner/presentation/screens/scanner_screen.dart';
 import 'shell_controller.dart';
 
-/// The working shell with floating navigation bar matching `newDesign`.
+/// The working shell with a full-width bottom navigation bar.
 ///
 /// Features:
 /// - 3 core destinations: Dashboard, Scan, History
-/// - Floating pill bar with subtle border & glass effect
-/// - Center raised Deep Red button for Scan (`#CF4647`)
+/// - Full-width rectangular bar, rounded top corners, flush to screen edges
+/// - Center raised Deep Red Scan button (largest control on the bar)
+/// - Smooth hover/press transitions via AnimatedContainer + AnimatedScale
 class HomeShell extends StatelessWidget {
   const HomeShell({super.key});
 
   @override
   Widget build(BuildContext context) {
     final shell = context.watch<ShellController>();
+    final bottomInset = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       backgroundColor: context.colors.ground,
@@ -37,80 +38,69 @@ class HomeShell extends StatelessWidget {
             ],
           ),
 
-          // Floating Navigation Bar at the bottom
+          // Full-width Bottom Navigation Bar (flush to both screen edges)
           Positioned(
-            left: 20,
-            right: 20,
-            bottom: 20,
-            child: SizedBox(
-              height: 80,
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.bottomCenter,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              key: const Key('bottom-navigation'),
+              padding: EdgeInsets.only(top: 10, bottom: bottomInset + 10),
+              decoration: BoxDecoration(
+                color: context.colors.surface,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(28),
+                ),
+                border: Border(
+                  top: BorderSide(color: context.colors.outline, width: 1.2),
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x26000000),
+                    blurRadius: 28,
+                    offset: Offset(0, -6),
+                  ),
+                ],
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  // Pill Navigation Bar background
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    height: 64,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(99),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: context.colors.surface.withValues(alpha: 0.94),
-                            borderRadius: BorderRadius.circular(99),
-                            border: Border.all(
-                              color: context.colors.outline,
-                              width: 1.2,
-                            ),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x33000000),
-                                blurRadius: 24,
-                                offset: Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              // Tab 1: Dashboard
-                              Expanded(
-                                child: _NavTab(
-                                  icon: AppIcons.dashboard,
-                                  label: context.trSafe('dashboard.title', 'Dashboard'),
-                                  selected: shell.index == 0,
-                                  onTap: () => shell.goIndex(0),
-                                ),
-                              ),
-
-                              // Reserved center space for the large Scan button
-                              const SizedBox(width: 80),
-
-                              // Tab 3: History
-                              Expanded(
-                                child: _NavTab(
-                                  icon: AppIcons.history,
-                                  label: context.trSafe('history.title', 'History'),
-                                  selected: shell.index == 2,
-                                  onTap: () => shell.goIndex(2),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                  // Tab 1: Dashboard
+                  Expanded(
+                    child: _NavTab(
+                      key: const Key('nav-dashboard'),
+                      icon: AppIcons.dashboard,
+                      label: context.trSafe('dashboard.title', 'Dashboard'),
+                      selected: shell.index == 0,
+                      onTap: () => shell.goIndex(0),
+                      semanticsLabel: context.trSafe(
+                        'dashboard.title',
+                        'Dashboard',
                       ),
                     ),
                   ),
 
-                  // Hero Center Scan Button (Elevated & Largest)
-                  Positioned(
-                    top: 0,
+                  // Tab 2: Scan — the hero, largest control, dead centre
+                  Expanded(
                     child: _ScanNavButton(
+                      key: const Key('nav-scan-hero'),
                       selected: shell.index == 1,
                       onTap: () => shell.goIndex(1),
+                    ),
+                  ),
+
+                  // Tab 3: History
+                  Expanded(
+                    child: _NavTab(
+                      key: const Key('nav-history'),
+                      icon: AppIcons.history,
+                      label: context.trSafe('history.title', 'History'),
+                      selected: shell.index == 2,
+                      onTap: () => shell.goIndex(2),
+                      semanticsLabel: context.trSafe(
+                        'history.title',
+                        'History',
+                      ),
                     ),
                   ),
                 ],
@@ -123,52 +113,107 @@ class HomeShell extends StatelessWidget {
   }
 }
 
-class _NavTab extends StatelessWidget {
+class _NavTab extends StatefulWidget {
   const _NavTab({
+    super.key,
     required this.icon,
     required this.label,
     required this.selected,
     required this.onTap,
+    required this.semanticsLabel,
   });
 
   final IconData icon;
   final String label;
   final bool selected;
   final VoidCallback onTap;
+  final String semanticsLabel;
+
+  @override
+  State<_NavTab> createState() => _NavTabState();
+}
+
+class _NavTabState extends State<_NavTab> {
+  bool _hovered = false;
+  bool _pressed = false;
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? const Color(0xFFF5D061) : context.colors.inkMuted;
+    final colors = context.colors;
+    final active = widget.selected;
+    final color = active || _hovered ? colors.secondary : colors.ink;
+    final background = active
+        ? colors.secondaryTint
+        : _hovered
+        ? colors.surfaceAlt.withValues(alpha: 0.55)
+        : Colors.transparent;
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(99),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 22, color: color),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: TextStyle(
-                fontFamily: 'DMSans',
-                fontSize: 10.5,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                color: color,
+    return Semantics(
+      label: widget.semanticsLabel,
+      selected: widget.selected,
+      button: true,
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() {
+          _hovered = false;
+          _pressed = false;
+        }),
+        child: GestureDetector(
+          onTapDown: (_) => setState(() => _pressed = true),
+          onTapCancel: () => setState(() => _pressed = false),
+          onTapUp: (_) => setState(() => _pressed = false),
+          child: AnimatedScale(
+            scale: _pressed ? 0.96 : 1,
+            duration: const Duration(milliseconds: 140),
+            curve: Curves.easeOutCubic,
+            child: InkWell(
+              onTap: widget.onTap,
+              borderRadius: BorderRadius.circular(20),
+              hoverColor: colors.secondaryTint,
+              splashColor: colors.secondaryTint,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOutCubic,
+                margin: const EdgeInsets.symmetric(horizontal: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: background,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(widget.icon, size: 26, color: color),
+                    const SizedBox(height: 5),
+                    AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOutCubic,
+                      style: TextStyle(
+                        fontFamily: 'DMSans',
+                        fontSize: 12,
+                        fontWeight: active ? FontWeight.w800 : FontWeight.w600,
+                        color: color,
+                      ),
+                      child: Text(widget.label),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _ScanNavButton extends StatelessWidget {
+class _ScanNavButton extends StatefulWidget {
   const _ScanNavButton({
+    super.key,
     required this.selected,
     required this.onTap,
   });
@@ -177,59 +222,97 @@ class _ScanNavButton extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
+  State<_ScanNavButton> createState() => _ScanNavButtonState();
+}
+
+class _ScanNavButtonState extends State<_ScanNavButton> {
+  bool _hovered = false;
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Hero prominent circular button
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFFCF4647),
-                  Color(0xFFB83A3B),
-                ],
-              ),
-              border: Border.all(
-                color: selected ? const Color(0xFFF5D061) : context.colors.surface,
-                width: 3.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFCF4647).withValues(alpha: selected ? 0.65 : 0.4),
-                  blurRadius: selected ? 18 : 12,
-                  offset: const Offset(0, 4),
+    final colors = context.colors;
+    final label = context.trSafe('scanner.navScan', 'Scan');
+    final elevated = widget.selected || _hovered;
+
+    return Semantics(
+      label: label,
+      selected: widget.selected,
+      button: true,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() {
+          _hovered = false;
+          _pressed = false;
+        }),
+        child: GestureDetector(
+          onTap: widget.onTap,
+          onTapDown: (_) => setState(() => _pressed = true),
+          onTapCancel: () => setState(() => _pressed = false),
+          onTapUp: (_) => setState(() => _pressed = false),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedScale(
+                scale: _pressed ? 0.94 : (elevated ? 1.06 : 1),
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOutCubic,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutCubic,
+                  width: 76,
+                  height: 76,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [colors.primary, colors.primaryPressed],
+                    ),
+                    border: Border.all(
+                      color: widget.selected || _hovered
+                          ? colors.secondary
+                          : colors.surface,
+                      width: 4,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: colors.primary.withValues(
+                          alpha: elevated ? 0.58 : 0.36,
+                        ),
+                        blurRadius: elevated ? 24 : 16,
+                        offset: Offset(0, elevated ? 7 : 4),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Icon(
+                      AppIcons.qrScanner,
+                      size: 36,
+                      color: colors.onPrimary,
+                    ),
+                  ),
                 ),
-              ],
-            ),
-            child: const Center(
-              child: Icon(
-                AppIcons.qrScanner,
-                size: 28,
-                color: Color(0xFFF8F6F6),
               ),
-            ),
+              const SizedBox(height: 6),
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOutCubic,
+                style: TextStyle(
+                  fontFamily: 'DMSans',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: widget.selected || _hovered
+                      ? colors.secondary
+                      : colors.primary,
+                  letterSpacing: 0.2,
+                ),
+                child: Text(label),
+              ),
+            ],
           ),
-          const SizedBox(height: 2),
-          Text(
-            context.trSafe('scanner.navScan', 'Scan'),
-            style: TextStyle(
-              fontFamily: 'DMSans',
-              fontSize: 10.5,
-              fontWeight: FontWeight.w700,
-              color: selected ? const Color(0xFFF5D061) : const Color(0xFFCF4647),
-              letterSpacing: 0.2,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

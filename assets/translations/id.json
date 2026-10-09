@@ -58,6 +58,8 @@
     "enterCode": "Masukkan kode manual",
     "codeHint": "mis. TKT-2026-001245",
     "codeRequired": "Masukkan kode tiket",
+    "scanHint": "Pindai QR ticket",
+    "verifying": "Memverifikasi tiket…",
     "offlineDisabled": "Pindai dinonaktifkan saat offline.",
     "demoOutcomes": "SIMULASI HASIL (DEMO)",
     "scanNext": "Pindai Berikutnya",

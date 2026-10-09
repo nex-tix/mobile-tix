@@ -52,12 +52,14 @@ class _ScanResultSheetState extends State<ScanResultSheet>
   void initState() {
     super.initState();
     if (widget.autoDismiss && widget.outcome.status == TicketStatus.valid) {
-      _dwell = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 3800),
-      )..forward().whenComplete(() {
-          if (mounted) Navigator.of(context).maybePop();
-        });
+      _dwell =
+          AnimationController(
+              vsync: this,
+              duration: const Duration(milliseconds: 3800),
+            )
+            ..forward().whenComplete(() {
+              if (mounted) Navigator.of(context).maybePop();
+            });
     }
   }
 
@@ -67,13 +69,29 @@ class _ScanResultSheetState extends State<ScanResultSheet>
     super.dispose();
   }
 
-  String _instructionForStatus(BuildContext context, TicketStatus status) => switch (status) {
-    TicketStatus.valid => context.trSafe('ticket.instructionValid', status.instruction),
-    TicketStatus.alreadyUsed => context.trSafe('ticket.instructionAlreadyUsed', status.instruction),
-    TicketStatus.expired => context.trSafe('ticket.instructionExpired', status.instruction),
-    TicketStatus.notFound => context.trSafe('ticket.instructionNotFound', status.instruction),
-    TicketStatus.cancelled => context.trSafe('ticket.instructionCancelled', status.instruction),
-  };
+  String _instructionForStatus(BuildContext context, TicketStatus status) =>
+      switch (status) {
+        TicketStatus.valid => context.trSafe(
+          'ticket.instructionValid',
+          status.instruction,
+        ),
+        TicketStatus.alreadyUsed => context.trSafe(
+          'ticket.instructionAlreadyUsed',
+          status.instruction,
+        ),
+        TicketStatus.expired => context.trSafe(
+          'ticket.instructionExpired',
+          status.instruction,
+        ),
+        TicketStatus.notFound => context.trSafe(
+          'ticket.instructionNotFound',
+          status.instruction,
+        ),
+        TicketStatus.cancelled => context.trSafe(
+          'ticket.instructionCancelled',
+          status.instruction,
+        ),
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -92,31 +110,36 @@ class _ScanResultSheetState extends State<ScanResultSheet>
     final IconData statusIcon;
 
     if (isValid) {
-      badgeColor = const Color(0xFF2ECC71);
-      textColor = const Color(0xFF2ECC71);
-      btnBgColor = const Color(0xFF2ECC71);
+      badgeColor = context.colors.valid;
+      textColor = context.colors.valid;
+      btnBgColor = context.colors.valid;
       btnTextColor = Colors.white;
       statusTitle = context.trSafe('ticket.valid', 'VALID');
       statusIcon = AppIcons.check;
     } else if (isUsed) {
-      badgeColor = const Color(0xFFCF4647);
-      textColor = const Color(0xFFCF4647);
-      btnBgColor = const Color(0xFFCF4647);
-      btnTextColor = const Color(0xFFF8F6F6);
+      badgeColor = context.colors.used;
+      textColor = context.colors.used;
+      btnBgColor = context.colors.used;
+      btnTextColor = context.colors.onPrimary;
       statusTitle = context.trSafe('ticket.alreadyUsed', 'ALREADY USED');
       statusIcon = AppIcons.close;
     } else if (isExpired) {
-      badgeColor = const Color(0xFFF5D061);
-      textColor = const Color(0xFFF5D061);
-      btnBgColor = const Color(0xFFF5D061);
-      btnTextColor = const Color(0xFF1E272B);
+      badgeColor = context.colors.expired;
+      textColor = context.colors.expired;
+      btnBgColor = context.colors.expired;
+      btnTextColor = Theme.of(context).brightness == Brightness.light
+          ? const Color(0xFF1E272B)
+          : context.colors.onPrimary;
       statusTitle = context.trSafe('ticket.expired', 'EXPIRED');
       statusIcon = AppIcons.schedule;
     } else {
-      badgeColor = const Color(0xFFCF4647);
-      textColor = const Color(0xFFCF4647);
-      btnBgColor = const Color(0xFFCF4647);
-      btnTextColor = const Color(0xFFF8F6F6);
+      final statusColor = status == TicketStatus.notFound
+          ? context.colors.notFound
+          : context.colors.cancelled;
+      badgeColor = statusColor;
+      textColor = statusColor;
+      btnBgColor = statusColor;
+      btnTextColor = context.colors.onPrimary;
       statusTitle = status == TicketStatus.notFound
           ? context.trSafe('ticket.invalid', 'INVALID TICKET')
           : context.trSafe('ticket.cancelled', 'CANCELLED');
@@ -131,10 +154,7 @@ class _ScanResultSheetState extends State<ScanResultSheet>
         color: context.colors.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(36)),
         border: Border(
-          top: BorderSide(
-            color: context.colors.outline,
-            width: 1,
-          ),
+          top: BorderSide(color: context.colors.outline, width: 1),
         ),
       ),
       child: SafeArea(
@@ -157,7 +177,10 @@ class _ScanResultSheetState extends State<ScanResultSheet>
             // Auto-dismiss countdown bar for valid scans
             if (_dwell != null)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 4,
+                ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(2),
                   child: AnimatedBuilder(
@@ -166,7 +189,9 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                       value: (1 - _dwell!.value).clamp(0.0, 1.0),
                       minHeight: 2.5,
                       backgroundColor: Colors.white.withValues(alpha: 0.08),
-                      valueColor: const AlwaysStoppedAnimation(Color(0xFF2ECC71)),
+                      valueColor: const AlwaysStoppedAnimation(
+                        Color(0xFF2ECC71),
+                      ),
                     ),
                   ),
                 ),
@@ -186,161 +211,167 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                       color: badgeColor,
                     ),
                     child: Center(
-                      child: Icon(
-                        statusIcon,
-                        size: 48,
-                        color: Colors.white,
-                      ),
+                      child: Icon(statusIcon, size: 48, color: Colors.white),
                     ),
                   ),
                   const SizedBox(height: 24),
 
-                      // Status Title
-                      Text(
-                        statusTitle,
-                        style: TextStyle(
-                          fontFamily: 'DMSans',
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          color: textColor,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
+                  // Status Title
+                  Text(
+                    statusTitle,
+                    style: TextStyle(
+                      fontFamily: 'DMSans',
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      color: textColor,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
 
-                      // Meta Details Block
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 32),
-                        child: Column(
+                  // Meta Details Block
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: Column(
+                      children: [
+                        // Ticket Type / Pax count
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // Ticket Type / Pax count
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  AppIcons.people,
-                                  size: 19,
-                                  color: context.colors.inkMuted,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '${outcome.category ?? context.trSafe('ticket.defaultCategory', 'Tiket')} · ${context.trSafe('ticket.visitor', '${outcome.tickets} Visitor', namedArgs: {'count': '${outcome.tickets}'})}',
-                                  style: TextStyle(
-                                    fontFamily: 'DMSans',
-                                    fontSize: 15.5,
-                                    color: context.colors.ink,
-                                  ),
-                                ),
-                              ],
+                            Icon(
+                              AppIcons.people,
+                              size: 19,
+                              color: context.colors.inkMuted,
                             ),
-                            const SizedBox(height: 10),
-
-                            // Timestamp
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  AppIcons.accessTime,
-                                  size: 19,
-                                  color: context.colors.inkMuted,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  Fmt.clockSeconds(outcome.at),
-                                  style: TextStyle(
-                                    fontFamily: 'DMSans',
-                                    fontSize: 15.5,
-                                    color: context.colors.ink,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-
-                            // Gate Location
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  AppIcons.location,
-                                  size: 19,
-                                  color: context.colors.inkMuted,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  outcome.gate ?? 'Gate 1',
-                                  style: TextStyle(
-                                    fontFamily: 'DMSans',
-                                    fontSize: 15.5,
-                                    color: context.colors.ink,
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            // Rejection note / reason if not valid
-                            if (!isValid) ...[
-                              const SizedBox(height: 12),
-                              Text(
-                                isUsed && outcome.previousUseAt != null
-                                    ? context.trSafe('ticket.previousUse', 'Dipakai sebelumnya: ${Fmt.clockSeconds(outcome.previousUseAt!)} (${outcome.previousUseGate ?? "Gate 1"})', namedArgs: {
-                                        'time': Fmt.clockSeconds(outcome.previousUseAt!),
-                                        'gate': outcome.previousUseGate ?? "Gate 1",
-                                      })
-                                    : _instructionForStatus(context, outcome.status),
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Color(0xFFFFB3AF),
-                                ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${outcome.category ?? context.trSafe('ticket.defaultCategory', 'Tiket')} · ${context.trSafe('ticket.visitor', '${outcome.tickets} Visitor', namedArgs: {'count': '${outcome.tickets}'})}',
+                              style: TextStyle(
+                                fontFamily: 'DMSans',
+                                fontSize: 15.5,
+                                color: context.colors.ink,
                               ),
-                            ],
+                            ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                ),
+                        const SizedBox(height: 10),
 
-                // Bottom Action: Scan Next Button
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: btnBgColor,
-                            foregroundColor: btnTextColor,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                        // Timestamp
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              AppIcons.accessTime,
+                              size: 19,
+                              color: context.colors.inkMuted,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              Fmt.clockSeconds(outcome.at),
+                              style: TextStyle(
+                                fontFamily: 'DMSans',
+                                fontSize: 15.5,
+                                color: context.colors.ink,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+
+                        // Gate Location
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              AppIcons.location,
+                              size: 19,
+                              color: context.colors.inkMuted,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              outcome.gate ?? 'Gate 1',
+                              style: TextStyle(
+                                fontFamily: 'DMSans',
+                                fontSize: 15.5,
+                                color: context.colors.ink,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        // Rejection note / reason if not valid
+                        if (!isValid) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            isUsed && outcome.previousUseAt != null
+                                ? context.trSafe(
+                                    'ticket.previousUse',
+                                    'Dipakai sebelumnya: ${Fmt.clockSeconds(outcome.previousUseAt!)} (${outcome.previousUseGate ?? "Gate 1"})',
+                                    namedArgs: {
+                                      'time': Fmt.clockSeconds(
+                                        outcome.previousUseAt!,
+                                      ),
+                                      'gate':
+                                          outcome.previousUseGate ?? "Gate 1",
+                                    },
+                                  )
+                                : _instructionForStatus(
+                                    context,
+                                    outcome.status,
+                                  ),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFFFFB3AF),
                             ),
                           ),
-                          onPressed: () {
-                            Navigator.of(context).maybePop();
-                          },
-                          child: Text(
-                            context.trSafe('scanner.scanNext', 'Scan Next'),
-                            style: TextStyle(
-                              fontFamily: 'DMSans',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: btnTextColor,
-                              letterSpacing: 0.2,
-                            ),
-                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Bottom Action: Scan Next Button
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+              child: Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: btnBgColor,
+                        foregroundColor: btnTextColor,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                    ],
+                      onPressed: () {
+                        Navigator.of(context).maybePop();
+                      },
+                      child: Text(
+                        context.trSafe('scanner.scanNext', 'Scan Next'),
+                        style: TextStyle(
+                          fontFamily: 'DMSans',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: btnTextColor,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      }
-    }
+          ],
+        ),
+      ),
+    );
+  }
+}

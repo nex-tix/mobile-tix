@@ -99,6 +99,12 @@ void main() {
     );
     await settle(tester);
 
+    // Nav bergaya tab: tiga target, dengan Scan sebagai tombol hero di tengah.
+    expect(find.byKey(const Key('bottom-navigation')), findsOneWidget);
+    expect(find.byKey(const Key('nav-dashboard')), findsOneWidget);
+    expect(find.byKey(const Key('nav-scan-hero')), findsOneWidget);
+    expect(find.byKey(const Key('nav-history')), findsOneWidget);
+
     // Tab pertama (Dashboard) memuat metrik hari ini dari API.
     expect(find.text('Visitors'), findsOneWidget);
     expect(find.text('128'), findsOneWidget);
