@@ -62,7 +62,11 @@
     "verifying": "Memverifikasi tiket…",
     "offlineDisabled": "Pindai dinonaktifkan saat offline.",
     "scanNext": "Pindai Berikutnya",
-    "pendingSync": "{count} tiket menunggu dikirim ke server"
+    "pendingSync": "{count} tiket menunggu dikirim ke server",
+    "offlineQueued": "Offline — {code} masuk antrean dan akan dikirim otomatis saat koneksi pulih.",
+    "cameraUnavailable": "Kamera tidak tersedia atau izin ditolak",
+    "toggleFlash": "Lampu Kilat",
+    "switchCamera": "Ganti Kamera"
   },
   "ticket": {
     "valid": "VALID",
@@ -73,6 +77,8 @@
     "visitor": "{count} Pengunjung",
     "defaultCategory": "Tiket",
     "detailTitle": "Detail Tiket {code}",
+    "detailHeading": "Detail Tiket",
+    "serialCode": "KODE TIKET",
     "statusLabel": "Status",
     "scanTimeLabel": "Waktu Pindai",
     "checkpointLabel": "Checkpoint",
@@ -97,7 +103,8 @@
     "valid": "Valid",
     "rejected": "Ditolak",
     "today": "Hari Ini",
-    "thisMonth": "Bulan Ini"
+    "thisMonth": "Bulan Ini",
+    "loadFailed": "Metrik tidak dapat dimuat"
   },
   "history": {
     "title": "Riwayat",
@@ -117,6 +124,8 @@
     "selectTitle": "Pilih checkpoint",
     "selectSubtitle": "Pilih checkpoint aktif Anda",
     "enterGate": "Masuk ke Gate",
-    "back": "Kembali"
+    "back": "Kembali",
+    "switchTitle": "Ganti Checkpoint",
+    "switchedSuccess": "Checkpoint berhasil diubah ke {gate}"
   }
 }

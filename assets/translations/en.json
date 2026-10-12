@@ -62,7 +62,11 @@
     "verifying": "Verifying ticket…",
     "offlineDisabled": "Scanning is disabled while offline.",
     "scanNext": "Scan Next",
-    "pendingSync": "{count} tickets pending sync to server"
+    "pendingSync": "{count} tickets pending sync to server",
+    "offlineQueued": "Offline — {code} has been queued and will sync automatically when back online.",
+    "cameraUnavailable": "Camera unavailable or permission denied",
+    "toggleFlash": "Flashlight",
+    "switchCamera": "Switch Camera"
   },
   "ticket": {
     "valid": "VALID",
@@ -73,6 +77,8 @@
     "visitor": "{count} Visitor",
     "defaultCategory": "Ticket",
     "detailTitle": "Ticket Details {code}",
+    "detailHeading": "Ticket Details",
+    "serialCode": "TICKET CODE",
     "statusLabel": "Status",
     "scanTimeLabel": "Scan Time",
     "checkpointLabel": "Checkpoint",
@@ -97,7 +103,8 @@
     "valid": "Valid",
     "rejected": "Rejected",
     "today": "Today",
-    "thisMonth": "This Month"
+    "thisMonth": "This Month",
+    "loadFailed": "Failed to load metrics"
   },
   "history": {
     "title": "History",
@@ -117,6 +124,8 @@
     "selectTitle": "Select checkpoint",
     "selectSubtitle": "Choose your active checkpoint",
     "enterGate": "Enter Gate",
-    "back": "Back"
+    "back": "Back",
+    "switchTitle": "Switch Checkpoint",
+    "switchedSuccess": "Checkpoint switched to {gate}"
   }
 }

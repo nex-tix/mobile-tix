@@ -239,43 +239,59 @@ class ProfileScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     // Checkpoint Row
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 16,
+                    InkWell(
+                      onTap: () => Navigator.of(context).pushNamed('/checkpoint'),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(AppSpacing.radiusXl),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                AppIcons.meetingRoom,
-                                size: 20,
-                                color: context.colors.inkMuted,
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                context.trSafe(
-                                  'profile.checkpoint',
-                                  'Checkpoint',
-                                ),
-                                style: TextStyle(
-                                  fontSize: 14,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 16,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  AppIcons.meetingRoom,
+                                  size: 20,
                                   color: context.colors.inkMuted,
                                 ),
-                              ),
-                            ],
-                          ),
-                          Text(
-                            checkpoint?.gate ?? 'Gate 1',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: context.colors.ink,
+                                const SizedBox(width: 12),
+                                Text(
+                                  context.trSafe(
+                                    'profile.checkpoint',
+                                    'Checkpoint',
+                                  ),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: context.colors.inkMuted,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                            Row(
+                              children: [
+                                Text(
+                                  checkpoint?.gate ?? 'Gate 1',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: context.colors.primary,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Icon(
+                                  AppIcons.arrowForward,
+                                  size: 16,
+                                  color: context.colors.primary,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     Divider(

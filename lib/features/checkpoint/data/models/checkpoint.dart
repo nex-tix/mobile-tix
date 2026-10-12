@@ -25,4 +25,22 @@ class Checkpoint {
   final int scansToday;
 
   String get label => '$gate\n$name';
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'gate': gate,
+    'name': name,
+    'note': note,
+    'open': open,
+    'scansToday': scansToday,
+  };
+
+  factory Checkpoint.fromJson(Map<String, dynamic> json) => Checkpoint(
+    id: json['id'] as String? ?? '',
+    gate: json['gate'] as String? ?? '',
+    name: json['name'] as String? ?? '',
+    note: json['note'] as String? ?? '',
+    open: json['open'] as bool? ?? true,
+    scansToday: (json['scansToday'] as num?)?.toInt() ?? 0,
+  );
 }

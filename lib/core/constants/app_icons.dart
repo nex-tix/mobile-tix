@@ -42,6 +42,8 @@ class AppIcons {
   static const IconData qrScanner = Iconsax.scan_barcode;
   static const IconData camera = Iconsax.camera;
   static const IconData noCamera = Iconsax.camera_slash;
+  static const IconData flash = Iconsax.flash_1;
+  static const IconData flashOff = Iconsax.flash_slash;
 
   // Auth & Security
   static const IconData logout = Iconsax.logout;

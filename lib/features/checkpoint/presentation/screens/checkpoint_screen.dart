@@ -5,6 +5,7 @@ import 'package:mobile_tix/core/constants/app_icons.dart';
 import '../../../../core/bloc/auth/auth_bloc.dart';
 import '../../../../core/bloc/auth/auth_event.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/ui/widgets/app_snackbar.dart';
 import '../../../../core/utils/i18n_helper.dart';
 import '../../../auth/logic/session_state.dart';
 import '../../data/dummy_checkpoints.dart';
@@ -45,6 +46,14 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
     if (_selected == null) return;
     context.read<SessionState>().selectCheckpoint(_selected!);
     if (widget.isSwitch) {
+      AppSnackbar.success(
+        context,
+        context.trSafe(
+          'checkpoint.switchedSuccess',
+          'Checkpoint berhasil diubah ke {gate}',
+          namedArgs: {'gate': _selected!.gate},
+        ),
+      );
       Navigator.of(context).maybePop();
     } else {
       Navigator.of(context).pushReplacementNamed('/home');

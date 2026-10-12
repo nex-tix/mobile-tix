@@ -6,6 +6,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:mobile_tix/core/data/dao/checkpoint_dao.dart';
+import 'package:mobile_tix/features/auth/logic/session_state.dart';
+import 'package:mobile_tix/features/checkpoint/data/models/checkpoint.dart';
 
 void main() {
   group('CheckpointDAO Tests', () {
@@ -71,6 +73,43 @@ void main() {
         await dao.clearActiveCheckpoint();
 
         expect(dao.getActiveCheckpoint(), isNull);
+        expect(dao.hasActiveCheckpoint(), isFalse);
+      });
+
+      test('Checkpoint model toJson dan fromJson roundtrip', () {
+        const cp = Checkpoint(
+          id: 'cp-01',
+          gate: 'Gate 1',
+          name: 'Pintu Utama',
+          note: 'Shift pagi',
+        );
+        final json = cp.toJson();
+        final restored = Checkpoint.fromJson(json);
+        expect(restored.id, equals(cp.id));
+        expect(restored.gate, equals(cp.gate));
+        expect(restored.name, equals(cp.name));
+      });
+
+      test('SessionState selectCheckpoint menyimpan ke DAO dan di-restore', () async {
+        final session = SessionState();
+        const cp = Checkpoint(
+          id: 'cp-99',
+          gate: 'Gate VIP',
+          name: 'Pintu VIP',
+          note: 'Shift malam',
+        );
+        await session.selectCheckpoint(cp);
+        expect(dao.hasActiveCheckpoint(), isTrue);
+        final loaded = dao.getActiveCheckpoint();
+        expect(loaded?['id'], equals('cp-99'));
+
+        // Instance baru otomatis me-restore gate aktif
+        final freshSession = SessionState();
+        expect(freshSession.checkpoint?.id, equals('cp-99'));
+        expect(freshSession.checkpoint?.gate, equals('Gate VIP'));
+
+        // Sign out menghapus checkpoint
+        await session.signOut();
         expect(dao.hasActiveCheckpoint(), isFalse);
       });
     });

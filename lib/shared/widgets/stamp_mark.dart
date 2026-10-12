@@ -103,11 +103,17 @@ class _StampMarkState extends State<StampMark>
                 children: [
                   // Ghost pass: the misregistration of a hand-pressed stamp.
                   if (status.stampIsInk)
-                    Transform.translate(
-                      offset: const Offset(1.5, -1.5),
-                      child: Opacity(
-                        opacity: 0.12,
-                        child: IgnorePointer(child: mark),
+                    Positioned.fill(
+                      child: Transform.translate(
+                        offset: const Offset(1.5, -1.5),
+                        child: Opacity(
+                          opacity: 0.12,
+                          child: IgnorePointer(
+                            child: ExcludeSemantics(
+                              child: _GhostFrame(status: status),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   // Impact: the first 30% of the press lifts a faint paper flash.
@@ -134,6 +140,36 @@ class _StampMarkState extends State<StampMark>
           ),
         );
       },
+    );
+  }
+}
+
+class _GhostFrame extends StatelessWidget {
+  const _GhostFrame({required this.status});
+
+  final TicketStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final ink = status.ink(c);
+    final filled = !status.stampIsInk;
+
+    return Container(
+      padding: const EdgeInsets.all(3.5),
+      decoration: BoxDecoration(
+        color: filled ? c.secondary : null,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+        border: filled ? null : Border.all(color: ink, width: 2.4),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
+          border: filled
+              ? Border.all(color: c.onSecondary.withValues(alpha: 0.28))
+              : Border.all(color: ink.withValues(alpha: 0.38)),
+        ),
+      ),
     );
   }
 }

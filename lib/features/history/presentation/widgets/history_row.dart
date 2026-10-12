@@ -4,6 +4,7 @@ import 'package:mobile_tix/core/constants/app_icons.dart';
 import '../../../../core/constants/ticket_status.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/ui/widgets/text_copyable.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/i18n_helper.dart';
 import '../../data/models/scan_record.dart';
@@ -163,18 +164,26 @@ class HistoryRow extends StatelessWidget {
                     ),
                   ),
                 ),
-                Text(
-                  context.trSafe(
-                    'ticket.detailTitle',
-                    'Detail Tiket ${record.ticketCode}',
-                    namedArgs: {'code': record.ticketCode},
-                  ),
-                  style: TextStyle(
-                    fontFamily: 'DMSans',
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: context.colors.ink,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      context.trSafe(
+                        'ticket.detailHeading',
+                        'Detail Tiket',
+                      ),
+                      style: TextStyle(
+                        fontFamily: 'DMSans',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: context.colors.ink,
+                      ),
+                    ),
+                    TextCopyable(
+                      value: record.ticketCode,
+                      copiedMessage: context.trSafe('common.copied', 'Disalin!'),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 _infoRow(

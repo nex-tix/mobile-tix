@@ -72,7 +72,6 @@ class HomeShell extends StatelessWidget {
                         'dashboard.title',
                         'Dashboard',
                       ),
-                      badgeCount: pendingSync > 0 ? pendingSync : null,
                     ),
                   ),
 
@@ -82,6 +81,7 @@ class HomeShell extends StatelessWidget {
                       key: const Key('nav-scan-hero'),
                       selected: shell.index == 1,
                       onTap: () => shell.goIndex(1),
+                      badgeCount: pendingSync > 0 ? pendingSync : null,
                     ),
                   ),
 
@@ -117,7 +117,6 @@ class _NavTab extends StatefulWidget {
     required this.selected,
     required this.onTap,
     required this.semanticsLabel,
-    this.badgeCount,
   });
 
   final IconData icon;
@@ -125,7 +124,6 @@ class _NavTab extends StatefulWidget {
   final bool selected;
   final VoidCallback onTap;
   final String semanticsLabel;
-  final int? badgeCount;
 
   @override
   State<_NavTab> createState() => _NavTabState();
@@ -185,45 +183,7 @@ class _NavTabState extends State<_NavTab> {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Icon(widget.icon, size: 26, color: color),
-                        if (widget.badgeCount != null && widget.badgeCount! > 0)
-                          Positioned(
-                            right: -6,
-                            top: -6,
-                            child: Container(
-                              padding: const EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                color: context.colors.primary,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: context.colors.surface,
-                                  width: 1.5,
-                                ),
-                              ),
-                              constraints: const BoxConstraints(
-                                minWidth: 16,
-                                minHeight: 16,
-                              ),
-                              child: Center(
-                                child: Text(
-                                  widget.badgeCount! > 9
-                                      ? '9+'
-                                      : widget.badgeCount.toString(),
-                                  style: TextStyle(
-                                    fontFamily: 'DMSans',
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w700,
-                                    color: context.colors.onPrimary,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
+                    Icon(widget.icon, size: 26, color: color),
                     const SizedBox(height: 5),
                     AnimatedDefaultTextStyle(
                       duration: const Duration(milliseconds: 180),
@@ -252,10 +212,12 @@ class _ScanNavButton extends StatefulWidget {
     super.key,
     required this.selected,
     required this.onTap,
+    this.badgeCount,
   });
 
   final bool selected;
   final VoidCallback onTap;
+  final int? badgeCount;
 
   @override
   State<_ScanNavButton> createState() => _ScanNavButtonState();
@@ -294,22 +256,64 @@ class _ScanNavButtonState extends State<_ScanNavButton> {
                 scale: _pressed ? 0.94 : (elevated ? 1.06 : 1),
                 duration: const Duration(milliseconds: 180),
                 curve: Curves.easeOutCubic,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  curve: Curves.easeOutCubic,
-                  width: 76,
-                  height: 76,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: colors.primary,
-                  ),
-                  child: Center(
-                    child: Icon(
-                      AppIcons.qrScanner,
-                      size: 36,
-                      color: colors.onPrimary,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOutCubic,
+                      width: 76,
+                      height: 76,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: colors.primary,
+                      ),
+                      child: Center(
+                        child: Icon(
+                          AppIcons.qrScanner,
+                          size: 36,
+                          color: colors.onPrimary,
+                        ),
+                      ),
                     ),
-                  ),
+                    if (widget.badgeCount != null && widget.badgeCount! > 0)
+                      Positioned(
+                        top: 2,
+                        right: 2,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colors.secondary,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: colors.surface,
+                              width: 2,
+                            ),
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 20,
+                            minHeight: 20,
+                          ),
+                          child: Center(
+                            child: Text(
+                              widget.badgeCount! > 9
+                                  ? '9+'
+                                  : widget.badgeCount.toString(),
+                              style: TextStyle(
+                                fontFamily: 'DMSans',
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: colors.onSecondary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
               const SizedBox(height: 6),

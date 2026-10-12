@@ -1,4 +1,7 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_tix/core/constants/app_icons.dart';
 import 'package:mobile_tix/core/theme/app_colors.dart';
 import 'package:mobile_tix/core/utils/i18n_helper.dart';
@@ -6,22 +9,25 @@ import 'package:mobile_tix/core/utils/i18n_helper.dart';
 /// Camera Viewfinder card based on Screen 5 (`5._scan_check_in/code.html`).
 ///
 /// Features:
-/// - Dark camera feed vignette styling
+/// - Real hardware camera feed via `mobile_scanner` on Android/iOS
+/// - Torch/Flashlight toggle and camera switch controls
+/// - Anti-duplicate scan cooldown debounce (2 seconds)
 /// - 4 curved corner reticles in Deep Red (`#CF4647`)
-/// - Central QR crosshair focus icon
-/// - "Scan QR ticket" caption
-/// - Tappable preview to simulate scan
+/// - Sweeping laser animation
+/// - Tappable preview fallback for simulation and test environments
 class ScannerViewfinder extends StatefulWidget {
   const ScannerViewfinder({
     super.key,
     required this.height,
     required this.onSimulate,
+    this.onScanned,
     this.disabled = false,
     this.processing = false,
   });
 
   final double height;
   final VoidCallback onSimulate;
+  final ValueChanged<String>? onScanned;
   final bool disabled;
   final bool processing;
 
@@ -36,10 +42,65 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
     duration: const Duration(milliseconds: 2000),
   )..repeat(reverse: true);
 
+  MobileScannerController? _scannerController;
+  bool _torchEnabled = false;
+  DateTime? _lastScannedAt;
+  String? _lastScannedCode;
+
+  bool get _canUseCamera =>
+      !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+
+  @override
+  void initState() {
+    super.initState();
+    if (_canUseCamera) {
+      _scannerController = MobileScannerController(
+        detectionSpeed: DetectionSpeed.normal,
+        facing: CameraFacing.back,
+        torchEnabled: false,
+      );
+    }
+  }
+
   @override
   void dispose() {
     _sweep.dispose();
+    _scannerController?.dispose();
     super.dispose();
+  }
+
+  void _onBarcodeDetected(BarcodeCapture capture) {
+    if (widget.disabled || widget.processing) return;
+    for (final barcode in capture.barcodes) {
+      final code = barcode.rawValue?.trim();
+      if (code != null && code.isNotEmpty) {
+        final now = DateTime.now();
+        if (_lastScannedCode == code && _lastScannedAt != null) {
+          if (now.difference(_lastScannedAt!) < const Duration(seconds: 2)) {
+            return;
+          }
+        }
+        _lastScannedAt = now;
+        _lastScannedCode = code;
+        widget.onScanned?.call(code);
+        break;
+      }
+    }
+  }
+
+  Future<void> _toggleTorch() async {
+    if (_scannerController == null) return;
+    try {
+      await _scannerController!.toggleTorch();
+      setState(() => _torchEnabled = !_torchEnabled);
+    } catch (_) {}
+  }
+
+  Future<void> _switchCamera() async {
+    if (_scannerController == null) return;
+    try {
+      await _scannerController!.switchCamera();
+    } catch (_) {}
   }
 
   @override
@@ -59,7 +120,61 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
         child: Stack(
           alignment: Alignment.center,
           children: [
-            // Center Reticle with 4 Corners
+            // 1. Live Camera Feed (Android/iOS)
+            if (_canUseCamera && _scannerController != null)
+              Positioned.fill(
+                child: MobileScanner(
+                  controller: _scannerController!,
+                  onDetect: _onBarcodeDetected,
+                  errorBuilder: (context, error) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              AppIcons.noCamera,
+                              size: 32,
+                              color: context.colors.inkMuted,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              context.trSafe(
+                                'scanner.cameraUnavailable',
+                                'Kamera tidak tersedia atau izin ditolak',
+                              ),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: context.colors.inkMuted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+            // 2. Dark Vignette overlay to keep reticle contrast
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment.center,
+                    radius: 0.85,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.5),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // 3. Center Reticle with 4 Corners
             SizedBox(
               width: frameSize,
               height: frameSize,
@@ -104,7 +219,9 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
                         : Icon(
                             AppIcons.qrScanner,
                             size: 36,
-                            color: context.colors.primary,
+                            color: context.colors.primary.withValues(
+                              alpha: 0.8,
+                            ),
                           ),
                   ),
 
@@ -146,7 +263,46 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
               ),
             ),
 
-            // Helper Instruction Text Under Viewfinder
+            // 4. Torch and Flip controls on top corners (when camera is available)
+            if (_canUseCamera && _scannerController != null)
+              Positioned(
+                top: 12,
+                left: 14,
+                right: 14,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        _torchEnabled ? AppIcons.flash : AppIcons.flashOff,
+                        color: _torchEnabled
+                            ? context.colors.secondary
+                            : Colors.white,
+                        size: 22,
+                      ),
+                      onPressed: _toggleTorch,
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.black.withValues(alpha: 0.45),
+                      ),
+                      tooltip: context.trSafe('scanner.toggleFlash', 'Lampu Kilat'),
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        AppIcons.replay,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      onPressed: _switchCamera,
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.black.withValues(alpha: 0.45),
+                      ),
+                      tooltip: context.trSafe('scanner.switchCamera', 'Ganti Kamera'),
+                    ),
+                  ],
+                ),
+              ),
+
+            // 5. Helper Instruction Text Under Viewfinder
             Positioned(
               bottom: 18,
               child: Text(
@@ -157,7 +313,13 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
                   fontFamily: 'DMSans',
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: context.colors.ink,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withValues(alpha: 0.6),
+                      blurRadius: 4,
+                    ),
+                  ],
                 ),
               ),
             ),

@@ -179,6 +179,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                     ScannerViewfinder(
                       height: viewHeight,
                       onSimulate: _simulateCameraScan,
+                      onScanned: _submit,
                       processing: state.isProcessing,
                       disabled: false,
                     ),
