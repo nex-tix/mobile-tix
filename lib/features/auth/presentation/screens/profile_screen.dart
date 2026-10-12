@@ -9,9 +9,13 @@ import '../../../../core/bloc/auth/auth_bloc.dart';
 import '../../../../core/bloc/auth/auth_event.dart';
 import '../../../../core/bloc/language/language_cubit.dart';
 import '../../../../core/bloc/theme/theme_cubit.dart';
+import '../../../../core/ui/widgets/app_snackbar.dart';
 import '../../../../core/utils/i18n_helper.dart';
+import '../../../../shared/widgets/app_sheet.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/widgets/inline_status.dart';
+import '../../../checkpoint/data/dummy_checkpoints.dart';
+import '../../../checkpoint/data/models/checkpoint.dart';
 import '../../logic/session_state.dart';
 
 /// Full-screen profile screen conforming to `newDesign/15._profile_bottom_sheet/code.html`.
@@ -240,7 +244,7 @@ class ProfileScreen extends StatelessWidget {
                   children: [
                     // Checkpoint Row
                     InkWell(
-                      onTap: () => Navigator.of(context).pushNamed('/checkpoint'),
+                      onTap: () => _showCheckpointPicker(context),
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(AppSpacing.radiusXl),
                       ),
@@ -284,7 +288,7 @@ class ProfileScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 6),
                                 Icon(
-                                  AppIcons.arrowForward,
+                                  AppIcons.chevronRight,
                                   size: 16,
                                   color: context.colors.primary,
                                 ),
@@ -397,4 +401,198 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
+
+  void _showCheckpointPicker(BuildContext context) {
+    final session = context.read<SessionState>();
+    final current = session.checkpoint;
+    final colors = context.colors;
+
+    AppSheet.show<void>(
+      context,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                context.trSafe('checkpoint.switchTitle', 'Ganti Checkpoint'),
+                style: TextStyle(
+                  fontFamily: 'DMSans',
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: colors.ink,
+                ),
+              ),
+              IconButton(
+                icon: Icon(AppIcons.close, size: 20, color: colors.inkMuted),
+                onPressed: () => Navigator.of(context).pop(),
+                splashRadius: 20,
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            context.trSafe(
+              'checkpoint.selectSubtitle',
+              'Pilih checkpoint aktif Anda',
+            ),
+            style: TextStyle(
+              fontSize: 13,
+              color: colors.inkMuted,
+            ),
+          ),
+          const SizedBox(height: 16),
+          for (final cp in dummyCheckpoints) ...[
+            _CheckpointPickerTile(
+              checkpoint: cp,
+              isSelected: current?.id == cp.id,
+              onTap: () {
+                Navigator.of(context).pop();
+                if (current?.id != cp.id) {
+                  session.selectCheckpoint(cp);
+                  AppSnackbar.success(
+                    context,
+                    context.trSafe(
+                      'checkpoint.switchedSuccess',
+                      'Checkpoint berhasil diubah ke {gate}',
+                      namedArgs: {'gate': cp.gate},
+                    ),
+                  );
+                }
+              },
+            ),
+            if (cp != dummyCheckpoints.last) const SizedBox(height: 10),
+          ],
+        ],
+      ),
+    );
+  }
 }
+
+class _CheckpointPickerTile extends StatelessWidget {
+  const _CheckpointPickerTile({
+    required this.checkpoint,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final Checkpoint checkpoint;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+          decoration: BoxDecoration(
+            color: isSelected ? colors.surfaceAlt : colors.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? colors.primary : colors.outline,
+              width: isSelected ? 1.5 : 1.0,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: isSelected ? colors.primaryTint : colors.surfaceAlt,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isSelected ? colors.primary : colors.outline,
+                  ),
+                ),
+                child: Center(
+                  child: Icon(
+                    AppIcons.meetingRoom,
+                    size: 18,
+                    color: isSelected ? colors.primary : colors.inkMuted,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          checkpoint.gate,
+                          style: TextStyle(
+                            fontFamily: 'DMSans',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: colors.ink,
+                          ),
+                        ),
+                        if (!checkpoint.open) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colors.primaryTint,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'DITUTUP',
+                              style: TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w600,
+                                color: colors.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    if (checkpoint.name.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        checkpoint.name,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: colors.inkMuted,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (isSelected)
+                Icon(
+                  AppIcons.checkCircle,
+                  size: 20,
+                  color: colors.primary,
+                )
+              else
+                Icon(
+                  AppIcons.chevronRight,
+                  size: 18,
+                  color: colors.inkMuted.withValues(alpha: 0.4),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
