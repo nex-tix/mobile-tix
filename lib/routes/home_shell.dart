@@ -30,6 +30,7 @@ class HomeShell extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: context.colors.ground,
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           // Screen pages kept alive in IndexedStack
