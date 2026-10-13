@@ -10,6 +10,7 @@ import '../../../../core/connectivity/connectivity_monitor.dart';
 import '../../../../core/data/dao/offline_queue_dao.dart';
 import '../../../../core/error/api_failure.dart';
 import '../data/models/scan_result.dart';
+import '../data/ticket_code.dart';
 import '../data/repositories/ticket_repository.dart';
 import 'scanner_state.dart';
 
@@ -79,7 +80,7 @@ class ScannerCubit extends Cubit<ScannerState> {
 
   /// Kirim satu scan ke endpoint sesuai mode aktif.
   ///
-  /// Hasilnya selalu salah satu dari lima verdict, kecuali:
+  /// Hasilnya selalu salah satu dari enam verdict, kecuali:
   /// - koneksi putus → [ScannerQueued] (scan disimpan, dikirim saat online);
   /// - kegagalan lain → [ScannerError] (tidak diantrekan).
   Future<void> scanTicket({
@@ -88,7 +89,10 @@ class ScannerCubit extends Cubit<ScannerState> {
   }) async {
     if (state.isProcessing) return; // satu scan diproses pada satu waktu
 
-    final code = ticketCode.trim();
+    // QR POS berisi payload ('TICKET|code=…|transaction=…'), bukan kode tiket
+    // polos. Dirapikan di sini supaya kamera, input manual, cooldown, dan
+    // antrean offline semuanya bekerja dengan kode yang sama.
+    final code = TicketCode.parse(ticketCode);
     final mode = _mode;
 
     if (code.isEmpty) {

@@ -141,6 +141,26 @@ void main() {
         expect(repository.calls, equals(['check|cp-01|TKT-1']));
       });
 
+      test('payload QR POS dikirim ke API sebagai kode tiket saja', () async {
+        final cubit = ScannerCubit(
+          repository: repository,
+          queueDao: queueDao,
+        );
+        addTearDown(cubit.close);
+
+        await cubit.scanTicket(
+          ticketCode:
+              'TICKET|code=GRP-2HPG-4FWB-GMFR-NRXW|transaction=6|status=active',
+          checkpointId: 'cp-01',
+        );
+
+        expect(
+          repository.calls,
+          equals(['checkIn|cp-01|GRP-2HPG-4FWB-GMFR-NRXW']),
+        );
+        expect(cubit.state, isA<ScannerSuccess>());
+      });
+
       test('setMode tidak mengubah apa pun bila mode sama', () async {
         final cubit = ScannerCubit(
           repository: repository,
