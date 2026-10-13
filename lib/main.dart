@@ -8,6 +8,7 @@ import 'core/bloc/theme/theme_cubit.dart';
 import 'core/bloc/language/language_cubit.dart';
 import 'core/data/dao/offline_queue_dao.dart';
 import 'core/data/dao/checkpoint_dao.dart';
+import 'core/data/dao/staff_dao.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +24,7 @@ void main() async {
   EncryptionService.initialize();
   await authTokenDao.initialize();
   await CheckpointDAO().initialize();
+  await StaffDAO().initialize();
   await OfflineQueueDAO().initialize();
 
   // 4. Inisialisasi Global Cubits (Theme & Language)

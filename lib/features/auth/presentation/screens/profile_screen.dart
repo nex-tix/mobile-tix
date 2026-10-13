@@ -30,6 +30,16 @@ class ProfileScreen extends StatelessWidget {
     final staff = session.staff;
     final checkpoint = session.checkpoint;
 
+    // Nama diambil dari akun yang benar-benar login (gate_users). Peran tidak
+    // ada di tabel petugas, jadi labelnya dari kamus dan username ditampilkan
+    // supaya jelas akun mana yang aktif di perangkat ini.
+    final staffName = staff?.displayName ?? '';
+    final staffUsername = staff?.username ?? '';
+    final roleLabel = context.trSafe('profile.defaultRole', 'Petugas Gate');
+    final staffRole = staffUsername.isEmpty
+        ? roleLabel
+        : '$roleLabel · @$staffUsername';
+
     return Scaffold(
       backgroundColor: context.colors.ground,
       appBar: AppBar(
@@ -73,7 +83,7 @@ class ProfileScreen extends StatelessWidget {
                       child: ClipOval(
                         child: Center(
                           child: Text(
-                            staff?.initials ?? 'R',
+                            staff?.initials ?? '',
                             style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w600,
@@ -89,7 +99,12 @@ class ProfileScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            staff?.name ?? 'Raya',
+                            staffName.isEmpty
+                                ? context.trSafe(
+                                    'profile.unknownStaff',
+                                    'Petugas belum dikenal',
+                                  )
+                                : staffName,
                             style: TextStyle(
                               fontFamily: 'DMSans',
                               fontSize: 18,
@@ -99,11 +114,7 @@ class ProfileScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            staff?.role ??
-                                context.trSafe(
-                                  'profile.defaultRole',
-                                  'Gate Staff · Shift Utama',
-                                ),
+                            staffRole,
                             style: TextStyle(
                               fontSize: 13,
                               color: context.colors.inkMuted,

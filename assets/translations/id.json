@@ -48,7 +48,8 @@
     "language": "Bahasa",
     "checkpoint": "Checkpoint",
     "connection": "Koneksi",
-    "defaultRole": "Gate Staff · Shift Utama"
+    "defaultRole": "Petugas Gate",
+    "unknownStaff": "Petugas belum dikenal"
   },
   "scanner": {
     "title": "Pindai Tiket",

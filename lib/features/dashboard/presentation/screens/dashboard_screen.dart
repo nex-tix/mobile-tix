@@ -57,7 +57,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _Header(
-                      initials: staff?.initials ?? 'R',
+                      initials: staff?.initials ?? '',
                       online: connectivity.online,
                       onToggleConnectivity: () =>
                           context.read<DemoConnectivity>().toggle(),
@@ -66,8 +66,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     const SizedBox(height: 20),
                     _Greeting(
-                      name: staff?.name ?? 'Raya',
-                      gate: checkpoint?.gate ?? 'Gate 1',
+                      name: staff?.displayName ?? '',
+                      gate: checkpoint?.gate ?? '',
                     ),
                     const SizedBox(height: 18),
                     _PeriodSwitch(
@@ -222,17 +222,19 @@ class _Greeting extends StatelessWidget {
             color: context.colors.inkMuted,
           ),
         ),
-        const SizedBox(height: 2),
-        Text(
-          name,
-          style: TextStyle(
-            fontFamily: 'DMSans',
-            fontSize: 26,
-            fontWeight: FontWeight.w600,
-            color: context.colors.ink,
-            letterSpacing: -0.3,
+        if (name.isNotEmpty) ...[
+          const SizedBox(height: 2),
+          Text(
+            name,
+            style: TextStyle(
+              fontFamily: 'DMSans',
+              fontSize: 26,
+              fontWeight: FontWeight.w600,
+              color: context.colors.ink,
+              letterSpacing: -0.3,
+            ),
           ),
-        ),
+        ],
         const SizedBox(height: 3),
         Text(
           gate,

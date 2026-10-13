@@ -48,7 +48,8 @@
     "language": "Language",
     "checkpoint": "Checkpoint",
     "connection": "Connection",
-    "defaultRole": "Gate Staff · Main Shift"
+    "defaultRole": "Gate Staff",
+    "unknownStaff": "Unknown staff"
   },
   "scanner": {
     "title": "Scan Ticket",

@@ -3,8 +3,10 @@
 
 import 'package:flutter/foundation.dart';
 import '../../services/api_service.dart';
+import '../dao/staff_dao.dart';
 import '../dao/token_jwt_dao.dart';
 import '../../config/api_endpoints.dart';
+import '../../../features/auth/data/models/gate_staff.dart';
 
 /// Response model untuk login endpoint
 /// 
@@ -13,37 +15,50 @@ class LoginResponse {
   // JWT token dari backend
   // Disimpan ke TokenJwtDAO setelah login sukses
   final String token;
-  
-  // User ID dari backend (optional, untuk cek siapa yang login)
-  final String? userId;
-  
-  // User name dari backend (optional)
-  final String? name;
+
+  /// Petugas yang berhasil login, dari field `user` balikan /login:
+  /// `{ "id": 4, "name": "rayamandara", "username": "raya", "phone": "..." }`.
+  /// Null bila server tidak mengirim identitas petugas.
+  final GateStaff? staff;
 
   /// Constructor
-  LoginResponse({
-    required this.token,
-    this.userId,
-    this.name,
-  });
+  LoginResponse({required this.token, this.staff});
 
   /// Parse dari JSON response
-  /// 
-  /// Backend format: { "data": { "token": "...", "userId": "...", "name": "..." } }
+  ///
+  /// Backend format:
+  /// `{ "data": { "token": "...", "user": { "id": 1, "name": "...", "username": "..." } } }`
+  /// Bentuk rata lama (`userId`/`name` sejajar token) masih diterima.
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
-    final userMap = json['user'] is Map ? json['user'] as Map<String, dynamic> : null;
+    final token = json['token'] as String? ?? '';
+    final rawUser = json['user'];
+    if (rawUser is Map) {
+      return LoginResponse(
+        token: token,
+        staff: GateStaff.fromJson(Map<String, dynamic>.from(rawUser)),
+      );
+    }
+
+    final name = json['name'] as String?;
+    final rawId = json['userId'];
+    if (name == null && rawId == null) {
+      return LoginResponse(token: token);
+    }
+
     return LoginResponse(
-      token: json['token'] as String? ?? '',
-      userId: json['userId'] as String? ?? userMap?['id']?.toString(),
-      name: json['name'] as String? ?? userMap?['name'] as String?,
+      token: token,
+      staff: GateStaff(
+        id: rawId is int ? rawId : int.tryParse('${rawId ?? ''}'),
+        name: name ?? '',
+        username: json['username'] as String? ?? '',
+      ),
     );
   }
 
   /// Convert ke JSON
   Map<String, dynamic> toJson() => {
     'token': token,
-    'userId': userId,
-    'name': name,
+    'staff': staff?.toJson(),
   };
 }
 
@@ -109,11 +124,17 @@ class AuthRepository {
   // Token disimpan terenkripsi ke Hive
   final TokenJwtDAO _tokenDAO;
 
+  // DAO identitas petugas — supaya nama di Profil tetap benar setelah app
+  // dibuka ulang, tanpa perlu memanggil /me lagi.
+  final StaffDAO _staffDao;
+
   /// Constructor dengan dependency injection
   /// 
   /// [_apiService]: Dio client dengan interceptor
   /// [_tokenDAO]: Hive token storage
-  AuthRepository(this._apiService, this._tokenDAO);
+  /// [_staffDao]: Hive penyimpanan petugas yang login (opsional untuk test)
+  AuthRepository(this._apiService, this._tokenDAO, {StaffDAO? staffDao})
+      : _staffDao = staffDao ?? StaffDAO();
 
   // ==================== LOGIN ENDPOINT ====================
 
@@ -190,8 +211,15 @@ class AuthRepository {
       await _tokenDAO.saveToken(loginResponse.token);
 
       // Set token ke ApiService interceptor
-      // Future requests akan include Authorization: Bearer <token>
+      // Future requests akan include Authorization: Bearer ***
       _apiService.setToken(loginResponse.token);
+
+      // Simpan identitas petugas (name/username dari gate_users) supaya UI
+      // menampilkan akun yang benar-benar login, bukan nama bawaan.
+      final staff = loginResponse.staff;
+      if (staff != null) {
+        await _staffDao.saveStaff(staff.toJson());
+      }
 
       // Return LoginResponse
       // BLoC akan handle success state dan navigate ke home screen
@@ -241,6 +269,9 @@ class AuthRepository {
 
       // Delete token dari TokenJwtDAO (terenkripsi storage)
       await _tokenDAO.deleteToken();
+
+      // Hapus identitas petugas — sesi berikutnya harus login ulang.
+      await _staffDao.clearStaff();
 
       // Clear token dari ApiService interceptor
       // Future requests tidak akan include Authorization header

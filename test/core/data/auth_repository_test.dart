@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
+import 'package:mobile_tix/core/data/dao/staff_dao.dart';
 import 'package:mobile_tix/core/data/dao/token_jwt_dao.dart';
 import 'package:mobile_tix/core/data/repositories/auth_repository.dart';
 import 'package:mobile_tix/core/services/api_service.dart';
@@ -41,10 +42,37 @@ void main() {
       );
 
       expect(response.token, isNotEmpty);
-      expect(response.name, equals('Admin Gate'));
+      expect(response.staff, isNotNull);
+      expect(response.staff!.name, equals('Admin Gate'));
+      expect(response.staff!.username, equals('admin.gate'));
       expect(repository.isAuthenticated(), isTrue);
       expect(tokenDAO.getToken(), equals(response.token));
       expect(apiService.token, equals(response.token));
+    });
+
+    test('login menyimpan identitas petugas supaya Profil memakai akun asli', () async {
+      final staffDao = StaffDAO();
+      await staffDao.initialize();
+      await staffDao.clearStaff();
+      expect(staffDao.getStaff(), isNull);
+
+      await repository.login(username: 'admin.gate', password: 'gate2026');
+
+      final saved = staffDao.getStaff();
+      expect(saved, isNotNull);
+      expect(saved!['name'], equals('Admin Gate'));
+      expect(saved['username'], equals('admin.gate'));
+    });
+
+    test('logout membersihkan identitas petugas', () async {
+      final staffDao = StaffDAO();
+      await staffDao.initialize();
+
+      await repository.login(username: 'admin.gate', password: 'gate2026');
+      expect(staffDao.getStaff(), isNotNull);
+
+      await repository.logout();
+      expect(staffDao.getStaff(), isNull);
     });
 
     test('login gagal melempar Exception jika credentials salah', () async {
