@@ -49,6 +49,30 @@ void main() {
       expect(dao.getToken(), equals(dummyJwt));
     });
 
+    test('masa berlaku token tersimpan dan terbaca', () async {
+      final expiry = DateTime.now().add(const Duration(days: 7));
+
+      await dao.saveToken(dummyJwt, expiresAt: expiry);
+
+      expect(dao.getExpiry(), equals(expiry));
+    });
+
+    test('belum ada token → getExpiry null', () {
+      expect(dao.getExpiry(), isNull);
+    });
+
+    test('deleteToken juga menghapus masa berlaku (logout)', () async {
+      await dao.saveToken(
+        dummyJwt,
+        expiresAt: DateTime.now().add(const Duration(days: 7)),
+      );
+
+      await dao.deleteToken();
+
+      expect(dao.getToken(), isNull);
+      expect(dao.getExpiry(), isNull);
+    });
+
     test('saveToken menimpa token lama (hanya 1 record aktif)', () async {
       await dao.saveToken(dummyJwt);
       await dao.saveToken('token-baru');

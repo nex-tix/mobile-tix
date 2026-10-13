@@ -45,6 +45,9 @@ void main() {
       expect(response.staff, isNotNull);
       expect(response.staff!.name, equals('Admin Gate'));
       expect(response.staff!.username, equals('admin.gate'));
+      // expires_at dari server disimpan agar auto-login bisa menolak token basi
+      expect(response.expiresAt, isNotNull);
+      expect(response.expiresAt!.isAfter(DateTime.now()), isTrue);
       expect(repository.isAuthenticated(), isTrue);
       expect(tokenDAO.getToken(), equals(response.token));
       expect(apiService.token, equals(response.token));

@@ -34,6 +34,14 @@ class TokenJwtCubit extends Cubit<TokenJwtState> {
       // Ini check token yang sudah disimpan dari login sebelumnya
       final token = _tokenDAO.getToken();
 
+      // Token kedaluwarsa tidak dipakai masuk — dibuang supaya petugas
+      // langsung diarahkan ke login, bukan masuk lalu semua request ditolak.
+      if (token != null && token.isNotEmpty && _isExpired(_tokenDAO.getExpiry())) {
+        await _tokenDAO.deleteToken();
+        emit(const TokenJwtState.unauthenticated());
+        return;
+      }
+
       if (token != null && token.isNotEmpty) {
         // Token ditemukan — emit authenticated state dengan token
         // State ini digunakan untuk:
@@ -54,13 +62,20 @@ class TokenJwtCubit extends Cubit<TokenJwtState> {
     }
   }
 
+  /// True bila masa berlaku token sudah lewat. Token tanpa info masa berlaku
+  /// (data lama) dianggap masih dipakai sampai server menolaknya.
+  bool _isExpired(DateTime? expiry) {
+    if (expiry == null) return false;
+    return DateTime.now().isAfter(expiry.toLocal());
+  }
+
   /// Save token setelah login sukses
   /// 
   /// [token]: JWT token string dari backend
   /// 
   /// Disimpan ke Hive (terenkripsi) dan emit authenticated state
   /// Dipanggil dari auth_bloc setelah login API berhasil
-  Future<void> saveToken(String token) async {
+  Future<void> saveToken(String token, {DateTime? expiresAt}) async {
     try {
       // Validate token tidak kosong
       if (token.isEmpty) {
@@ -70,7 +85,7 @@ class TokenJwtCubit extends Cubit<TokenJwtState> {
 
       // Simpan token ke Hive (auto-encrypt menggunakan EncryptionService key)
       // Token disimpan dalam box 'token_box' dengan key 'jwt_token'
-      await _tokenDAO.saveToken(token);
+      await _tokenDAO.saveToken(token, expiresAt: expiresAt);
 
       // Emit authenticated state dengan token yang baru disimpan
       // State ini akan trigger update di semua BLoC yang listen

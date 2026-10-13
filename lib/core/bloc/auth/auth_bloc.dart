@@ -88,7 +88,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
 
       // Simpan token (sudah di‑save oleh AuthRepository, tapi kita set lagi untuk UI sync)
-      tokenCubit.saveToken(response.token);
+      tokenCubit.saveToken(response.token, expiresAt: response.expiresAt);
       apiService.setToken(response.token);
 
       emit(const AuthAuthenticated());

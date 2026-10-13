@@ -27,6 +27,11 @@ void main() async {
   await StaffDAO().initialize();
   await OfflineQueueDAO().initialize();
 
+  // 3b. Pulihkan sesi: token yang tersimpan dibaca ulang supaya petugas tidak
+  //     perlu login setiap kali aplikasi dibuka. Token yang sudah kedaluwarsa
+  //     otomatis dibuang oleh loadToken().
+  await authTokenCubit.loadToken();
+
   // 4. Inisialisasi Global Cubits (Theme & Language)
   final themeCubit = ThemeCubit();
   await themeCubit.initialize();

@@ -21,8 +21,12 @@ class LoginResponse {
   /// Null bila server tidak mengirim identitas petugas.
   final GateStaff? staff;
 
+  /// Masa berlaku token dari server (`expires_at`). Disimpan supaya aplikasi
+  /// yang dibuka ulang tidak memakai token yang sudah kedaluwarsa.
+  final DateTime? expiresAt;
+
   /// Constructor
-  LoginResponse({required this.token, this.staff});
+  LoginResponse({required this.token, this.staff, this.expiresAt});
 
   /// Parse dari JSON response
   ///
@@ -31,22 +35,28 @@ class LoginResponse {
   /// Bentuk rata lama (`userId`/`name` sejajar token) masih diterima.
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     final token = json['token'] as String? ?? '';
+    final expiresAt = DateTime.tryParse(
+      (json['expires_at'] as String?) ?? '',
+    );
+
     final rawUser = json['user'];
     if (rawUser is Map) {
       return LoginResponse(
         token: token,
         staff: GateStaff.fromJson(Map<String, dynamic>.from(rawUser)),
+        expiresAt: expiresAt,
       );
     }
 
     final name = json['name'] as String?;
     final rawId = json['userId'];
     if (name == null && rawId == null) {
-      return LoginResponse(token: token);
+      return LoginResponse(token: token, expiresAt: expiresAt);
     }
 
     return LoginResponse(
       token: token,
+      expiresAt: expiresAt,
       staff: GateStaff(
         id: rawId is int ? rawId : int.tryParse('${rawId ?? ''}'),
         name: name ?? '',
@@ -59,6 +69,7 @@ class LoginResponse {
   Map<String, dynamic> toJson() => {
     'token': token,
     'staff': staff?.toJson(),
+    'expires_at': expiresAt?.toIso8601String(),
   };
 }
 
@@ -206,9 +217,12 @@ class AuthRepository {
         throw Exception('Token tidak diterima dari server');
       }
 
-      // Simpan token ke TokenJwtDAO (terenkripsi)
-      // Next request akan auto-inject token ke Authorization header
-      await _tokenDAO.saveToken(loginResponse.token);
+      // Simpan token + masa berlakunya ke TokenJwtDAO (terenkripsi).
+      // Masa berlaku dipakai saat aplikasi dibuka ulang (lihat loadToken).
+      await _tokenDAO.saveToken(
+        loginResponse.token,
+        expiresAt: loginResponse.expiresAt,
+      );
 
       // Set token ke ApiService interceptor
       // Future requests akan include Authorization: Bearer ***

@@ -21,6 +21,11 @@ class TokenJwtDAO {
   // Dalam box Hive, data disimpan dengan key-value pair
   static const String _tokenKey = 'jwt_token';
 
+  // Key masa berlaku token (dari field expires_at balikan /login).
+  // Dipakai saat aplikasi dibuka ulang: token yang sudah lewat masa berlaku
+  // tidak perlu dipakai masuk lagi.
+  static const String _expiryKey = 'jwt_expires_at';
+
   // Singleton instance — hanya 1 DAO untuk token
   static final TokenJwtDAO _instance = TokenJwtDAO._internal();
   
@@ -63,15 +68,34 @@ class TokenJwtDAO {
   /// Simpan JWT token ke Hive
   /// 
   /// [token]: JWT token string yang valid
+  /// [expiresAt]: masa berlaku dari server (opsional; null = tidak diubah)
   /// Throws: Exception jika gagal simpan
-  Future<void> saveToken(String token) async {
+  Future<void> saveToken(String token, {DateTime? expiresAt}) async {
     try {
       if (_tokenBox == null) {
         throw Exception('TokenJwtDAO not initialized. Call initialize() first.');
       }
       await _tokenBox!.put(_tokenKey, token);
+      if (expiresAt != null) {
+        await _tokenBox!.put(_expiryKey, expiresAt.toIso8601String());
+      }
     } catch (e) {
       throw Exception('Failed to save token: $e');
+    }
+  }
+
+  /// Masa berlaku token yang tersimpan.
+  ///
+  /// Returns: DateTime masa berlaku, atau null bila tidak tersimpan / tidak
+  /// bisa dibaca (token lama sebelum kolom ini ada).
+  DateTime? getExpiry() {
+    try {
+      final raw = _tokenBox?.get(_expiryKey);
+      if (raw is! String || raw.isEmpty) return null;
+      return DateTime.tryParse(raw);
+    } catch (e) {
+      debugPrint('Error getting token expiry: $e');
+      return null;
     }
   }
 
@@ -105,6 +129,7 @@ class TokenJwtDAO {
     try {
       if (_tokenBox == null) return;
       await _tokenBox!.delete(_tokenKey);
+      await _tokenBox!.delete(_expiryKey);
     } catch (e) {
       throw Exception('Failed to delete token: $e');
     }

@@ -24,6 +24,7 @@ class MockTokenRefreshService extends TokenRefreshService {
 // Manual mock implementation for TokenJwtDAO
 class MockTokenJwtDAO implements TokenJwtDAO {
   String? _token;
+  DateTime? _expiry;
   bool _shouldThrow = false;
 
   @override
@@ -33,10 +34,14 @@ class MockTokenJwtDAO implements TokenJwtDAO {
   Future<void> initialize() async {}
 
   @override
-  Future<void> saveToken(String token) async {
+  Future<void> saveToken(String token, {DateTime? expiresAt}) async {
     if (_shouldThrow) throw Exception('Save failed');
     _token = token;
+    if (expiresAt != null) _expiry = expiresAt;
   }
+
+  @override
+  DateTime? getExpiry() => _expiry;
 
   @override
   String? getToken() {
@@ -51,6 +56,7 @@ class MockTokenJwtDAO implements TokenJwtDAO {
   Future<void> deleteToken() async {
     if (_shouldThrow) throw Exception('Delete failed');
     _token = null;
+    _expiry = null;
   }
 
   @override
@@ -89,6 +95,36 @@ void main() {
         await cubit.loadToken();
 
         expect(cubit.state, TokenJwtState.authenticated('valid-jwt-token'));
+      });
+
+      test('token kedaluwarsa dibuang, bukan dipakai masuk', () async {
+        mockDao._token = 'expired-token';
+        mockDao._expiry = DateTime.now().subtract(const Duration(minutes: 5));
+
+        await cubit.loadToken();
+
+        expect(cubit.state, const TokenJwtState.unauthenticated());
+        expect(mockDao.getToken(), isNull);
+        expect(mockDao.getExpiry(), isNull);
+      });
+
+      test('token yang masih berlaku dipakai masuk', () async {
+        mockDao._token = 'fresh-token';
+        mockDao._expiry = DateTime.now().add(const Duration(hours: 12));
+
+        await cubit.loadToken();
+
+        expect(cubit.state, TokenJwtState.authenticated('fresh-token'));
+      });
+
+      test('token tanpa info masa berlaku tetap dipakai (data lama)',
+          () async {
+        mockDao._token = 'legacy-token';
+        mockDao._expiry = null;
+
+        await cubit.loadToken();
+
+        expect(cubit.state, TokenJwtState.authenticated('legacy-token'));
       });
 
       test('emits unauthenticated when token is null', () async {

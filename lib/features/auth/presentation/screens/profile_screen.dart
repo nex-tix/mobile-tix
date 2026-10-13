@@ -30,15 +30,10 @@ class ProfileScreen extends StatelessWidget {
     final staff = session.staff;
     final checkpoint = session.checkpoint;
 
-    // Nama diambil dari akun yang benar-benar login (gate_users). Peran tidak
-    // ada di tabel petugas, jadi labelnya dari kamus dan username ditampilkan
-    // supaya jelas akun mana yang aktif di perangkat ini.
+    // Nama diambil dari akun yang benar-benar login (gate_users).
     final staffName = staff?.displayName ?? '';
-    final staffUsername = staff?.username ?? '';
-    final roleLabel = context.trSafe('profile.defaultRole', 'Petugas Gate');
-    final staffRole = staffUsername.isEmpty
-        ? roleLabel
-        : '$roleLabel · @$staffUsername';
+    // Peran tidak ada di tabel petugas, jadi labelnya dari kamus.
+    final staffRole = context.trSafe('profile.defaultRole', 'Petugas Gate');
 
     return Scaffold(
       backgroundColor: context.colors.ground,
