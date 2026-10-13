@@ -7,12 +7,30 @@ import 'package:mobile_tix/features/scanner/data/models/scan_result.dart';
 
 void main() {
   group('ScanResult.parseStatus', () {
-    test('memetakan kelima status resmi', () {
+    test('memetakan keenam status resmi', () {
       expect(ScanResult.parseStatus('valid'), TicketStatus.valid);
       expect(ScanResult.parseStatus('already_used'), TicketStatus.alreadyUsed);
       expect(ScanResult.parseStatus('expired'), TicketStatus.expired);
+      expect(ScanResult.parseStatus('not_yet_valid'), TicketStatus.notYetValid);
       expect(ScanResult.parseStatus('not_found'), TicketStatus.notFound);
       expect(ScanResult.parseStatus('cancelled'), TicketStatus.cancelled);
+    });
+
+    test('NOT_YET_VALID dari server dikenali dan menutup gate', () {
+      final result = ScanResult.fromJson(
+        {
+          'status': 'NOT_YET_VALID',
+          'ticket_code': 'TKT-2026-000002',
+          'message': 'Tiket belum berlaku (berlaku 2026-10-20)',
+        },
+        mode: ScanMode.checkIn,
+      );
+
+      expect(result.status, TicketStatus.notYetValid);
+      expect(result.isValid, isFalse);
+      expect(result.isCheckedIn, isFalse);
+      expect(result.message, contains('2026-10-20'));
+      expect(result.toOutcome().status, TicketStatus.notYetValid);
     });
 
     test('toleran terhadap variasi penulisan dari backend', () {

@@ -7,7 +7,7 @@ Aplikasi mobile berbasis Flutter untuk validasi tiket, check-in pengunjung, dan 
 ## 🚀 Fitur Utama
 
 - **Pindaian & Validasi Tiket**:
-  - Validasi tiket QR/Barcode dengan 5 status verdict: `VALID`, `ALREADY_USED`, `EXPIRED`, `NOT_FOUND`, `CANCELLED`.
+  - Validasi tiket QR/Barcode dengan 6 status verdict: `VALID`, `ALREADY_USED`, `EXPIRED`, `NOT_YET_VALID` (belum masuk masa berlaku), `NOT_FOUND`, `CANCELLED`.
   - Dukungan dua mode operasi: **Mode Cek** (hanya periksa) dan **Mode Check-in** (validasi + check-in).
   - Umpan balik audio (beep) dan getar haptic otomatis saat pindaian berhasil maupun ditolak.
 - **Offline First & Auto-Sync**:

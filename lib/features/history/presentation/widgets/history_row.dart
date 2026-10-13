@@ -26,6 +26,10 @@ class HistoryRow extends StatelessWidget {
           'SUDAH DIPAKAI',
         ),
         TicketStatus.expired => context.trSafe('ticket.expired', 'KEDALUWARSA'),
+        TicketStatus.notYetValid => context.trSafe(
+          'ticket.notYetValid',
+          'BELUM BERLAKU',
+        ),
         TicketStatus.notFound => context.trSafe(
           'ticket.invalid',
           'TIKET TIDAK VALID',

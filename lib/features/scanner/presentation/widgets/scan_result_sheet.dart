@@ -88,6 +88,10 @@ class _ScanResultSheetState extends State<ScanResultSheet>
           'ticket.instructionExpired',
           status.instruction,
         ),
+        TicketStatus.notYetValid => context.trSafe(
+          'ticket.instructionNotYetValid',
+          status.instruction,
+        ),
         TicketStatus.notFound => context.trSafe(
           'ticket.instructionNotFound',
           status.instruction,
@@ -112,6 +116,8 @@ class _ScanResultSheetState extends State<ScanResultSheet>
       statusTitle = context.trSafe('ticket.alreadyUsed', 'ALREADY USED');
     } else if (status == TicketStatus.expired) {
       statusTitle = context.trSafe('ticket.expired', 'EXPIRED');
+    } else if (status == TicketStatus.notYetValid) {
+      statusTitle = context.trSafe('ticket.notYetValid', 'BELUM BERLAKU');
     } else if (status == TicketStatus.notFound) {
       statusTitle = context.trSafe('ticket.invalid', 'INVALID TICKET');
     } else {
@@ -178,7 +184,7 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                     status: status,
                     word: statusTitle,
                     subline:
-                        '${outcome.gate ?? 'Gate 1'} · ${Fmt.clock(outcome.at)}',
+                        '${outcome.gate ?? 'Gate 1'} · ${Fmt.clockWita(outcome.at)}',
                   ),
                   const SizedBox(height: 22),
                   Text(
@@ -189,6 +195,23 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                       color: context.colors.ink,
                     ),
                   ),
+
+                  // Kode yang benar-benar dibaca: hanya ditampilkan saat TIDAK
+                  // DITEMUKAN, supaya operator bisa membedakan kode salah baca
+                  // dari kode yang memang tidak ada di sistem.
+                  if (status == TicketStatus.notFound && outcome.code.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      outcome.code,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'DMSans',
+                        fontSize: 12.5,
+                        letterSpacing: 0.6,
+                        color: context.colors.inkFaint,
+                      ),
+                    ),
+                  ],
 
                   // Rejection note / reason if not valid
                   if (!isValid) ...[

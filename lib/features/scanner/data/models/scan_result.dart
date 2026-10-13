@@ -32,7 +32,7 @@ class ScanResult {
     this.message,
   });
 
-  /// One of the five verdicts the gate must handle.
+  /// One of the six verdicts the gate must handle.
   final TicketStatus status;
 
   /// The code that was scanned / keyed in.
@@ -113,7 +113,7 @@ class ScanResult {
     );
   }
 
-  /// Map the server's status string onto the gate's five verdicts.
+  /// Map the server's status string onto the gate's six verdicts.
   static TicketStatus parseStatus(Object? raw) => TicketStatus.parse(raw);
 
   /// The presentation model the result sheet renders.

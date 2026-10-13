@@ -1,5 +1,5 @@
 // File: ticket_repository_test.dart
-// Unit test TicketRepository — kontrak lima status dari dua endpoint validasi.
+// Unit test TicketRepository — kontrak enam status dari dua endpoint validasi.
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_tix/core/constants/ticket_status.dart';
@@ -17,11 +17,11 @@ void main() {
     });
 
     setUp(() {
-      // EnvConfig.useMockApi default true → ApiService menjawab dari mock adapter.
-      repository = TicketRepositoryImpl(ApiService());
+      // Mock diaktifkan eksplisit (EnvConfig.useMockApi bawaannya false).
+      repository = TicketRepositoryImpl(ApiService(useMockApi: true));
     });
 
-    test('mode Cek memetakan kelima verdict', () async {
+    test('mode Cek memetakan keenam verdict', () async {
       Future<TicketStatus> statusFor(String code) async {
         final result = await repository.checkTicket(
           ticketCode: code,
@@ -33,11 +33,12 @@ void main() {
       expect(await statusFor('VALID-2026-001'), TicketStatus.valid);
       expect(await statusFor('USED-2026-001'), TicketStatus.alreadyUsed);
       expect(await statusFor('EXPIRED-2026-001'), TicketStatus.expired);
+      expect(await statusFor('NOTYET-2026-001'), TicketStatus.notYetValid);
       expect(await statusFor('CANCEL-2026-001'), TicketStatus.cancelled);
       expect(await statusFor('TIDAK-DIKENAL'), TicketStatus.notFound);
     });
 
-    test('mode Check-in memetakan kelima verdict', () async {
+    test('mode Check-in memetakan keenam verdict', () async {
       Future<TicketStatus> statusFor(String code) async {
         final result = await repository.validateAndCheckIn(
           ticketCode: code,
@@ -49,6 +50,7 @@ void main() {
       expect(await statusFor('VALID-2026-001'), TicketStatus.valid);
       expect(await statusFor('USED-2026-001'), TicketStatus.alreadyUsed);
       expect(await statusFor('EXPIRED-2026-001'), TicketStatus.expired);
+      expect(await statusFor('NOTYET-2026-001'), TicketStatus.notYetValid);
       expect(await statusFor('CANCEL-2026-001'), TicketStatus.cancelled);
       expect(await statusFor('TIDAK-DIKENAL'), TicketStatus.notFound);
     });

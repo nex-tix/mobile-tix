@@ -189,6 +189,7 @@ class MockApiAdapter {
     if (code.startsWith('VALID')) return 'valid';
     if (code.startsWith('USED')) return 'already_used';
     if (code.startsWith('EXPIRED')) return 'expired';
+    if (code.startsWith('NOTYET')) return 'not_yet_valid';
     if (code.startsWith('CANCEL')) return 'cancelled';
     if (code.startsWith('TKT-')) {
       if (code.endsWith('4')) return 'already_used';
@@ -202,7 +203,7 @@ class MockApiAdapter {
 
   /// Payload satu tiket, dalam bentuk yang sama dengan backend real.
   ///
-  /// Semua lima verdict dikirim sebagai payload yang bisa dibaca `ScanResult`
+  /// Semua enam verdict dikirim sebagai payload yang bisa dibaca `ScanResult`
   /// (statusnya bagian dari data, bukan kegagalan transport).
   Map<String, dynamic> _ticketPayload({
     required String code,
@@ -253,7 +254,7 @@ class MockApiAdapter {
   /// [ticketCode]: kode ticket dari QR scan atau manual input
   /// [checkpoint]: gate tempat petugas bertugas (tidak mengubah tiket)
   ///
-  /// Returns: ApiResponse dengan payload tiket + salah satu dari lima status
+  /// Returns: ApiResponse dengan payload tiket + salah satu dari enam status
   Future<ApiResponse<Map<String, dynamic>>> checkTicket({
     required String ticketCode,
     String checkpoint = '',

@@ -61,7 +61,7 @@ final class ScannerProcessing extends ScannerState {
   final String ticketCode;
 }
 
-/// Server menjawab dengan salah satu dari lima verdict.
+/// Server menjawab dengan salah satu dari enam verdict.
 ///
 /// Perhatikan: ini "request berhasil", bukan "tiket valid" — validitas tiket ada
 /// di [result] dan bisa berupa ALREADY_USED / EXPIRED / NOT_FOUND / CANCELLED.

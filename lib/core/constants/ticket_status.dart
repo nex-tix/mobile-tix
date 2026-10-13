@@ -25,6 +25,12 @@ enum TicketStatus {
     shortLabel: 'Kedaluwarsa',
     instruction: 'Tiket di luar masa berlaku.',
   ),
+  notYetValid(
+    code: 'not_yet_valid',
+    label: 'BELUM BERLAKU',
+    shortLabel: 'Belum berlaku',
+    instruction: 'Tiket belum masuk masa berlaku. Cek tanggal kunjungannya.',
+  ),
   notFound(
     code: 'not_found',
     label: 'TIDAK DITEMUKAN',
@@ -59,7 +65,7 @@ enum TicketStatus {
 
   bool get isEntry => this == TicketStatus.valid;
 
-  /// Petakan string status dari server ke salah satu dari lima verdict.
+  /// Petakan string status dari server ke salah satu dari enam verdict.
   ///
   /// Toleran terhadap variasi penulisan backend (`checked_in`, `used`, `void`…)
   /// dan mengembalikan [notFound] untuk apa pun yang tidak dikenali — termasuk
@@ -70,6 +76,7 @@ enum TicketStatus {
       'valid' || 'active' || 'checked_in' => TicketStatus.valid,
       'already_used' || 'used' || 'reused' => TicketStatus.alreadyUsed,
       'expired' => TicketStatus.expired,
+      'not_yet_valid' || 'not_yet' || 'notyet' => TicketStatus.notYetValid,
       'cancelled' || 'canceled' || 'void' => TicketStatus.cancelled,
       _ => TicketStatus.notFound,
     };
@@ -79,6 +86,7 @@ enum TicketStatus {
     TicketStatus.valid => c.valid,
     TicketStatus.alreadyUsed => c.used,
     TicketStatus.expired => c.expired,
+    TicketStatus.notYetValid => c.notYet,
     TicketStatus.notFound => c.notFound,
     TicketStatus.cancelled => c.cancelled,
   };
@@ -87,6 +95,7 @@ enum TicketStatus {
     TicketStatus.valid => c.validTint,
     TicketStatus.alreadyUsed => c.usedTint,
     TicketStatus.expired => c.expiredTint,
+    TicketStatus.notYetValid => c.notYetTint,
     TicketStatus.notFound => c.notFoundTint,
     TicketStatus.cancelled => c.cancelledTint,
   };
@@ -100,6 +109,7 @@ enum TicketStatus {
     TicketStatus.valid => AppIcons.check,
     TicketStatus.alreadyUsed => AppIcons.replay,
     TicketStatus.expired => AppIcons.schedule,
+    TicketStatus.notYetValid => AppIcons.info,
     TicketStatus.notFound => AppIcons.searchOff,
     TicketStatus.cancelled => AppIcons.block,
   };

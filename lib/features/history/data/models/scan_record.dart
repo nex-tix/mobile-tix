@@ -8,7 +8,7 @@ import '../../../../core/constants/ticket_status.dart';
 /// Satu baris log gate: tiket apa yang dipindai, kapan, di mana, dan hasilnya.
 ///
 /// Scan yang ditolak tetap dicatat — riwayat adalah catatan kejadian, bukan
-/// daftar tamu yang masuk. Karena itu [status] bisa berisi kelima verdict.
+/// daftar tamu yang masuk. Karena itu [status] bisa berisi keenam verdict.
 @immutable
 class ScanRecord {
   const ScanRecord({
@@ -25,7 +25,7 @@ class ScanRecord {
   /// Kode tiket yang dipindai.
   final String ticketCode;
 
-  /// Hasil scan — salah satu dari lima verdict.
+  /// Hasil scan — salah satu dari enam verdict.
   final TicketStatus status;
 
   /// Waktu scan terjadi (waktu perangkat, sudah dikonversi ke waktu lokal).

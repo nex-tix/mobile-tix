@@ -74,6 +74,7 @@
     "expired": "KEDALUWARSA",
     "invalid": "TIKET TIDAK VALID",
     "cancelled": "DIBATALKAN",
+    "notYetValid": "BELUM BERLAKU",
     "visitor": "{count} Pengunjung",
     "defaultCategory": "Tiket",
     "detailTitle": "Detail Tiket {code}",
@@ -91,7 +92,8 @@
     "instructionAlreadyUsed": "Tiket sudah dipindai. Arahkan ke petugas.",
     "instructionExpired": "Tiket di luar masa berlaku.",
     "instructionNotFound": "Kode tidak dikenali. Periksa tiket atau masukkan kode manual.",
-    "instructionCancelled": "Tiket dibatalkan di sistem. Tolak masuk."
+    "instructionCancelled": "Tiket dibatalkan di sistem. Tolak masuk.",
+    "instructionNotYetValid": "Tiket belum masuk masa berlaku. Cek tanggal kunjungannya."
   },
   "dashboard": {
     "title": "Dashboard",

@@ -39,6 +39,8 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.usedTint,
     required this.expired,
     required this.expiredTint,
+    required this.notYet,
+    required this.notYetTint,
     required this.cancelled,
     required this.cancelledTint,
     required this.notFound,
@@ -88,6 +90,10 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color usedTint;
   final Color expired;
   final Color expiredTint;
+
+  /// Tiket yang belum masuk masa berlaku: menunggu tanggalnya, bukan ditolak.
+  final Color notYet;
+  final Color notYetTint;
   final Color cancelled;
   final Color cancelledTint;
   final Color notFound;
@@ -133,6 +139,8 @@ class AppColors extends ThemeExtension<AppColors> {
     usedTint: Color(0x26CF4647),
     expired: Color(0xFFF59E0B),
     expiredTint: Color(0x26F59E0B),
+    notYet: Color(0xFF2F6FED),
+    notYetTint: Color(0x262F6FED),
     cancelled: Color(0xFFEF4444),
     cancelledTint: Color(0x26EF4444),
     notFound: Color(0xFF6B7280),
@@ -168,6 +176,8 @@ class AppColors extends ThemeExtension<AppColors> {
     usedTint: Color(0x26CF4647),
     expired: Color(0xFFF5D061),
     expiredTint: Color(0x26F5D061),
+    notYet: Color(0xFF7BA7F7),
+    notYetTint: Color(0x267BA7F7),
     cancelled: Color(0xFFCF4647),
     cancelledTint: Color(0x26CF4647),
     notFound: Color(0xFFA3B1B7),
@@ -204,6 +214,8 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? usedTint,
     Color? expired,
     Color? expiredTint,
+    Color? notYet,
+    Color? notYetTint,
     Color? cancelled,
     Color? cancelledTint,
     Color? notFound,
@@ -238,6 +250,8 @@ class AppColors extends ThemeExtension<AppColors> {
       usedTint: usedTint ?? this.usedTint,
       expired: expired ?? this.expired,
       expiredTint: expiredTint ?? this.expiredTint,
+      notYet: notYet ?? this.notYet,
+      notYetTint: notYetTint ?? this.notYetTint,
       cancelled: cancelled ?? this.cancelled,
       cancelledTint: cancelledTint ?? this.cancelledTint,
       notFound: notFound ?? this.notFound,
@@ -278,6 +292,8 @@ class AppColors extends ThemeExtension<AppColors> {
       usedTint: f(usedTint, other.usedTint),
       expired: f(expired, other.expired),
       expiredTint: f(expiredTint, other.expiredTint),
+      notYet: f(notYet, other.notYet),
+      notYetTint: f(notYetTint, other.notYetTint),
       cancelled: f(cancelled, other.cancelled),
       cancelledTint: f(cancelledTint, other.cancelledTint),
       notFound: f(notFound, other.notFound),

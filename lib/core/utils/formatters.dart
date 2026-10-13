@@ -1,7 +1,11 @@
 import 'package:intl/intl.dart';
 
-/// Dummy-data formatting. Everything here formats a value the UI already holds —
-/// no parsing of backend payloads, because there is no backend in this stage.
+/// Formatting nilai yang sudah dipegang UI (jam pemindaian, tanggal, jumlah).
+///
+/// Aturan jam: gate beroperasi di WITA dan server mencatat semua stempel waktu
+/// dalam WITA, jadi jam pun ditampilkan dalam WITA. Kalau jam device dipakai apa
+/// adanya, HP yang timezone-nya beda (mis. emulator GMT) akan menampilkan jam
+/// yang berbeda 8 jam dari catatan server di layar yang sama.
 class Fmt {
   const Fmt._();
 
@@ -11,8 +15,15 @@ class Fmt {
   static final DateFormat _monthDay = DateFormat('d MMM', 'id_ID');
   static final NumberFormat _thousands = NumberFormat.decimalPattern('id_ID');
 
-  /// `14:32`
+  /// `14:32` — jam device apa adanya.
   static String clock(DateTime t) => _clock.format(t);
+
+  /// `14:32` dalam WITA (Asia/Makassar = UTC+8, tanpa DST).
+  ///
+  /// Dipakai untuk waktu yang berasal dari jam device (mis. subline stempel
+  /// hasil pindai) supaya sebaris dengan stempel waktu dari server.
+  static String clockWita(DateTime t) =>
+      _clock.format(t.toUtc().add(const Duration(hours: 8)));
 
   /// `14:32:07`
   static String clockSeconds(DateTime t) => _clockSeconds.format(t);

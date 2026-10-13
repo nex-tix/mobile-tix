@@ -97,7 +97,7 @@ class TicketRepositoryImpl implements TicketRepository {
 
       // Sebagian backend mengirim NOT_FOUND / EXPIRED sebagai `success: false`
       // tapi tetap menyertakan payload status di dalamnya. Selama payload ada,
-      // verdict-nya tetap harus dibaca — itu justru inti dari kelima status.
+      // verdict-nya tetap harus dibaca — itu justru inti dari keenam status.
       final data = body['data'];
       if (data is Map) {
         return ScanResult.fromJson(Map<String, dynamic>.from(data), mode: mode);

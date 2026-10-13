@@ -74,6 +74,7 @@
     "expired": "EXPIRED",
     "invalid": "INVALID TICKET",
     "cancelled": "CANCELLED",
+    "notYetValid": "NOT YET VALID",
     "visitor": "{count} Visitor",
     "defaultCategory": "Ticket",
     "detailTitle": "Ticket Details {code}",
@@ -91,7 +92,8 @@
     "instructionAlreadyUsed": "Ticket already scanned. Direct to staff.",
     "instructionExpired": "Ticket is outside its validity period.",
     "instructionNotFound": "Code not recognized. Check the ticket or enter the code manually.",
-    "instructionCancelled": "Ticket was cancelled in the system. Deny entry."
+    "instructionCancelled": "Ticket was cancelled in the system. Deny entry.",
+    "instructionNotYetValid": "This ticket is not valid yet. Check its visit date."
   },
   "dashboard": {
     "title": "Dashboard",

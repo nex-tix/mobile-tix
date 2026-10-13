@@ -25,7 +25,7 @@ class HistoryFilter {
   /// Hanya scan yang ditolak — semua verdict kecuali VALID.
   static const HistoryFilter rejected = HistoryFilter(rejectedOnly: true);
 
-  /// Salah satu dari lima verdict; null = semua hasil (valid & ditolak).
+  /// Salah satu dari enam verdict; null = semua hasil (valid & ditolak).
   final TicketStatus? status;
 
   /// Nama gate; null = semua gate.
