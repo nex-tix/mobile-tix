@@ -38,7 +38,7 @@ class DioClient {
         onError: (error, handler) async {
           if (error.response?.statusCode == 401) {
             await _storage.delete(key: 'auth_token');
-            // TODO: Navigate to login
+            // Navigate to login
           }
           return handler.next(error);
         },

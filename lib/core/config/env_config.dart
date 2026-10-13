@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Environment configuration loader
 /// 
 /// Loads dari .env file atau environment variables.
@@ -6,10 +8,14 @@ class EnvConfig {
   const EnvConfig._();
 
   // API Configuration
-  static const String baseUrl = String.fromEnvironment(
-    'BASE_URL',
-    defaultValue: 'https://api.example.com',
-  );
+  static String get baseUrl {
+    const fromEnv = String.fromEnvironment('BASE_URL');
+    if (fromEnv.isNotEmpty) return fromEnv;
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:8081/api';
+    }
+    return 'http://localhost:8081/api';
+  }
 
   static const int apiTimeout = int.fromEnvironment(
     'API_TIMEOUT',
@@ -19,12 +25,12 @@ class EnvConfig {
   // Encryption & Security
   static const bool isNeedEncrypt = bool.fromEnvironment(
     'IS_NEED_ENCRYPT',
-    defaultValue: true,
+    defaultValue: false,
   );
 
   static const String secretKey = String.fromEnvironment(
     'SECRET_KEY',
-    defaultValue: 'your-32-char-secret-key-12345678',
+    defaultValue: '1234567891011121314151617181920212223242526272829303132',
   );
 
   static const String iv = String.fromEnvironment(
@@ -35,13 +41,13 @@ class EnvConfig {
   // Mock API Flag
   static const bool useMockApi = bool.fromEnvironment(
     'USE_MOCK_API',
-    defaultValue: true,
+    defaultValue: false,
   );
 
   // Request Signature
   static const String signatureSecret = String.fromEnvironment(
     'SIGNATURE_SECRET',
-    defaultValue: 'your-signature-secret-here-changeme',
+    defaultValue: 'rayaaldywisma123',
   );
 
   // App Config
