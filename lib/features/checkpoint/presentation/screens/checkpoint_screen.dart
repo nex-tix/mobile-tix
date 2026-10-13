@@ -8,6 +8,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/ui/widgets/app_snackbar.dart';
 import '../../../../core/utils/i18n_helper.dart';
 import '../../../auth/logic/session_state.dart';
+import '../../../../core/data/dao/checkpoint_dao.dart';
 import '../../data/dummy_checkpoints.dart';
 import '../../data/models/checkpoint.dart';
 import '../widgets/checkpoint_tile.dart';
@@ -32,14 +33,20 @@ class CheckpointScreen extends StatefulWidget {
 class _CheckpointScreenState extends State<CheckpointScreen> {
   Checkpoint? _selected;
 
+  List<Checkpoint> get _allCheckpoints {
+    final cached = CheckpointDAO().getCheckpoints();
+    if (cached != null && cached.isNotEmpty) {
+      return cached.map((e) => Checkpoint.fromJson(e)).toList();
+    }
+    return dummyCheckpoints;
+  }
+
   @override
   void initState() {
     super.initState();
     // Default seleksi ke checkpoint yang sedang aktif di session (jika ada)
     final current = context.read<SessionState>().checkpoint;
-    _selected =
-        current ??
-        (dummyCheckpoints.isNotEmpty ? dummyCheckpoints.first : null);
+    _selected = current ?? (_allCheckpoints.isNotEmpty ? _allCheckpoints.first : null);
   }
 
   void _confirm() {
@@ -144,7 +151,7 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 children: [
-                  for (final cp in dummyCheckpoints)
+                  for (final cp in _allCheckpoints)
                     CheckpointTile(
                       checkpoint: cp,
                       selected: _selected?.id == cp.id,

@@ -14,6 +14,7 @@ import '../../../../core/utils/i18n_helper.dart';
 import '../../../../shared/widgets/app_sheet.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/widgets/inline_status.dart';
+import '../../../../core/data/dao/checkpoint_dao.dart';
 import '../../../checkpoint/data/dummy_checkpoints.dart';
 import '../../../checkpoint/data/models/checkpoint.dart';
 import '../../logic/session_state.dart';
@@ -444,27 +445,40 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          for (final cp in dummyCheckpoints) ...[
-            _CheckpointPickerTile(
-              checkpoint: cp,
-              isSelected: current?.id == cp.id,
-              onTap: () {
-                Navigator.of(context).pop();
-                if (current?.id != cp.id) {
-                  session.selectCheckpoint(cp);
-                  AppSnackbar.success(
-                    context,
-                    context.trSafe(
-                      'checkpoint.switchedSuccess',
-                      'Checkpoint berhasil diubah ke {gate}',
-                      namedArgs: {'gate': cp.gate},
+          Builder(
+            builder: (context) {
+              final cached = CheckpointDAO().getCheckpoints();
+              final checkpoints = cached != null && cached.isNotEmpty
+                  ? cached.map((e) => Checkpoint.fromJson(e)).toList()
+                  : dummyCheckpoints;
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final cp in checkpoints) ...[
+                    _CheckpointPickerTile(
+                      checkpoint: cp,
+                      isSelected: current?.id == cp.id,
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        if (current?.id != cp.id) {
+                          session.selectCheckpoint(cp);
+                          AppSnackbar.success(
+                            context,
+                            context.trSafe(
+                              'checkpoint.switchedSuccess',
+                              'Checkpoint berhasil diubah ke {gate}',
+                              namedArgs: {'gate': cp.gate},
+                            ),
+                          );
+                        }
+                      },
                     ),
-                  );
-                }
-              },
-            ),
-            if (cp != dummyCheckpoints.last) const SizedBox(height: 10),
-          ],
+                    if (cp != checkpoints.last) const SizedBox(height: 10),
+                  ],
+                ],
+              );
+            },
+          ),
         ],
       ),
     );

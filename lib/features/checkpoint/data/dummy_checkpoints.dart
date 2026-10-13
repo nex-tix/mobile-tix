@@ -4,22 +4,22 @@ import 'models/checkpoint.dart';
 /// reviewed with realistic copy.
 const List<Checkpoint> dummyCheckpoints = [
   Checkpoint(
-    id: 'gate-1',
-    gate: 'Gate 1',
+    id: '1',
+    gate: 'Gerbang Utama',
     name: 'Pintu Masuk Utama',
-    note: 'Shift pagi · 2 petugas',
-    scansToday: 128,
+    note: 'Shift aktif · 2 petugas',
+    scansToday: 0,
   ),
   Checkpoint(
-    id: 'gate-2',
-    gate: 'Gate 2',
+    id: '2',
+    gate: 'Gerbang Selatan',
     name: 'Pintu Masuk Selatan',
-    note: 'Shift pagi · 1 petugas',
-    scansToday: 74,
+    note: 'Shift aktif · 1 petugas',
+    scansToday: 0,
   ),
   Checkpoint(
-    id: 'gate-3',
-    gate: 'Gate 3',
+    id: '3',
+    gate: 'Gerbang Barat',
     name: 'Pintu Masuk Barat',
     note: 'Ditutup sampai 12.00',
     open: false,

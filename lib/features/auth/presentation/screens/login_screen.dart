@@ -9,6 +9,8 @@ import '../../../../core/bloc/auth/auth_state.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/ui/widgets/app_snackbar.dart';
+import '../../../../app.dart' show authApiService;
+import '../../../../core/data/dao/checkpoint_dao.dart';
 import '../../../checkpoint/data/dummy_checkpoints.dart';
 import '../../../checkpoint/data/models/checkpoint.dart';
 import '../../logic/session_state.dart';
@@ -42,6 +44,56 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _passwordError;
   String? _gateError;
   Checkpoint? _selectedGate = dummyCheckpoints.first;
+  List<Checkpoint> _checkpoints = dummyCheckpoints;
+  bool _loadingCheckpoints = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCheckpoints();
+  }
+
+  Future<void> _loadCheckpoints() async {
+    final cached = CheckpointDAO().getCheckpoints();
+    if (cached != null && cached.isNotEmpty) {
+      final list = cached.map((e) => Checkpoint.fromJson(e)).toList();
+      if (mounted) {
+        setState(() {
+          _checkpoints = list;
+          _selectedGate = list.first;
+        });
+      }
+    }
+
+    try {
+      if (mounted) setState(() => _loadingCheckpoints = true);
+      final response = await authApiService.dio.get('/checkpoints');
+      if (response.data is Map && response.data['data'] is List) {
+        final rawList = response.data['data'] as List;
+        final list = rawList
+            .map((item) => Checkpoint.fromJson(Map<String, dynamic>.from(item as Map)))
+            .toList();
+        if (list.isNotEmpty && mounted) {
+          setState(() {
+            _checkpoints = list;
+            final match = list.where((cp) => cp.id == _selectedGate?.id);
+            _selectedGate = match.isNotEmpty ? match.first : list.first;
+          });
+          final dao = CheckpointDAO();
+          await dao.saveCheckpoints(
+            rawList.map((e) => Map<String, dynamic>.from(e as Map)).toList(),
+          );
+          if (_selectedGate != null) {
+            await dao.saveCheckpoint(_selectedGate!.toJson());
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('[LoginScreen] Error fetching checkpoints: $e');
+    } finally {
+      if (mounted) setState(() => _loadingCheckpoints = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -417,11 +469,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         color: context.colors.onFieldMuted,
                       ),
                     ),
-                    items: dummyCheckpoints.map((checkpoint) {
+                    items: _checkpoints.map((checkpoint) {
+                      final displayLabel = checkpoint.name.isNotEmpty &&
+                              checkpoint.name != checkpoint.gate
+                          ? '${checkpoint.gate} (${checkpoint.name})'
+                          : checkpoint.gate;
                       return DropdownMenuItem<Checkpoint>(
                         value: checkpoint,
                         child: Text(
-                          checkpoint.label,
+                          displayLabel,
                           style: TextStyle(
                             fontFamily: 'DMSans',
                             fontSize: 15,
@@ -437,10 +493,19 @@ class _LoginScreenState extends State<LoginScreen> {
                       });
                     },
                     dropdownColor: context.colors.surfaceField,
-                    icon: Icon(
-                      AppIcons.arrowDropDown,
-                      color: context.colors.onFieldMuted,
-                    ),
+                    icon: _loadingCheckpoints
+                        ? SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: context.colors.primary,
+                            ),
+                          )
+                        : Icon(
+                            AppIcons.arrowDropDown,
+                            color: context.colors.onFieldMuted,
+                          ),
                   ),
                 ),
               ),

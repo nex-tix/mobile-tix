@@ -36,11 +36,11 @@ class Checkpoint {
   };
 
   factory Checkpoint.fromJson(Map<String, dynamic> json) => Checkpoint(
-    id: json['id'] as String? ?? '',
-    gate: json['gate'] as String? ?? '',
-    name: json['name'] as String? ?? '',
-    note: json['note'] as String? ?? '',
-    open: json['open'] as bool? ?? true,
+    id: json['id']?.toString() ?? '',
+    gate: json['gate'] as String? ?? json['name'] as String? ?? 'Gate',
+    name: json['location'] as String? ?? json['name'] as String? ?? '',
+    note: json['note'] as String? ?? json['location'] as String? ?? 'Aktif',
+    open: json['open'] as bool? ?? json['is_active'] as bool? ?? true,
     scansToday: (json['scansToday'] as num?)?.toInt() ?? 0,
   );
 }
