@@ -30,7 +30,6 @@
     "gateRequired": "Pilih gate terlebih dahulu",
     "login": "Login",
     "loggingIn": "Memproses...",
-    "demoHint": "Gunakan akun demo: {username}",
     "logoutTitle": "Keluar dari akun?",
     "logoutMessage": "Sesi saat ini akan diakhiri.",
     "sessionExpiringTitle": "Peringatan Sesi",

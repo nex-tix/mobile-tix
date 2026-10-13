@@ -1,7 +1,8 @@
-/// Identitas aplikasi dan nilai bantuan untuk layar login demo.
+/// Identitas aplikasi dan konstanta tampilan.
 ///
 /// Semua layar sudah berbicara ke REST API lewat `ApiService`; yang tersisa di
-/// sini hanya konstanta tampilan dan akun demo, bukan penentu perilaku.
+/// sini hanya konstanta tampilan, bukan penentu perilaku. Kredensial petugas
+/// tidak pernah disimpan di aplikasi.
 library;
 
 import 'package:mobile_tix/core/config/env_config.dart';
@@ -16,10 +17,6 @@ class AppConfig {
 
   static const String logoAsset = 'assets/images/logo.png';
   static const String kecakBackgroundAsset = 'assets/images/kecak-background.jpg';
-
-  /// Shown on the login screen as a demo note.
-  static const String demoUsername = 'gate1';
-  static const String demoPassword = 'gate123';
 
   // New getters from env config (optional)
   static String get baseUrl => EnvConfig.baseUrl;

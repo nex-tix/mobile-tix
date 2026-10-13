@@ -30,7 +30,6 @@
     "gateRequired": "Please select a gate first",
     "login": "Login",
     "loggingIn": "Signing in...",
-    "demoHint": "Use demo account: {username}",
     "logoutTitle": "Sign out?",
     "logoutMessage": "Your current session will be ended.",
     "sessionExpiringTitle": "Session Warning",

@@ -19,8 +19,8 @@ import '../../logic/session_state.dart';
 ///
 /// Features:
 /// - Brand logo and "Gate Validator" header
-/// - Sleek dark obsidian credentials form (`#18202C` fields with amber focus)
-/// - Amber gold gradient action button
+/// - Form kosong: petugas mengisi username, password, dan gate sendiri
+/// - Field mengikuti token tema (terang/gelap), bukan warna obsidian tetap
 /// - Atmospheric Uluwatu Kecak fire dance photo background at the bottom
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -30,12 +30,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  late final TextEditingController _username = TextEditingController(
-    text: AppConfig.demoUsername,
-  );
-  late final TextEditingController _password = TextEditingController(
-    text: AppConfig.demoPassword,
-  );
+  // Sengaja kosong: kredensial tidak diisikan otomatis oleh aplikasi.
+  final TextEditingController _username = TextEditingController();
+  final TextEditingController _password = TextEditingController();
   final FocusNode _usernameFocus = FocusNode();
   final FocusNode _passwordFocus = FocusNode();
 
@@ -43,7 +40,8 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _usernameError;
   String? _passwordError;
   String? _gateError;
-  Checkpoint? _selectedGate = dummyCheckpoints.first;
+  // Petugas memilih gate sendiri; layar ini tidak memilihkan apa pun.
+  Checkpoint? _selectedGate;
   List<Checkpoint> _checkpoints = dummyCheckpoints;
   bool _loadingCheckpoints = false;
 
@@ -58,10 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (cached != null && cached.isNotEmpty) {
       final list = cached.map((e) => Checkpoint.fromJson(e)).toList();
       if (mounted) {
-        setState(() {
-          _checkpoints = list;
-          _selectedGate = list.first;
-        });
+        setState(() => _checkpoints = list);
       }
     }
 
@@ -76,8 +71,10 @@ class _LoginScreenState extends State<LoginScreen> {
         if (list.isNotEmpty && mounted) {
           setState(() {
             _checkpoints = list;
+            // Pilihan petugas dipertahankan bila gate itu masih ada; kalau
+            // belum memilih, tetap kosong.
             final match = list.where((cp) => cp.id == _selectedGate?.id);
-            _selectedGate = match.isNotEmpty ? match.first : list.first;
+            _selectedGate = match.isNotEmpty ? match.first : null;
           });
           final dao = CheckpointDAO();
           await dao.saveCheckpoints(
@@ -262,7 +259,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       _obscured
                                           ? AppIcons.visibilityOff
                                           : AppIcons.visibility,
-                                      color: context.colors.onFieldMuted,
+                                      color: context.colors.inkMuted,
                                       size: 20,
                                     ),
                                     onPressed: () {
@@ -318,20 +315,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ),
 
-                                // Helper demo hint
-                                const SizedBox(height: 16),
-                                Text(
-                                  context.tr(
-                                    'auth.demoHint',
-                                    namedArgs: {
-                                      'username': AppConfig.demoUsername,
-                                    },
-                                  ),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: context.colors.inkMuted,
-                                  ),
-                                ),
                                 const SizedBox(
                                   height: 120,
                                 ), // Room for bottom Kecak scene
@@ -366,14 +349,14 @@ class _LoginScreenState extends State<LoginScreen> {
         Container(
           height: 52,
           decoration: BoxDecoration(
-            color: context.colors.surfaceField,
+            color: context.colors.surface,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: error != null
                   ? context.colors.primary
                   : focusNode.hasFocus
                   ? context.colors.secondary
-                  : context.colors.onFieldMuted.withValues(alpha: 0.45),
+                  : context.colors.outline,
               width: 1.2,
             ),
           ),
@@ -381,7 +364,7 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(left: 14, right: 10),
-                child: Icon(icon, size: 20, color: context.colors.onFieldMuted),
+                child: Icon(icon, size: 20, color: context.colors.inkMuted),
               ),
               Expanded(
                 child: TextField(
@@ -391,14 +374,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: TextStyle(
                     fontFamily: 'DMSans',
                     fontSize: 15,
-                    color: context.colors.onField,
+                    color: context.colors.ink,
                   ),
                   decoration: InputDecoration(
                     hintText: hint,
                     hintStyle: TextStyle(
                       fontFamily: 'DMSans',
                       fontSize: 15,
-                      color: context.colors.onFieldMuted,
+                      color: context.colors.inkMuted,
                     ),
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
@@ -437,12 +420,12 @@ class _LoginScreenState extends State<LoginScreen> {
         Container(
           height: 52,
           decoration: BoxDecoration(
-            color: context.colors.surfaceField,
+            color: context.colors.surface,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: _gateError != null
                   ? context.colors.primary
-                  : context.colors.onFieldMuted.withValues(alpha: 0.45),
+                  : context.colors.outline,
               width: 1.2,
             ),
           ),
@@ -453,7 +436,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Icon(
                   AppIcons.door,
                   size: 20,
-                  color: context.colors.onFieldMuted,
+                  color: context.colors.inkMuted,
                 ),
               ),
               Expanded(
@@ -466,7 +449,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(
                         fontFamily: 'DMSans',
                         fontSize: 15,
-                        color: context.colors.onFieldMuted,
+                        color: context.colors.inkMuted,
                       ),
                     ),
                     items: _checkpoints.map((checkpoint) {
@@ -481,7 +464,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(
                             fontFamily: 'DMSans',
                             fontSize: 15,
-                            color: context.colors.onField,
+                            color: context.colors.ink,
                           ),
                         ),
                       );
@@ -492,7 +475,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         _gateError = null;
                       });
                     },
-                    dropdownColor: context.colors.surfaceField,
+                    dropdownColor: context.colors.surface,
                     icon: _loadingCheckpoints
                         ? SizedBox(
                             width: 16,
@@ -504,7 +487,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           )
                         : Icon(
                             AppIcons.arrowDropDown,
-                            color: context.colors.onFieldMuted,
+                            color: context.colors.inkMuted,
                           ),
                   ),
                 ),
