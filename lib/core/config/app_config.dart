@@ -1,5 +1,7 @@
-/// App config for the UI prototype stage. Dummy values only — nothing here talks
-/// to a backend; the Dio layer is untouched and unused by these screens.
+/// Identitas aplikasi dan nilai bantuan untuk layar login demo.
+///
+/// Semua layar sudah berbicara ke REST API lewat `ApiService`; yang tersisa di
+/// sini hanya konstanta tampilan dan akun demo, bukan penentu perilaku.
 library;
 
 import 'package:mobile_tix/core/config/env_config.dart';
@@ -16,11 +18,8 @@ class AppConfig {
   static const String kecakBackgroundAsset = 'assets/images/kecak-background.jpg';
 
   /// Shown on the login screen as a demo note.
-  static const String demoUsername = 'admin.gate';
-  static const String demoPassword = 'gate2026';
-
-  /// The prototype answers every outcome from local dummy data.
-  static const bool uiOnly = true;
+  static const String demoUsername = 'gate1';
+  static const String demoPassword = 'gate123';
 
   // New getters from env config (optional)
   static String get baseUrl => EnvConfig.baseUrl;
