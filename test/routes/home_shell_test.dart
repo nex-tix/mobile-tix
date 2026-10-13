@@ -5,7 +5,9 @@
 
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
@@ -45,11 +47,15 @@ void main() {
   });
 
   setUp(() async {
+    // rootBundle menyimpan cache string; dibersihkan supaya delegate
+    // EasyLocalization benar-benar memuat ulang kamus sebelum widget dibangun.
+    rootBundle.clear();
+
     queueDao = OfflineQueueDAO();
     await queueDao.initialize();
     await queueDao.clear();
 
-    final apiService = ApiService(); // EnvConfig.useMockApi default true
+    final apiService = ApiService(useMockApi: true); // mock eksplisit
     connectivity = DemoConnectivity();
     dashboardCubit = DashboardCubit(
       repository: DashboardRepositoryImpl(apiService),
@@ -84,17 +90,35 @@ void main() {
         ),
       );
 
+    // Kamus dimuat sungguhan (locale `en` sesuai teks yang diperiksa di bawah),
+    // supaya label tidak diam-diam jatuh ke fallback hardcoded.
     await tester.pumpWidget(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider<SessionState>.value(value: session),
-          ChangeNotifierProvider<DemoConnectivity>.value(value: connectivity),
-          ChangeNotifierProvider(create: (_) => ShellController()),
-          BlocProvider<DashboardCubit>.value(value: dashboardCubit),
-          BlocProvider<HistoryCubit>.value(value: historyCubit),
-          BlocProvider<ScannerCubit>.value(value: scannerCubit),
-        ],
-        child: const MaterialApp(home: HomeShell()),
+      EasyLocalization(
+        supportedLocales: const [Locale('id'), Locale('en')],
+        path: 'assets/translations',
+        fallbackLocale: const Locale('id'),
+        startLocale: const Locale('en'),
+        assetLoader: const RootBundleAssetLoader(),
+        child: Builder(
+          builder: (easyContext) => MultiProvider(
+            providers: [
+              ChangeNotifierProvider<SessionState>.value(value: session),
+              ChangeNotifierProvider<DemoConnectivity>.value(
+                value: connectivity,
+              ),
+              ChangeNotifierProvider(create: (_) => ShellController()),
+              BlocProvider<DashboardCubit>.value(value: dashboardCubit),
+              BlocProvider<HistoryCubit>.value(value: historyCubit),
+              BlocProvider<ScannerCubit>.value(value: scannerCubit),
+            ],
+            child: MaterialApp(
+              locale: easyContext.locale,
+              supportedLocales: easyContext.supportedLocales,
+              localizationsDelegates: easyContext.localizationDelegates,
+              home: const HomeShell(),
+            ),
+          ),
+        ),
       ),
     );
     await settle(tester);

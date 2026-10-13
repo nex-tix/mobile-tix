@@ -33,7 +33,7 @@ void main() {
       await offlineQueueDAO.initialize();
       await offlineQueueDAO.clear();
 
-      apiService = ApiService();
+      apiService = ApiService(useMockApi: true);
       repository = CheckpointRepository(
         apiService,
         checkpointDAO,

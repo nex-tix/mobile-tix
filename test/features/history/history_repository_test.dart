@@ -24,8 +24,8 @@ void main() {
     });
 
     setUp(() {
-      // EnvConfig.useMockApi default true → ApiService menjawab dari mock adapter.
-      repository = DashboardRepositoryImpl(ApiService());
+      // Mock diaktifkan eksplisit (EnvConfig.useMockApi bawaannya false).
+      repository = DashboardRepositoryImpl(ApiService(useMockApi: true));
     });
 
     test('halaman pertama mengembalikan satu halaman penuh', () async {

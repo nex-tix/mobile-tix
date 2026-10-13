@@ -9,7 +9,7 @@ void main() {
     });
 
     test('ApiService mock login request succeeds with valid credentials', () async {
-      final apiService = ApiService();
+      final apiService = ApiService(useMockApi: true);
 
       final response = await apiService.post(
         '/login',
@@ -28,7 +28,7 @@ void main() {
     });
 
     test('ApiService sets and clears token properly', () {
-      final apiService = ApiService();
+      final apiService = ApiService(useMockApi: true);
       expect(apiService.token, isNull);
 
       apiService.setToken('test-token-123');
@@ -39,7 +39,7 @@ void main() {
     });
 
     test('ApiService mock checkpoints returns list', () async {
-      final apiService = ApiService();
+      final apiService = ApiService(useMockApi: true);
       final response = await apiService.get('/checkpoints');
 
       expect(response.statusCode, equals(200));

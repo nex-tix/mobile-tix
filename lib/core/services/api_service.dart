@@ -12,7 +12,8 @@ import 'mock_api_adapter.dart';
 /// - Request Interceptor: Auto inject headers, SHA256 body hash, HMAC signing, AES-CBC encryption
 /// - Response Interceptor: Auto decrypt payload jika terenkripsi
 /// - Error Interceptor: Menangkap HTTP 401 -> 1x token refresh & retry request asli
-/// - Mock API Interceptor: Simulasi response jika EnvConfig.useMockApi aktif
+/// - Mock API Interceptor: Simulasi response jika mock diaktifkan (EnvConfig.useMockApi
+///   atau parameter ApiService(useMockApi: true))
 class ApiService {
   late final Dio _dio;
   String? _token;
@@ -25,7 +26,14 @@ class ApiService {
 
   bool _isRefreshing = false;
 
-  ApiService() {
+  /// Jalur mock untuk satu instance ini.
+  ///
+  /// [useMockApi] null → ikut [EnvConfig.useMockApi] (dari --dart-define).
+  /// Test wajib mengaktifkannya eksplisit supaya hasilnya tidak bergantung pada
+  /// nilai default flag tersebut.
+  final bool _useMockApi;
+
+  ApiService({bool? useMockApi}) : _useMockApi = useMockApi ?? EnvConfig.useMockApi {
     _dio = Dio(
       BaseOptions(
         baseUrl: EnvConfig.baseUrl,
@@ -39,7 +47,7 @@ class ApiService {
     );
 
     // Mock API interceptor dijalankan sebelum network jika diaktifkan
-    if (EnvConfig.useMockApi) {
+    if (_useMockApi) {
       _dio.interceptors.add(
         InterceptorsWrapper(
           onRequest: _handleMockRequest,

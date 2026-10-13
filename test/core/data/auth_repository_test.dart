@@ -28,7 +28,7 @@ void main() {
       await tokenDAO.initialize();
       await Hive.box<String>(boxName).clear();
 
-      apiService = ApiService();
+      apiService = ApiService(useMockApi: true);
       repository = AuthRepository(apiService, tokenDAO);
     });
 
