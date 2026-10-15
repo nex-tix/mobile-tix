@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/i18n_helper.dart';
 import '../../../auth/logic/session_state.dart';
+import '../../../../core/ui/widgets/app_snackbar.dart';
 import '../../../../shared/widgets/inline_status.dart';
 import '../../bloc/dashboard_cubit.dart';
 import '../../bloc/dashboard_state.dart';
@@ -59,8 +60,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     _Header(
                       initials: staff?.initials ?? '',
                       online: connectivity.online,
-                      onToggleConnectivity: () =>
-                          context.read<DemoConnectivity>().toggle(),
+                      isChecking: connectivity.isChecking,
+                      onRefresh: () async {
+                        final ok = await context
+                            .read<DemoConnectivity>()
+                            .checkConnection();
+                        if (context.mounted) {
+                          if (ok) {
+                            AppSnackbar.success(
+                              context,
+                              context.trSafe(
+                                'connectivity.connectedSuccess',
+                                'Sinyal terhubung kembali (Online)',
+                              ),
+                            );
+                          } else {
+                            AppSnackbar.warning(
+                              context,
+                              context.trSafe(
+                                'connectivity.stillOffline',
+                                'Sinyal belum ditemukan, masih Mode Offline',
+                              ),
+                            );
+                          }
+                        }
+                      },
                       onProfileTap: () =>
                           Navigator.of(context).pushNamed('/profile'),
                     ),
@@ -143,13 +167,15 @@ class _Header extends StatelessWidget {
   const _Header({
     required this.initials,
     required this.online,
-    required this.onToggleConnectivity,
+    this.isChecking = false,
+    this.onRefresh,
     required this.onProfileTap,
   });
 
   final String initials;
   final bool online;
-  final VoidCallback onToggleConnectivity;
+  final bool isChecking;
+  final VoidCallback? onRefresh;
   final VoidCallback onProfileTap;
 
   @override
@@ -189,7 +215,11 @@ class _Header extends StatelessWidget {
             ),
           ),
         ),
-        ConnectionPill(online: online, onToggle: onToggleConnectivity),
+        ConnectionPill(
+          online: online,
+          isChecking: isChecking,
+          onRefresh: onRefresh,
+        ),
       ],
     );
   }

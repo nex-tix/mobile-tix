@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../core/connectivity/demo_connectivity.dart';
 import '../core/constants/app_icons.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_spacing.dart';
+import '../core/ui/widgets/app_snackbar.dart';
 import '../core/utils/i18n_helper.dart';
 import '../features/dashboard/bloc/dashboard_cubit.dart';
 import '../features/dashboard/presentation/screens/dashboard_screen.dart';
@@ -12,6 +15,7 @@ import '../features/history/presentation/screens/history_screen.dart';
 import '../features/scanner/bloc/scanner_cubit.dart';
 import '../features/scanner/bloc/scanner_state.dart';
 import '../features/scanner/presentation/screens/scanner_screen.dart';
+import '../shared/widgets/offline_notice_dialog.dart';
 import 'shell_controller.dart';
 
 /// The working shell with a full-width bottom navigation bar.
@@ -30,6 +34,70 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _lastIndex = 0;
+  bool _isOfflineDialogOpen = false;
+  StreamSubscription? _lostSub;
+  StreamSubscription? _restoredSub;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final connectivity = context.read<DemoConnectivity>();
+
+      // Dengarkan jika sinyal tiba-tiba hilang -> tampilkan notifikasi di tengah layar
+      _lostSub = connectivity.onConnectionLost.listen((_) {
+        _showOfflineDialog(connectivity);
+      });
+
+      // Dengarkan jika sinyal pulih kembali -> tutup dialog jika sedang terbuka & beri feedback
+      _restoredSub = connectivity.onConnectionRestored.listen((_) {
+        if (_isOfflineDialogOpen && mounted) {
+          Navigator.of(context, rootNavigator: true).pop();
+          _isOfflineDialogOpen = false;
+        }
+        if (mounted) {
+          AppSnackbar.success(
+            context,
+            context.trSafe(
+              'connectivity.connectedSuccess',
+              'Sinyal terhubung kembali (Online)',
+            ),
+          );
+        }
+      });
+
+      // Jika saat aplikasi dibuka kondisi jaringan offline, langsung beri tahu pengguna
+      if (connectivity.offline) {
+        _showOfflineDialog(connectivity);
+      }
+    });
+  }
+
+  void _showOfflineDialog(DemoConnectivity connectivity) {
+    if (_isOfflineDialogOpen || !mounted) return;
+    _isOfflineDialogOpen = true;
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => OfflineNoticeDialog(
+        connectivity: connectivity,
+        onDismiss: () {
+          Navigator.of(ctx).pop();
+          _isOfflineDialogOpen = false;
+        },
+      ),
+    ).then((_) {
+      _isOfflineDialogOpen = false;
+    });
+  }
+
+  @override
+  void dispose() {
+    _lostSub?.cancel();
+    _restoredSub?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -11,31 +11,44 @@ import '../../core/utils/i18n_helper.dart';
 /// The dot carries the status colour; the word stays ink, so the pill adds one
 /// accent instead of four.
 class ConnectionPill extends StatelessWidget {
-  const ConnectionPill({super.key, required this.online, this.onToggle});
+  const ConnectionPill({
+    super.key,
+    required this.online,
+    this.onRefresh,
+    this.onToggle,
+    this.isChecking = false,
+  });
 
   final bool online;
+  final VoidCallback? onRefresh;
   final VoidCallback? onToggle;
+  final bool isChecking;
 
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
     final text = AppText.of(context);
+    final refreshAction = onRefresh ?? onToggle;
 
     final pill = Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.xs + 2,
+      padding: EdgeInsets.symmetric(
+        horizontal: online ? AppSpacing.xs + 4 : AppSpacing.xs + 6,
         vertical: 5,
       ),
       decoration: BoxDecoration(
+        color: online ? c.surface : c.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: c.outline),
+        border: Border.all(
+          color: online ? c.outline : c.primary.withValues(alpha: 0.35),
+          width: 1.1,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 6,
-            height: 6,
+            width: 7,
+            height: 7,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: online ? c.valid : c.primary,
@@ -48,23 +61,47 @@ class ConnectionPill extends StatelessWidget {
               online ? 'Online' : 'Offline',
             ),
             style: text.label.copyWith(
-              color: c.ink,
+              color: online ? c.ink : c.primary,
+              fontWeight: FontWeight.w600,
               letterSpacing: 0.6,
               fontSize: 11.5,
             ),
           ),
+          if (!online) ...[
+            const SizedBox(width: 6),
+            if (isChecking)
+              SizedBox(
+                width: 11,
+                height: 11,
+                child: CircularProgressIndicator(
+                  strokeWidth: 1.8,
+                  color: c.primary,
+                ),
+              )
+            else
+              Icon(
+                AppIcons.refresh,
+                size: 13,
+                color: c.primary,
+              ),
+          ],
         ],
       ),
     );
 
-    if (onToggle == null) return pill;
+    // Saat online: tidak dapat ditekan / di-toggle manual
+    // Saat offline: dapat ditekan untuk mencari sinyal / refresh
+    if (online || refreshAction == null) return pill;
 
-    return InkWell(
-      onTap: onToggle,
-      borderRadius: BorderRadius.circular(99),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs / 2),
-        child: pill,
+    return Tooltip(
+      message: 'Ketuk untuk mencari sinyal lagi',
+      child: InkWell(
+        onTap: isChecking ? null : refreshAction,
+        borderRadius: BorderRadius.circular(99),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs / 2),
+          child: pill,
+        ),
       ),
     );
   }

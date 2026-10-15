@@ -129,5 +129,14 @@
     "back": "Back",
     "switchTitle": "Switch Checkpoint",
     "switchedSuccess": "Checkpoint switched to {gate}"
+  },
+  "connectivity": {
+    "offlineTitle": "Offline Mode",
+    "noSignal": "No Signal",
+    "searchSignal": "Find Signal",
+    "searchingSignal": "Searching for signal...",
+    "continueOffline": "Continue Offline",
+    "connectedSuccess": "Connection restored (Online)",
+    "stillOffline": "No signal found, still in Offline Mode"
   }
 }

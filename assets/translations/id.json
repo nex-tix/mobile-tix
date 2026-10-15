@@ -129,5 +129,14 @@
     "back": "Kembali",
     "switchTitle": "Ganti Checkpoint",
     "switchedSuccess": "Checkpoint berhasil diubah ke {gate}"
+  },
+  "connectivity": {
+    "offlineTitle": "Mode Offline",
+    "noSignal": "Tidak Ada Sinyal",
+    "searchSignal": "Cari Sinyal",
+    "searchingSignal": "Mencari sinyal...",
+    "continueOffline": "Lanjut Scan Offline",
+    "connectedSuccess": "Sinyal terhubung kembali (Online)",
+    "stillOffline": "Sinyal belum ditemukan, masih Mode Offline"
   }
 }

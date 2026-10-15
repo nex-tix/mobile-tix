@@ -338,8 +338,31 @@ class ProfileScreen extends StatelessWidget {
                           ),
                           ConnectionPill(
                             online: connectivity.online,
-                            onToggle: () =>
-                                context.read<DemoConnectivity>().toggle(),
+                            isChecking: connectivity.isChecking,
+                            onRefresh: () async {
+                              final ok = await context
+                                  .read<DemoConnectivity>()
+                                  .checkConnection();
+                              if (context.mounted) {
+                                if (ok) {
+                                  AppSnackbar.success(
+                                    context,
+                                    context.trSafe(
+                                      'connectivity.connectedSuccess',
+                                      'Sinyal terhubung kembali (Online)',
+                                    ),
+                                  );
+                                } else {
+                                  AppSnackbar.warning(
+                                    context,
+                                    context.trSafe(
+                                      'connectivity.stillOffline',
+                                      'Sinyal belum ditemukan, masih Mode Offline',
+                                    ),
+                                  );
+                                }
+                              }
+                            },
                           ),
                         ],
                       ),

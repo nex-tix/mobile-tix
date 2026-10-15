@@ -159,8 +159,31 @@ class _ScannerScreenState extends State<ScannerScreen> {
                     _Header(
                       gate: checkpoint?.gate ?? 'Gate 1',
                       online: connectivity.online,
-                      onToggleConnectivity: () =>
-                          context.read<DemoConnectivity>().toggle(),
+                      isChecking: connectivity.isChecking,
+                      onRefresh: () async {
+                        final ok = await context
+                            .read<DemoConnectivity>()
+                            .checkConnection();
+                        if (context.mounted) {
+                          if (ok) {
+                            AppSnackbar.success(
+                              context,
+                              context.trSafe(
+                                'connectivity.connectedSuccess',
+                                'Sinyal terhubung kembali (Online)',
+                              ),
+                            );
+                          } else {
+                            AppSnackbar.warning(
+                              context,
+                              context.trSafe(
+                                'connectivity.stillOffline',
+                                'Sinyal belum ditemukan, masih Mode Offline',
+                              ),
+                            );
+                          }
+                        }
+                      },
                     ),
                     const SizedBox(height: 16),
 
@@ -287,12 +310,14 @@ class _Header extends StatelessWidget {
   const _Header({
     required this.gate,
     required this.online,
-    required this.onToggleConnectivity,
+    this.isChecking = false,
+    this.onRefresh,
   });
 
   final String gate;
   final bool online;
-  final VoidCallback onToggleConnectivity;
+  final bool isChecking;
+  final VoidCallback? onRefresh;
 
   @override
   Widget build(BuildContext context) {
@@ -323,7 +348,11 @@ class _Header extends StatelessWidget {
             ),
           ],
         ),
-        ConnectionPill(online: online, onToggle: onToggleConnectivity),
+        ConnectionPill(
+          online: online,
+          isChecking: isChecking,
+          onRefresh: onRefresh,
+        ),
       ],
     );
   }
