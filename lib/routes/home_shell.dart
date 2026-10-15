@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
 
 import '../core/constants/app_icons.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_spacing.dart';
 import '../core/utils/i18n_helper.dart';
+import '../features/dashboard/bloc/dashboard_cubit.dart';
 import '../features/dashboard/presentation/screens/dashboard_screen.dart';
+import '../features/history/bloc/history_cubit.dart';
 import '../features/history/presentation/screens/history_screen.dart';
 import '../features/scanner/bloc/scanner_cubit.dart';
+import '../features/scanner/bloc/scanner_state.dart';
 import '../features/scanner/presentation/screens/scanner_screen.dart';
 import 'shell_controller.dart';
 
@@ -19,8 +21,15 @@ import 'shell_controller.dart';
 /// - Full-width rectangular bar, rounded top corners, flush to screen edges
 /// - Center raised Deep Red Scan button (largest control on the bar)
 /// - Smooth hover/press transitions via AnimatedContainer + AnimatedScale
-class HomeShell extends StatelessWidget {
+class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
+
+  @override
+  State<HomeShell> createState() => _HomeShellState();
+}
+
+class _HomeShellState extends State<HomeShell> {
+  int _lastIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -28,83 +37,123 @@ class HomeShell extends StatelessWidget {
     final pendingSync = context.watch<ScannerCubit>().pendingSyncCount;
     final bottomInset = MediaQuery.of(context).padding.bottom;
 
-    return Scaffold(
-      backgroundColor: context.colors.ground,
-      resizeToAvoidBottomInset: false,
-      body: Stack(
-        children: [
-          // Screen pages kept alive in IndexedStack
-          IndexedStack(
-            index: shell.index,
-            children: const [
-              DashboardScreen(),
-              ScannerScreen(),
-              HistoryScreen(),
-            ],
-          ),
+    // Saat tab berpindah (mis. dari Scan ke History atau Dashboard),
+    // otomatis segarkan data agar data terbaru langsung tampil tanpa perlu pencet filter.
+    if (_lastIndex != shell.index) {
+      _lastIndex = shell.index;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (shell.index == 2) {
+          context.read<HistoryCubit>().refresh();
+        } else if (shell.index == 0) {
+          context.read<DashboardCubit>().refresh();
+        }
+      });
+    }
 
-          // Full-width Bottom Navigation Bar (flush to both screen edges)
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              key: const Key('bottom-navigation'),
-              padding: EdgeInsets.only(top: 10, bottom: bottomInset + 10),
-              decoration: BoxDecoration(
-                color: context.colors.surface,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(AppSpacing.radiusSheet),
+    return MultiBlocListener(
+      listeners: [
+        // Otomatis refresh riwayat dan dashboard begitu pemindaian tiket berhasil
+        BlocListener<ScannerCubit, ScannerState>(
+          listenWhen: (previous, current) => current is ScannerSuccess,
+          listener: (context, state) {
+            if (state is ScannerSuccess) {
+              context.read<HistoryCubit>().refresh();
+              context.read<DashboardCubit>().refresh();
+            }
+          },
+        ),
+      ],
+      child: Scaffold(
+        backgroundColor: context.colors.ground,
+        resizeToAvoidBottomInset: false,
+        body: Stack(
+          children: [
+            // Screen pages kept alive in IndexedStack
+            IndexedStack(
+              index: shell.index,
+              children: const [
+                DashboardScreen(),
+                ScannerScreen(),
+                HistoryScreen(),
+              ],
+            ),
+
+            // Full-width Bottom Navigation Bar (flush to both screen edges)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                key: const Key('bottom-navigation'),
+                padding: EdgeInsets.only(top: 10, bottom: bottomInset + 10),
+                decoration: BoxDecoration(
+                  color: context.colors.surface,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(AppSpacing.radiusSheet),
+                  ),
+                  border: Border(top: BorderSide(color: context.colors.outline)),
                 ),
-                border: Border(top: BorderSide(color: context.colors.outline)),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  // Tab 1: Dashboard
-                  Expanded(
-                    child: _NavTab(
-                      key: const Key('nav-dashboard'),
-                      icon: AppIcons.dashboard,
-                      label: context.trSafe('dashboard.title', 'Dashboard'),
-                      selected: shell.index == 0,
-                      onTap: () => shell.goIndex(0),
-                      semanticsLabel: context.trSafe(
-                        'dashboard.title',
-                        'Dashboard',
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    // Tab 1: Dashboard
+                    Expanded(
+                      child: _NavTab(
+                        key: const Key('nav-dashboard'),
+                        icon: AppIcons.dashboard,
+                        label: context.trSafe('dashboard.title', 'Dashboard'),
+                        selected: shell.index == 0,
+                        onTap: () {
+                          if (shell.index == 0) {
+                            context.read<DashboardCubit>().refresh();
+                          } else {
+                            shell.goIndex(0);
+                          }
+                        },
+                        semanticsLabel: context.trSafe(
+                          'dashboard.title',
+                          'Dashboard',
+                        ),
                       ),
                     ),
-                  ),
 
-                  // Tab 2: Scan — the hero, largest control, dead centre
-                  Expanded(
-                    child: _ScanNavButton(
-                      key: const Key('nav-scan-hero'),
-                      selected: shell.index == 1,
-                      onTap: () => shell.goIndex(1),
-                      badgeCount: pendingSync > 0 ? pendingSync : null,
-                    ),
-                  ),
-
-                  // Tab 3: History
-                  Expanded(
-                    child: _NavTab(
-                      key: const Key('nav-history'),
-                      icon: AppIcons.history,
-                      label: context.trSafe('history.title', 'History'),
-                      selected: shell.index == 2,
-                      onTap: () => shell.goIndex(2),
-                      semanticsLabel: context.trSafe(
-                        'history.title',
-                        'History',
+                    // Tab 2: Scan — the hero, largest control, dead centre
+                    Expanded(
+                      child: _ScanNavButton(
+                        key: const Key('nav-scan-hero'),
+                        selected: shell.index == 1,
+                        onTap: () => shell.goIndex(1),
+                        badgeCount: pendingSync > 0 ? pendingSync : null,
                       ),
                     ),
-                  ),
-                ],
+
+                    // Tab 3: History
+                    Expanded(
+                      child: _NavTab(
+                        key: const Key('nav-history'),
+                        icon: AppIcons.history,
+                        label: context.trSafe('history.title', 'History'),
+                        selected: shell.index == 2,
+                        onTap: () {
+                          if (shell.index == 2) {
+                            context.read<HistoryCubit>().refresh();
+                          } else {
+                            shell.goIndex(2);
+                          }
+                        },
+                        semanticsLabel: context.trSafe(
+                          'history.title',
+                          'History',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
