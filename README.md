@@ -72,9 +72,9 @@ cp .env.example .env
 
 Isi konfigurasi sesuai kebutuhan:
 ```env
-BASE_URL=https://api.example.com
+BASE_URL=https://secureapi.pandemenulis.com/tiket/api
 API_TIMEOUT=30000
-USE_MOCK_API=true
+USE_MOCK_API=false
 IS_NEED_ENCRYPT=true
 SECRET_KEY=your-32-char-secret-key-12345678
 IV=1234567890123456

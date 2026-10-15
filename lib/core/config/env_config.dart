@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 /// Environment configuration loader
 /// 
 /// Loads dari .env file atau environment variables.
@@ -7,14 +5,15 @@ import 'package:flutter/foundation.dart';
 class EnvConfig {
   const EnvConfig._();
 
+  /// Default production URL jika tidak dispesifikasikan lewat --dart-define.
+  /// Ubah konstanta ini sesuai domain server online Anda.
+  static const String _defaultProductionUrl = 'https://secureapi.pandemenulis.com/tiket/api';
+
   // API Configuration
   static String get baseUrl {
     const fromEnv = String.fromEnvironment('BASE_URL');
     if (fromEnv.isNotEmpty) return fromEnv;
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:8081/api';
-    }
-    return 'http://localhost:8081/api';
+    return _defaultProductionUrl;
   }
 
   static const int apiTimeout = int.fromEnvironment(

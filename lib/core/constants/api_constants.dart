@@ -1,5 +1,7 @@
+import '../config/env_config.dart';
+
 class ApiConstants {
-  static const String baseUrl = 'https://your-api-domain.com/api';
+  static String get baseUrl => EnvConfig.baseUrl;
 
   // Auth
   static const String login = '/login';

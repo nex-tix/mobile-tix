@@ -2,6 +2,7 @@
 // BLoC untuk authentication flow (login, logout, auto-login)
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../error/api_failure.dart';
 import '../../services/api_service.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../token_jwt/token_jwt_cubit.dart';
@@ -92,8 +93,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       apiService.setToken(response.token);
 
       emit(const AuthAuthenticated());
+    } on ApiFailure catch (e) {
+      emit(AuthFailure(message: e.message));
     } catch (e) {
-      emit(AuthFailure(message: e.toString()));
+      final msg = e.toString().replaceFirst(RegExp(r'^Exception:\s*'), '');
+      emit(AuthFailure(message: msg));
     }
   }
 

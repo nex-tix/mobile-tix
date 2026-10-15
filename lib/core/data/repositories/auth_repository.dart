@@ -1,7 +1,9 @@
 // File: auth_repository.dart
 // Repository untuk authentication endpoints (login, logout, me)
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import '../../error/api_failure.dart';
 import '../../services/api_service.dart';
 import '../dao/staff_dao.dart';
 import '../dao/token_jwt_dao.dart';
@@ -238,6 +240,11 @@ class AuthRepository {
       // Return LoginResponse
       // BLoC akan handle success state dan navigate ke home screen
       return loginResponse;
+    } on ApiFailure {
+      rethrow;
+    } on DioException catch (e) {
+      debugPrint('Login DioException: $e');
+      throw ApiFailure.fromDio(e);
     } catch (e) {
       // Log error (di production gunakan logging service)
       debugPrint('Login error: $e');

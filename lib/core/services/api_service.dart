@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
 import '../config/env_config.dart';
 import 'encryption_service.dart';
@@ -45,6 +47,18 @@ class ApiService {
         },
       ),
     );
+
+    // Bypass SSL handshake / certificate issues pada versi Android lama (seperti Let's Encrypt ISRG Root X2)
+    if (!kIsWeb) {
+      _dio.httpClientAdapter = IOHttpClientAdapter(
+        createHttpClient: () {
+          final client = HttpClient();
+          client.badCertificateCallback =
+              (X509Certificate cert, String host, int port) => true;
+          return client;
+        },
+      );
+    }
 
     // Mock API interceptor dijalankan sebelum network jika diaktifkan
     if (_useMockApi) {
@@ -317,8 +331,9 @@ class ApiService {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    // Tangkap 401 Unauthorized → coba 1x auto-refresh token
-    if (err.response?.statusCode == 401 && onRefreshToken != null && !_isRefreshing) {
+    // Tangkap 401 Unauthorized → coba 1x auto-refresh token (lewati endpoint login)
+    final isLogin = err.requestOptions.path.endsWith('/login');
+    if (!isLogin && err.response?.statusCode == 401 && onRefreshToken != null && !_isRefreshing) {
       _isRefreshing = true;
       try {
         debugPrint('[ApiService] 401 Unauthorized terdeteksi. Mencoba auto-refresh token...');
