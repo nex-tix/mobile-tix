@@ -47,5 +47,9 @@ class TicketCode {
   }
 
   /// True bila [raw] sudah berbentuk kode tiket (setelah normalisasi).
-  static bool looksLikeTicket(String raw) => _ticketPattern.hasMatch(parse(raw));
+  static bool looksLikeTicket(String raw) =>
+      _ticketPattern.hasMatch(parse(raw));
+
+  /// True bila [raw] adalah tiket rombongan (`GRP-`).
+  static bool isGroup(String raw) => parse(raw).startsWith('GRP');
 }

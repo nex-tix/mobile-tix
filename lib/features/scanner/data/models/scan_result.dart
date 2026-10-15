@@ -93,7 +93,14 @@ class ScanResult {
       mode: mode,
       scannedAt: scannedAt ?? DateTime.now(),
       visitorName: _string(json['visitor_name'] ?? json['visitorName']),
-      visitorCount: _int(json['visitor_count'] ?? json['visitorCount']) ?? 1,
+      visitorCount: _int(
+            json['visitor_count'] ??
+                json['visitorCount'] ??
+                json['actual_visitor_count'] ??
+                json['actualVisitorCount'] ??
+                json['quota'],
+          ) ??
+          1,
       category: _string(
         json['category'] ?? json['visitor_type'] ?? json['ticket_type'],
       ),
@@ -117,7 +124,7 @@ class ScanResult {
   static TicketStatus parseStatus(Object? raw) => TicketStatus.parse(raw);
 
   /// The presentation model the result sheet renders.
-  ScanOutcome toOutcome({String? gate}) {
+  ScanOutcome toOutcome({String? gate, int? actualAdmitted}) {
     return ScanOutcome(
       status: status,
       code: ticketCode,
@@ -127,6 +134,7 @@ class ScanResult {
       category: category,
       gate: usedAtCheckpoint ?? gate,
       tickets: visitorCount,
+      actualAdmitted: actualAdmitted,
       previousUseAt: status == TicketStatus.alreadyUsed ? usedAt : null,
       previousUseGate: status == TicketStatus.alreadyUsed
           ? usedAtCheckpoint

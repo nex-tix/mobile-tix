@@ -35,6 +35,7 @@ class _FakeTicketRepository implements TicketRepository {
   Future<ScanResult> validateAndCheckIn({
     required String ticketCode,
     required String checkpointId,
+    int? actualVisitorCount,
   }) {
     calls.add('checkIn|$checkpointId|$ticketCode');
     return _respond(ticketCode, ScanMode.checkIn);

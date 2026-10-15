@@ -21,6 +21,7 @@ class ScanOutcome {
     this.category,
     this.gate,
     this.tickets = 1,
+    this.actualAdmitted,
     this.previousUseAt,
     this.previousUseGate,
     this.message,
@@ -36,6 +37,7 @@ class ScanOutcome {
   final String? category;
   final String? gate;
   final int tickets;
+  final int? actualAdmitted;
 
   /// For ALREADY_USED: when and where the ticket was first used.
   final DateTime? previousUseAt;

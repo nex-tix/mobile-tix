@@ -24,6 +24,7 @@ abstract class TicketRepository {
   Future<ScanResult> validateAndCheckIn({
     required String ticketCode,
     required String checkpointId,
+    int? actualVisitorCount,
   });
 }
 
@@ -52,11 +53,13 @@ class TicketRepositoryImpl implements TicketRepository {
   Future<ScanResult> validateAndCheckIn({
     required String ticketCode,
     required String checkpointId,
+    int? actualVisitorCount,
   }) => _scan(
     endpoint: ApiEndpoints.ticketValidateAndCheckin,
     mode: ScanMode.checkIn,
     ticketCode: ticketCode,
     checkpointId: checkpointId,
+    actualVisitorCount: actualVisitorCount,
   );
 
   Future<ScanResult> _scan({
@@ -64,6 +67,7 @@ class TicketRepositoryImpl implements TicketRepository {
     required ScanMode mode,
     required String ticketCode,
     required String checkpointId,
+    int? actualVisitorCount,
   }) async {
     final code = ticketCode.trim();
     final checkpoint = checkpointId.trim();
@@ -82,9 +86,20 @@ class TicketRepositoryImpl implements TicketRepository {
     }
 
     try {
+      final payload = <String, dynamic>{
+        'ticketCode': code,
+        'checkpointId': checkpoint,
+        if (actualVisitorCount != null) ...{
+          'actual_visitor_count': actualVisitorCount,
+          'actualVisitorCount': actualVisitorCount,
+          'visitor_count': actualVisitorCount,
+          'visitorCount': actualVisitorCount,
+        },
+      };
+
       final response = await _apiService.post(
         endpoint,
-        data: {'ticketCode': code, 'checkpointId': checkpoint},
+        data: payload,
       );
 
       final body = response.data;

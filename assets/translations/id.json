@@ -138,5 +138,18 @@
     "continueOffline": "Lanjut Scan Offline",
     "connectedSuccess": "Sinyal terhubung kembali (Online)",
     "stillOffline": "Sinyal belum ditemukan, masih Mode Offline"
+  },
+  "groupTicket": {
+    "dialogTitle": "Konfirmasi Jumlah Hadir",
+    "bookedQuota": "Kuota Tiket: {count} Orang",
+    "actualCount": "Jumlah Hadir Saat Ini",
+    "matchExact": "Sesuai ({count} Orang)",
+    "statusExact": "Jumlah hadir sesuai dengan kuota tiket ({count} orang).",
+    "statusExceeded": "Jumlah hadir ({actual} orang) melebihi kuota ({quota} orang). Tiket ditolak dan tidak dapat dikonfirmasi. Kelebihan {extra} orang harus membeli tiket baru terpisah.",
+    "statusLess": "{actual} orang dicatat masuk ({extra} orang tidak hadir).",
+    "confirmCheckIn": "Konfirmasi Masuk ({count} Orang)",
+    "rejectedExceeded": "Tiket Ditolak (Melebihi Kuota)",
+    "cancel": "Batal",
+    "admittedInfo": "{actual} dari {quota} Pengunjung Hadir"
   }
 }

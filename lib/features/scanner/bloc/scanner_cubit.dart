@@ -53,6 +53,20 @@ class ScannerCubit extends Cubit<ScannerState> {
 
   ScanMode get mode => _mode;
 
+  TicketRepository get repository => _repository;
+
+  /// Memeriksa tiket tanpa check-in (dipakai untuk validasi rombongan sebelum check-in).
+  Future<ScanResult> checkTicketOnly({
+    required String ticketCode,
+    required String checkpointId,
+  }) {
+    final code = TicketCode.parse(ticketCode);
+    return _repository.checkTicket(
+      ticketCode: code,
+      checkpointId: checkpointId,
+    );
+  }
+
   /// Jumlah scan yang masih menunggu dikirim, dibaca langsung dari DAO.
   int get pendingSyncCount => _queueDao.size;
 
@@ -86,6 +100,7 @@ class ScannerCubit extends Cubit<ScannerState> {
   Future<void> scanTicket({
     required String ticketCode,
     required String checkpointId,
+    int? actualVisitorCount,
   }) async {
     if (state.isProcessing) return; // satu scan diproses pada satu waktu
 
@@ -155,6 +170,7 @@ class ScannerCubit extends Cubit<ScannerState> {
         mode: mode,
         ticketCode: code,
         checkpointId: checkpointId,
+        actualVisitorCount: actualVisitorCount,
       );
       if (isClosed) return;
       emit(
@@ -265,11 +281,13 @@ class ScannerCubit extends Cubit<ScannerState> {
     required ScanMode mode,
     required String ticketCode,
     required String checkpointId,
+    int? actualVisitorCount,
   }) {
     return mode == ScanMode.checkIn
         ? _repository.validateAndCheckIn(
             ticketCode: ticketCode,
             checkpointId: checkpointId,
+            actualVisitorCount: actualVisitorCount,
           )
         : _repository.checkTicket(
             ticketCode: ticketCode,
@@ -336,6 +354,7 @@ class ScannerCubit extends Cubit<ScannerState> {
   /// (sheet hasil / pesan error), dan meng-emit ulang akan memicu listener
   /// menampilkan hal yang sama dua kali.
   void _refreshPendingSync({int synced = 0}) {
+    if (isClosed) return;
     final pending = pendingSyncCount;
     switch (state) {
       case ScannerIdle s when s.pendingSync != pending:

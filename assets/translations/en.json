@@ -138,5 +138,18 @@
     "continueOffline": "Continue Offline",
     "connectedSuccess": "Connection restored (Online)",
     "stillOffline": "No signal found, still in Offline Mode"
+  },
+  "groupTicket": {
+    "dialogTitle": "Confirm Headcount",
+    "bookedQuota": "Ticket Quota: {count} Visitors",
+    "actualCount": "Actual Headcount",
+    "matchExact": "Match Quota ({count} Visitors)",
+    "statusExact": "Headcount matches ticket quota ({count} visitors).",
+    "statusExceeded": "Headcount ({actual} visitors) exceeds quota ({quota} visitors). Ticket is rejected and cannot be confirmed. Extra {extra} visitor(s) must purchase separate tickets.",
+    "statusLess": "{actual} visitors admitted ({extra} absent).",
+    "confirmCheckIn": "Confirm Entry ({count} Visitors)",
+    "rejectedExceeded": "Ticket Rejected (Exceeds Quota)",
+    "cancel": "Cancel",
+    "admittedInfo": "{actual} of {quota} Visitors Admitted"
   }
 }

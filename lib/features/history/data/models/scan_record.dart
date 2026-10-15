@@ -89,8 +89,13 @@ class ScanRecord {
             json['buyer_name'] ??
             json['buyerName'],
       ),
-      visitorCount:
-          _int(json['visitor_count'] ?? json['visitorCount']) ?? 1,
+      visitorCount: _int(
+            json['actual_visitor_count'] ??
+                json['actualVisitorCount'] ??
+                json['visitor_count'] ??
+                json['visitorCount'],
+          ) ??
+          1,
       category: _string(
         json['category'] ??
             json['ticket_type'] ??

@@ -13,6 +13,8 @@ import '../../../../shared/widgets/inline_status.dart';
 import '../../bloc/scanner_cubit.dart';
 import '../../bloc/scanner_state.dart';
 import '../../../../routes/shell_controller.dart';
+import '../../data/ticket_code.dart';
+import '../widgets/group_headcount_dialog.dart';
 import '../widgets/scan_result_sheet.dart';
 import '../widgets/scanner_viewfinder.dart';
 
@@ -34,10 +36,12 @@ class _ScannerScreenState extends State<ScannerScreen> {
   final TextEditingController _codeController = TextEditingController();
   bool _showManualInput = false;
   bool _isHandlingScan = false;
+  int? _lastActualAdmitted;
 
   // Walkthrough sample codes
   static const List<String> _sampleCodes = [
-    'TKT-2026-001245', // Valid
+    'TKT-2026-001245', // Valid (Individu 1 Orang)
+    'GRP-2026-008888', // Valid (Rombongan 10 Orang)
     'TKT-2026-001244', // Re-use / Already used
     'TKT-2026-001243', // Expired
     'TKT-2026-001242', // Cancelled
@@ -80,9 +84,45 @@ class _ScannerScreenState extends State<ScannerScreen> {
     _codeController.clear();
     if (_showManualInput) setState(() => _showManualInput = false);
 
-    await context.read<ScannerCubit>().scanTicket(
+    final cubit = context.read<ScannerCubit>();
+    _lastActualAdmitted = null;
+
+    // Untuk tiket rombongan saat mode Check-In, lakukan konfirmasi hadir & kuota riil
+    // sebelum check-in resmi dikirim ke server.
+    if (cubit.mode == ScanMode.checkIn && TicketCode.isGroup(trimmed)) {
+      setState(() => _isHandlingScan = true);
+      try {
+        final checkResult = await cubit.checkTicketOnly(
+          ticketCode: trimmed,
+          checkpointId: checkpointId,
+        );
+
+        if (checkResult.status == TicketStatus.valid &&
+            checkResult.visitorCount > 1) {
+          if (!mounted) return;
+          final admitted = await GroupHeadcountDialog.show(
+            context,
+            scanResult: checkResult,
+          );
+          if (admitted == null) {
+            // Petugas membatalkan dialog -> jangan check-in
+            return;
+          }
+          _lastActualAdmitted = admitted;
+        }
+      } catch (_) {
+        // Bila pre-check gagal/offline, biarkan cubit.scanTicket menangani alur error/antrean
+      } finally {
+        if (mounted) {
+          setState(() => _isHandlingScan = false);
+        }
+      }
+    }
+
+    await cubit.scanTicket(
       ticketCode: trimmed,
       checkpointId: checkpointId,
+      actualVisitorCount: _lastActualAdmitted,
     );
   }
 
@@ -106,34 +146,38 @@ class _ScannerScreenState extends State<ScannerScreen> {
             AudioFeedbackService.instance.playError();
           }
           final gate = context.read<SessionState>().checkpoint?.gate;
+          final admitted = _lastActualAdmitted;
+          _lastActualAdmitted = null;
+          final isGroup = result.visitorCount > 1 || admitted != null;
           await ScanResultSheet.show(
             context,
-            outcome: result.toOutcome(gate: gate),
+            outcome: result.toOutcome(gate: gate, actualAdmitted: admitted),
             autoDismiss:
                 result.status == TicketStatus.valid &&
-                result.mode == ScanMode.checkIn,
+                result.mode == ScanMode.checkIn &&
+                !isGroup,
             onRetry: () => _submit(result.ticketCode),
           );
           if (!mounted) return;
           cubit.acknowledgeResult();
 
-        case ScannerQueued(ticketCode: final code):
-          AudioFeedbackService.instance.playError();
-          AppSnackbar.warning(
-            context,
-            context.trSafe(
-              'scanner.offlineQueued',
-              'Offline — {code} masuk antrean dan akan dikirim otomatis saat koneksi pulih.',
-              namedArgs: {'code': code},
-            ),
-            duration: const Duration(seconds: 4),
-          );
-          cubit.acknowledgeResult();
+      case ScannerQueued(ticketCode: final code):
+        AudioFeedbackService.instance.playError();
+        AppSnackbar.warning(
+          context,
+          context.trSafe(
+            'scanner.offlineQueued',
+            'Offline — {code} masuk antrean dan akan dikirim otomatis saat koneksi pulih.',
+            namedArgs: {'code': code},
+          ),
+          duration: const Duration(seconds: 4),
+        );
+        cubit.acknowledgeResult();
 
-        case ScannerError(message: final message):
-          AudioFeedbackService.instance.playError();
-          AppSnackbar.danger(context, message);
-          cubit.acknowledgeResult();
+      case ScannerError(message: final message):
+        AudioFeedbackService.instance.playError();
+        AppSnackbar.danger(context, message);
+        cubit.acknowledgeResult();
 
         case ScannerIdle():
         case ScannerProcessing():

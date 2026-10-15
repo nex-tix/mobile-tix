@@ -3,10 +3,11 @@
 // Simulasi response dari 8 endpoint sesuai PRDMOBILE.md
 
 import 'dart:convert';
+
 import '../data/models/api_response_model.dart';
 
 /// Mock API Adapter untuk simulasi backend responses
-/// 
+///
 /// Gunakan ini saat backend belum ready atau untuk testing.
 /// Setiap method return Future dengan delay 500ms untuk simulasi network latency.
 /// Response format sama persis dengan backend real supaya gampang swap nanti.
@@ -33,12 +34,16 @@ class MockApiAdapter {
         .encode(utf8.encode(json.encode({'alg': 'HS256', 'typ': 'JWT'})))
         .replaceAll('=', '');
     final payload = base64Url
-        .encode(utf8.encode(json.encode({
-          'sub': username,
-          'name': 'Admin Gate',
-          'iat': iat,
-          'exp': exp,
-        })))
+        .encode(
+          utf8.encode(
+            json.encode({
+              'sub': username,
+              'name': 'Admin Gate',
+              'iat': iat,
+              'exp': exp,
+            }),
+          ),
+        )
         .replaceAll('=', '');
     const signature = 'SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
     return '$header.$payload.$signature';
@@ -47,11 +52,11 @@ class MockApiAdapter {
   // ==================== AUTHENTICATION ====================
 
   /// Mock endpoint: POST /login
-  /// 
+  ///
   /// [username]: username dari login form (e.g., "admin.gate")
   /// [password]: password dari login form (e.g., "gate2026")
   /// [checkpoint]: gate/pintu yang dipilih (e.g., "Gate A")
-  /// 
+  ///
   /// Returns: ApiResponse dengan token JWT dan user info
   /// Success jika username == "admin.gate" dan password == "gate2026"
   Future<ApiResponse<Map<String, dynamic>>> login({
@@ -76,20 +81,20 @@ class MockApiAdapter {
             'role': 'validator',
             'checkpoint': checkpoint,
           },
-          'expires_at': DateTime.now().add(const Duration(hours: 12)).toIso8601String(),
+          'expires_at': DateTime.now()
+              .add(const Duration(hours: 12))
+              .toIso8601String(),
         },
         message: 'Login berhasil',
       );
     } else {
       // Gagal login — invalid credentials
-      return ApiResponse.error(
-        message: 'Username atau password salah',
-      );
+      return ApiResponse.error(message: 'Username atau password salah');
     }
   }
 
   /// Mock endpoint: POST /logout
-  /// 
+  ///
   /// Tidak butuh parameter (token sudah ada di header Authorization)
   /// Returns: ApiResponse sukses/gagal
   Future<ApiResponse<Map<String, dynamic>>> logout() async {
@@ -98,15 +103,13 @@ class MockApiAdapter {
 
     // Logout selalu sukses
     return ApiResponse.success(
-      data: {
-        'logged_out_at': DateTime.now().toIso8601String(),
-      },
+      data: {'logged_out_at': DateTime.now().toIso8601String()},
       message: 'Logout berhasil',
     );
   }
 
   /// Mock endpoint: GET /me
-  /// 
+  ///
   /// Get current user info dari token
   /// Returns: ApiResponse dengan user data
   Future<ApiResponse<Map<String, dynamic>>> getCurrentUser() async {
@@ -132,7 +135,7 @@ class MockApiAdapter {
   // ==================== CHECKPOINT MANAGEMENT ====================
 
   /// Mock endpoint: GET /checkpoints
-  /// 
+  ///
   /// Get list semua gate/checkpoint yang tersedia
   /// Returns: ApiResponse dengan array checkpoint
   Future<ApiResponse<List<Map<String, dynamic>>>> getCheckpoints() async {
@@ -210,6 +213,7 @@ class MockApiAdapter {
     required String status,
     required String checkpoint,
     required bool checkedIn,
+    int? actualVisitorCount,
   }) {
     final now = DateTime.now();
     final gate = checkpoint.trim().isEmpty ? 'Gate A' : checkpoint.trim();
@@ -217,13 +221,20 @@ class MockApiAdapter {
     final used = status == 'already_used';
     final withHolder = valid || used;
     final written = checkedIn && valid;
+    final isGroup = code.toUpperCase().startsWith('GRP');
+    final baseCount = withHolder ? (isGroup ? 10 : 1) : 0;
+    final visitorCount = (checkedIn && actualVisitorCount != null)
+        ? actualVisitorCount
+        : baseCount;
 
     return {
       'ticket_code': code,
       'status': status,
-      'visitor_name': withHolder ? 'Rangga Prasetyo' : null,
-      'visitor_count': withHolder ? 1 : 0,
-      'category': withHolder ? 'Individu' : null,
+      'visitor_name': withHolder
+          ? (isGroup ? 'Rombongan PT Maju Bersama' : 'Rangga Prasetyo')
+          : null,
+      'visitor_count': visitorCount,
+      'category': withHolder ? (isGroup ? 'Rombongan' : 'Individu') : null,
       'used_at': used
           ? now.subtract(const Duration(minutes: 27)).toIso8601String()
           : (written ? now.toIso8601String() : null),
@@ -283,11 +294,13 @@ class MockApiAdapter {
   /// Validate ticket + proses check-in sekaligus (atomic operation).
   /// [ticketCode]: kode ticket dari QR scan atau manual input
   /// [checkpoint]: gate tempat check-in dilakukan
+  /// [actualVisitorCount]: jumlah riil pengunjung yang hadir
   ///
   /// Returns: ApiResponse dengan payload tiket setelah check-in untuk status valid
   Future<ApiResponse<Map<String, dynamic>>> validateAndCheckIn({
     required String ticketCode,
     required String checkpoint,
+    int? actualVisitorCount,
   }) async {
     // Simulasi network delay
     await Future.delayed(_networkDelay);
@@ -303,6 +316,7 @@ class MockApiAdapter {
         status: status,
         checkpoint: checkpoint,
         checkedIn: true,
+        actualVisitorCount: actualVisitorCount,
       ),
       message: ticketMessageFor(status, checkedIn: true),
     );
@@ -350,7 +364,21 @@ class MockApiAdapter {
             },
             // Total pengunjung per jam operasional sepanjang bulan ini
             // (jumlah = 3412, sama dengan total_visitors).
-            'hourly': [107, 240, 640, 480, 293, 160, 187, 320, 373, 240, 160, 133, 79],
+            'hourly': [
+              107,
+              240,
+              640,
+              480,
+              293,
+              160,
+              187,
+              320,
+              373,
+              240,
+              160,
+              133,
+              79,
+            ],
             'hour_start': 8,
           }
         : <String, dynamic>{
@@ -422,9 +450,7 @@ class MockApiAdapter {
     final day = date?.trim();
     if (day != null && day.isNotEmpty) {
       records = records
-          .where(
-            (item) => (item['scanned_at'] as String).startsWith(day),
-          )
+          .where((item) => (item['scanned_at'] as String).startsWith(day))
           .toList();
     }
 

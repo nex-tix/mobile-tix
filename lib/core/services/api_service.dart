@@ -174,6 +174,13 @@ class ApiService {
       }
 
       if (path.endsWith('/ticket/validate-and-checkin')) {
+        final countRaw = body['actual_visitor_count'] ??
+            body['actualVisitorCount'] ??
+            body['visitor_count'] ??
+            body['visitorCount'];
+        final actualCount =
+            countRaw != null ? int.tryParse(countRaw.toString()) : null;
+
         final res = await adapter.validateAndCheckIn(
           ticketCode:
               body['ticket_code']?.toString() ??
@@ -184,6 +191,7 @@ class ApiService {
               body['checkpoint_id']?.toString() ??
               body['checkpoint']?.toString() ??
               'Gate A',
+          actualVisitorCount: actualCount,
         );
         return handler.resolve(Response(
           requestOptions: options,

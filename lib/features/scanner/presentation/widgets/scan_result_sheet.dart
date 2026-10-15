@@ -56,7 +56,8 @@ class _ScanResultSheetState extends State<ScanResultSheet>
   @override
   void initState() {
     super.initState();
-    if (widget.autoDismiss && widget.outcome.status == TicketStatus.valid) {
+    final isGroup = widget.outcome.tickets > 1 || widget.outcome.actualAdmitted != null;
+    if (widget.autoDismiss && widget.outcome.status == TicketStatus.valid && !isGroup) {
       _dwell =
           AnimationController(
               vsync: this,
@@ -187,19 +188,43 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                         '${outcome.gate ?? 'Gate 1'} · ${Fmt.clockWita(outcome.at)}',
                   ),
                   const SizedBox(height: 22),
-                  Text(
-                    '${outcome.category ?? context.trSafe('ticket.defaultCategory', 'Tiket')} · ${context.trSafe('ticket.visitor', '${outcome.tickets} Visitor', namedArgs: {'count': '${outcome.tickets}'})}',
-                    style: TextStyle(
-                      fontFamily: 'DMSans',
-                      fontSize: 15.5,
-                      color: context.colors.ink,
-                    ),
+                  Builder(
+                    builder: (context) {
+                      final String visitorSubtitle;
+                      if (outcome.actualAdmitted != null &&
+                          outcome.actualAdmitted != outcome.tickets) {
+                        visitorSubtitle = context.trSafe(
+                          'groupTicket.admittedInfo',
+                          '${outcome.actualAdmitted} dari ${outcome.tickets} Pengunjung Hadir',
+                          namedArgs: {
+                            'actual': '${outcome.actualAdmitted}',
+                            'quota': '${outcome.tickets}',
+                          },
+                        );
+                      } else {
+                        visitorSubtitle = context.trSafe(
+                          'ticket.visitor',
+                          '${outcome.tickets} Visitor',
+                          namedArgs: {'count': '${outcome.tickets}'},
+                        );
+                      }
+
+                      return Text(
+                        '${outcome.category ?? context.trSafe('ticket.defaultCategory', 'Tiket')} · $visitorSubtitle',
+                        style: TextStyle(
+                          fontFamily: 'DMSans',
+                          fontSize: 15.5,
+                          color: context.colors.ink,
+                        ),
+                      );
+                    },
                   ),
 
                   // Kode yang benar-benar dibaca: hanya ditampilkan saat TIDAK
                   // DITEMUKAN, supaya operator bisa membedakan kode salah baca
                   // dari kode yang memang tidak ada di sistem.
-                  if (status == TicketStatus.notFound && outcome.code.isNotEmpty) ...[
+                  if (status == TicketStatus.notFound &&
+                      outcome.code.isNotEmpty) ...[
                     const SizedBox(height: 8),
                     Text(
                       outcome.code,
