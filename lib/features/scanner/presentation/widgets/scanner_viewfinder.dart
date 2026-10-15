@@ -23,6 +23,7 @@ class ScannerViewfinder extends StatefulWidget {
     this.onScanned,
     this.disabled = false,
     this.processing = false,
+    this.isActive = true,
   });
 
   final double height;
@@ -30,17 +31,18 @@ class ScannerViewfinder extends StatefulWidget {
   final ValueChanged<String>? onScanned;
   final bool disabled;
   final bool processing;
+  final bool isActive;
 
   @override
   State<ScannerViewfinder> createState() => _ScannerViewfinderState();
 }
 
 class _ScannerViewfinderState extends State<ScannerViewfinder>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final AnimationController _sweep = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 2000),
-  )..repeat(reverse: true);
+  );
 
   MobileScannerController? _scannerController;
   bool _torchEnabled = false;
@@ -53,7 +55,11 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
   @override
   void initState() {
     super.initState();
-    if (_canUseCamera) {
+    WidgetsBinding.instance.addObserver(this);
+    if (widget.isActive && !widget.disabled) {
+      _sweep.repeat(reverse: true);
+    }
+    if (_canUseCamera && widget.isActive) {
       _scannerController = MobileScannerController(
         detectionSpeed: DetectionSpeed.normal,
         facing: CameraFacing.back,
@@ -63,14 +69,70 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
   }
 
   @override
+  void didUpdateWidget(ScannerViewfinder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isActive != widget.isActive ||
+        oldWidget.disabled != widget.disabled) {
+      if (widget.isActive && !widget.disabled) {
+        _startCamera();
+      } else {
+        _stopCamera();
+      }
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!_canUseCamera || _scannerController == null) return;
+    if (state == AppLifecycleState.resumed &&
+        widget.isActive &&
+        !widget.disabled) {
+      _startCamera();
+    } else if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused) {
+      _stopCamera();
+    }
+  }
+
+  void _startCamera() {
+    if (!_canUseCamera) return;
+    if (_scannerController == null) {
+      _scannerController = MobileScannerController(
+        detectionSpeed: DetectionSpeed.normal,
+        facing: CameraFacing.back,
+        torchEnabled: false,
+      );
+      if (mounted) setState(() {});
+    } else {
+      try {
+        _scannerController?.start();
+      } catch (_) {}
+    }
+    if (!_sweep.isAnimating) {
+      _sweep.repeat(reverse: true);
+    }
+  }
+
+  void _stopCamera() {
+    if (!_canUseCamera || _scannerController == null) return;
+    try {
+      _scannerController?.stop();
+    } catch (_) {}
+    if (_sweep.isAnimating) {
+      _sweep.stop();
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _sweep.dispose();
     _scannerController?.dispose();
     super.dispose();
   }
 
   void _onBarcodeDetected(BarcodeCapture capture) {
-    if (widget.disabled || widget.processing) return;
+    if (!widget.isActive || widget.disabled || widget.processing) return;
     for (final barcode in capture.barcodes) {
       final code = barcode.rawValue?.trim();
       if (code != null && code.isNotEmpty) {
@@ -121,7 +183,7 @@ class _ScannerViewfinderState extends State<ScannerViewfinder>
           alignment: Alignment.center,
           children: [
             // 1. Live Camera Feed (Android/iOS)
-            if (_canUseCamera && _scannerController != null)
+            if (_canUseCamera && _scannerController != null && widget.isActive)
               Positioned.fill(
                 child: MobileScanner(
                   controller: _scannerController!,

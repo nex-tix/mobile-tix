@@ -12,6 +12,7 @@ import '../../../auth/logic/session_state.dart';
 import '../../../../shared/widgets/inline_status.dart';
 import '../../bloc/scanner_cubit.dart';
 import '../../bloc/scanner_state.dart';
+import '../../../../routes/shell_controller.dart';
 import '../widgets/scan_result_sheet.dart';
 import '../widgets/scanner_viewfinder.dart';
 
@@ -21,7 +22,9 @@ import '../widgets/scanner_viewfinder.dart';
 /// [ScannerCubit] dan hanya menampilkan apa yang cubit laporkan — hasil dari
 /// server, masuk antrean karena offline, atau gagal.
 class ScannerScreen extends StatefulWidget {
-  const ScannerScreen({super.key});
+  const ScannerScreen({super.key, this.isActive});
+
+  final bool? isActive;
 
   @override
   State<ScannerScreen> createState() => _ScannerScreenState();
@@ -30,6 +33,7 @@ class ScannerScreen extends StatefulWidget {
 class _ScannerScreenState extends State<ScannerScreen> {
   final TextEditingController _codeController = TextEditingController();
   bool _showManualInput = false;
+  bool _isHandlingScan = false;
 
   // Walkthrough sample codes
   static const List<String> _sampleCodes = [
@@ -49,6 +53,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
   /// Kirim satu kode ke cubit.
   Future<void> _submit(String code) async {
+    final shell = context.read<ShellController?>();
+    final isScreenActive =
+        widget.isActive ?? (shell == null || shell.index == 1);
+    if (!isScreenActive || _isHandlingScan) return;
+
     final trimmed = code.trim();
     if (trimmed.isEmpty) {
       AppSnackbar.warning(
@@ -86,47 +95,54 @@ class _ScannerScreenState extends State<ScannerScreen> {
   /// Reaksi terhadap hasil yang tidak lagi menunggu.
   Future<void> _onScanOutcome(ScannerState state) async {
     final cubit = context.read<ScannerCubit>();
+    _isHandlingScan = true;
 
-    switch (state) {
-      case ScannerSuccess(result: final result):
-        if (result.status == TicketStatus.valid) {
-          AudioFeedbackService.instance.playSuccess();
-        } else {
+    try {
+      switch (state) {
+        case ScannerSuccess(result: final result):
+          if (result.status == TicketStatus.valid) {
+            AudioFeedbackService.instance.playSuccess();
+          } else {
+            AudioFeedbackService.instance.playError();
+          }
+          final gate = context.read<SessionState>().checkpoint?.gate;
+          await ScanResultSheet.show(
+            context,
+            outcome: result.toOutcome(gate: gate),
+            autoDismiss:
+                result.status == TicketStatus.valid &&
+                result.mode == ScanMode.checkIn,
+            onRetry: () => _submit(result.ticketCode),
+          );
+          if (!mounted) return;
+          cubit.acknowledgeResult();
+
+        case ScannerQueued(ticketCode: final code):
           AudioFeedbackService.instance.playError();
-        }
-        final gate = context.read<SessionState>().checkpoint?.gate;
-        await ScanResultSheet.show(
-          context,
-          outcome: result.toOutcome(gate: gate),
-          autoDismiss:
-              result.status == TicketStatus.valid &&
-              result.mode == ScanMode.checkIn,
-          onRetry: () => _submit(result.ticketCode),
-        );
-        if (!mounted) return;
-        cubit.acknowledgeResult();
+          AppSnackbar.warning(
+            context,
+            context.trSafe(
+              'scanner.offlineQueued',
+              'Offline — {code} masuk antrean dan akan dikirim otomatis saat koneksi pulih.',
+              namedArgs: {'code': code},
+            ),
+            duration: const Duration(seconds: 4),
+          );
+          cubit.acknowledgeResult();
 
-      case ScannerQueued(ticketCode: final code):
-        AudioFeedbackService.instance.playError();
-        AppSnackbar.warning(
-          context,
-          context.trSafe(
-            'scanner.offlineQueued',
-            'Offline — {code} masuk antrean dan akan dikirim otomatis saat koneksi pulih.',
-            namedArgs: {'code': code},
-          ),
-          duration: const Duration(seconds: 4),
-        );
-        cubit.acknowledgeResult();
+        case ScannerError(message: final message):
+          AudioFeedbackService.instance.playError();
+          AppSnackbar.danger(context, message);
+          cubit.acknowledgeResult();
 
-      case ScannerError(message: final message):
-        AudioFeedbackService.instance.playError();
-        AppSnackbar.danger(context, message);
-        cubit.acknowledgeResult();
-
-      case ScannerIdle():
-      case ScannerProcessing():
-        break;
+        case ScannerIdle():
+        case ScannerProcessing():
+          break;
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isHandlingScan = false);
+      }
     }
   }
 
@@ -134,6 +150,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
   Widget build(BuildContext context) {
     final session = context.watch<SessionState>();
     final connectivity = context.watch<DemoConnectivity>();
+    final shell = context.watch<ShellController?>();
+    final isScreenActive =
+        widget.isActive ?? (shell == null || shell.index == 1);
     final checkpoint = session.checkpoint;
 
     final screenHeight = MediaQuery.sizeOf(context).height;
@@ -203,8 +222,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
                       height: viewHeight,
                       onSimulate: _simulateCameraScan,
                       onScanned: _submit,
-                      processing: state.isProcessing,
-                      disabled: false,
+                      processing: state.isProcessing || _isHandlingScan,
+                      disabled: !isScreenActive ||
+                          _showManualInput ||
+                          _isHandlingScan,
+                      isActive: isScreenActive,
                     ),
                     const SizedBox(height: 14),
 

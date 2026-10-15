@@ -140,10 +140,10 @@ class _HomeShellState extends State<HomeShell> {
             // Screen pages kept alive in IndexedStack
             IndexedStack(
               index: shell.index,
-              children: const [
-                DashboardScreen(),
-                ScannerScreen(),
-                HistoryScreen(),
+              children: [
+                const DashboardScreen(),
+                ScannerScreen(isActive: shell.index == 1),
+                const HistoryScreen(),
               ],
             ),
 
