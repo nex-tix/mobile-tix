@@ -3,12 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/connectivity/demo_connectivity.dart';
 import '../../../../core/constants/app_icons.dart';
+import '../../../../core/data/dao/offline_queue_dao.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/utils/i18n_helper.dart';
 import '../../../auth/logic/session_state.dart';
 import '../../../../core/ui/widgets/app_snackbar.dart';
 import '../../../../shared/widgets/inline_status.dart';
+import '../../../scanner/bloc/scanner_cubit.dart';
+import '../../../scanner/bloc/scanner_state.dart';
+import '../../../scanner/data/models/queued_scan.dart';
 import '../../bloc/dashboard_cubit.dart';
 import '../../bloc/dashboard_state.dart';
 import '../widgets/dashboard_skeleton.dart';
@@ -159,6 +163,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
+      // Pending offline queue section — tampil hanya bila ada item dan ScannerCubit tersedia.
+      const _PendingQueueWrapper(),
     ];
   }
 }
@@ -537,3 +543,374 @@ class _FailureView extends StatelessWidget {
     );
   }
 }
+
+/// Pembungkus antrean pending yang aman: tidak crash jika ScannerCubit tidak ada di tree (mis. unit test terisolasi).
+class _PendingQueueWrapper extends StatelessWidget {
+  const _PendingQueueWrapper();
+
+  @override
+  Widget build(BuildContext context) {
+    ScannerCubit? cubit;
+    try {
+      cubit = BlocProvider.of<ScannerCubit>(context, listen: false);
+    } catch (_) {
+      cubit = null;
+    }
+
+    if (cubit == null) return const SizedBox.shrink();
+
+    return BlocBuilder<ScannerCubit, ScannerState>(
+      bloc: cubit,
+      buildWhen: (prev, curr) => prev.pendingSync != curr.pendingSync,
+      builder: (context, scannerState) {
+        if (!scannerState.hasPendingSync) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(top: 18),
+          child: _PendingQueueSection(
+            scannerCubit: cubit,
+            onSyncDone: () {
+              context.read<DashboardCubit>().refresh();
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// List tiket offline yang menunggu dikirim ke server.
+///
+/// Ditampilkan di bawah card Pengunjung/Valid/Ditolak saat ada item di antrean
+/// offline. Setiap item menampilkan kode tiket, mode, jumlah pengunjung riil,
+/// dan waktu scan. Tombol "Kirim ke Server" memicu sync manual.
+class _PendingQueueSection extends StatefulWidget {
+  const _PendingQueueSection({this.scannerCubit, this.onSyncDone});
+
+  final ScannerCubit? scannerCubit;
+  final VoidCallback? onSyncDone;
+
+  @override
+  State<_PendingQueueSection> createState() => _PendingQueueSectionState();
+}
+
+class _PendingQueueSectionState extends State<_PendingQueueSection> {
+  bool _syncing = false;
+
+  Future<void> _syncQueue() async {
+    if (_syncing) return;
+
+    final connectivity = context.read<DemoConnectivity>();
+    if (!connectivity.online) {
+      AppSnackbar.warning(
+        context,
+        context.trSafe(
+          'dashboard.syncNoConnection',
+          'Tidak ada koneksi internet. Coba lagi saat sudah online.',
+        ),
+      );
+      return;
+    }
+
+    setState(() => _syncing = true);
+    try {
+      final cubit = widget.scannerCubit ?? context.read<ScannerCubit>();
+      final synced = await cubit.processOfflineQueue();
+      if (!mounted) return;
+
+      if (synced > 0) {
+        AppSnackbar.success(
+          context,
+          context.trSafe(
+            'dashboard.syncSuccess',
+            '{count} tiket berhasil dikirim ke server',
+            namedArgs: {'count': '$synced'},
+          ),
+        );
+        widget.onSyncDone?.call();
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.danger(context, 'Gagal mengirim antrean: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _syncing = false);
+      }
+    }
+  }
+
+  String _formatTime(DateTime dateTime) {
+    final local = dateTime.toLocal();
+    final h = local.hour.toString().padLeft(2, '0');
+    final m = local.minute.toString().padLeft(2, '0');
+    return '$h:$m WITA';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final items = OfflineQueueDAO().getAll();
+    final totalCount = items.length;
+
+    if (totalCount == 0) return const SizedBox.shrink();
+
+    // Tampilkan hingga 5 tiket pertama
+    final displayItems = items.take(5).toList();
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: c.outline),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header: Judul & Badge jumlah
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: c.primary.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      AppIcons.history,
+                      size: 16,
+                      color: c.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    context.trSafe(
+                      'dashboard.pendingQueue',
+                      'Menunggu Dikirim',
+                    ),
+                    style: TextStyle(
+                      fontFamily: 'DMSans',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: c.ink,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: c.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: c.primary.withValues(alpha: 0.25),
+                  ),
+                ),
+                child: Text(
+                  context.trSafe(
+                    'dashboard.pendingQueueCount',
+                    '{count} tiket menunggu',
+                    namedArgs: {'count': '$totalCount'},
+                  ),
+                  style: TextStyle(
+                    fontFamily: 'DMSans',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: c.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // List item pending
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: displayItems.length,
+            separatorBuilder: (_, __) => Divider(
+              color: c.outline.withValues(alpha: 0.5),
+              height: 14,
+            ),
+            itemBuilder: (context, index) {
+              final item = displayItems[index];
+              final isCheckIn =
+                  item.mode == 'checkIn' || item.mode == 'check_in';
+              final timeStr = _formatTime(item.queuedAt);
+              final visitors = item.actualVisitorCount;
+
+              return Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: isCheckIn
+                          ? c.valid.withValues(alpha: 0.1)
+                          : c.surfaceAlt,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      isCheckIn ? AppIcons.checkCircle : AppIcons.qrScanner,
+                      size: 18,
+                      color: isCheckIn ? c.valid : c.inkMuted,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.ticketCode,
+                          style: TextStyle(
+                            fontFamily: 'DMSans',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: c.ink,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Text(
+                              isCheckIn ? 'Check-In' : 'Periksa',
+                              style: TextStyle(
+                                fontFamily: 'DMSans',
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: isCheckIn ? c.valid : c.inkMuted,
+                              ),
+                            ),
+                            if (visitors != null && visitors > 0) ...[
+                              Text(
+                                ' · ',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: c.inkMuted,
+                                ),
+                              ),
+                              Text(
+                                context.trSafe(
+                                  'dashboard.pendingItemVisitors',
+                                  '{count} orang hadir',
+                                  namedArgs: {'count': '$visitors'},
+                                ),
+                                style: TextStyle(
+                                  fontFamily: 'DMSans',
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: c.primary,
+                                ),
+                              ),
+                            ],
+                            Text(
+                              ' · $timeStr',
+                              style: TextStyle(
+                                fontFamily: 'DMSans',
+                                fontSize: 12,
+                                color: c.inkMuted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+
+          if (totalCount > displayItems.length) ...[
+            const SizedBox(height: 8),
+            Center(
+              child: Text(
+                '+ ${totalCount - displayItems.length} tiket lainnya',
+                style: TextStyle(
+                  fontFamily: 'DMSans',
+                  fontSize: 12,
+                  color: c.inkMuted,
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+
+          // Tombol "Kirim ke Server"
+          SizedBox(
+            height: 48,
+            child: ElevatedButton(
+              onPressed: _syncing ? null : _syncQueue,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: c.primary,
+                foregroundColor: c.onPrimary,
+                disabledBackgroundColor: c.primary.withValues(alpha: 0.6),
+                disabledForegroundColor: Colors.white70,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: _syncing
+                  ? Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          context.trSafe(
+                            'dashboard.sendingToServer',
+                            'Mengirim...',
+                          ),
+                          style: const TextStyle(
+                            fontFamily: 'DMSans',
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.cloud_upload_outlined, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          context.trSafe(
+                            'dashboard.sendToServer',
+                            'Kirim ke Server',
+                          ),
+                          style: const TextStyle(
+                            fontFamily: 'DMSans',
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
