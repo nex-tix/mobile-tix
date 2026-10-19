@@ -106,7 +106,15 @@
     "rejected": "Ditolak",
     "today": "Hari Ini",
     "thisMonth": "Bulan Ini",
-    "loadFailed": "Metrik tidak dapat dimuat"
+    "loadFailed": "Metrik tidak dapat dimuat",
+    "pendingQueue": "Menunggu Dikirim",
+    "pendingQueueCount": "{count} tiket menunggu",
+    "sendToServer": "Kirim ke Server",
+    "sendingToServer": "Mengirim...",
+    "syncSuccess": "{count} tiket berhasil dikirim ke server",
+    "syncNoConnection": "Tidak ada koneksi internet. Coba lagi saat sudah online.",
+    "pendingItemVisitors": "{count} orang hadir",
+    "pendingItemQueued": "Discan {time}"
   },
   "history": {
     "title": "Riwayat",
@@ -142,12 +150,15 @@
   "groupTicket": {
     "dialogTitle": "Konfirmasi Jumlah Hadir",
     "bookedQuota": "Kuota Tiket: {count} Orang",
+    "quotaFromPhysical": "Kuota Tiket (Lihat Fisik)",
+    "offlineBadge": "Mode Offline · Antrean Perangkat",
     "actualCount": "Jumlah Hadir Saat Ini",
     "matchExact": "Sesuai ({count} Orang)",
     "statusExact": "Jumlah hadir sesuai dengan kuota tiket ({count} orang).",
     "statusExceeded": "Jumlah hadir ({actual} orang) melebihi kuota ({quota} orang). Tiket ditolak dan tidak dapat dikonfirmasi. Kelebihan {extra} orang harus membeli tiket baru terpisah.",
     "statusLess": "{actual} orang dicatat masuk ({extra} orang tidak hadir).",
     "confirmCheckIn": "Konfirmasi Masuk ({count} Orang)",
+    "confirmOffline": "Konfirmasi Hadir ({count} Orang) · Offline",
     "rejectedExceeded": "Tiket Ditolak (Melebihi Kuota)",
     "cancel": "Batal",
     "admittedInfo": "{actual} dari {quota} Pengunjung Hadir"

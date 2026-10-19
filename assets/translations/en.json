@@ -106,7 +106,15 @@
     "rejected": "Rejected",
     "today": "Today",
     "thisMonth": "This Month",
-    "loadFailed": "Failed to load metrics"
+    "loadFailed": "Failed to load metrics",
+    "pendingQueue": "Waiting to Send",
+    "pendingQueueCount": "{count} tickets pending",
+    "sendToServer": "Send to Server",
+    "sendingToServer": "Sending...",
+    "syncSuccess": "{count} tickets successfully sent to server",
+    "syncNoConnection": "No internet connection. Please try again when back online.",
+    "pendingItemVisitors": "{count} visitors",
+    "pendingItemQueued": "Scanned {time}"
   },
   "history": {
     "title": "History",
@@ -142,12 +150,15 @@
   "groupTicket": {
     "dialogTitle": "Confirm Headcount",
     "bookedQuota": "Ticket Quota: {count} Visitors",
+    "quotaFromPhysical": "Ticket Quota (Physical Check)",
+    "offlineBadge": "Offline Mode · Device Queue",
     "actualCount": "Actual Headcount",
     "matchExact": "Match Quota ({count} Visitors)",
     "statusExact": "Headcount matches ticket quota ({count} visitors).",
     "statusExceeded": "Headcount ({actual} visitors) exceeds quota ({quota} visitors). Ticket is rejected and cannot be confirmed. Extra {extra} visitor(s) must purchase separate tickets.",
     "statusLess": "{actual} visitors admitted ({extra} absent).",
     "confirmCheckIn": "Confirm Entry ({count} Visitors)",
+    "confirmOffline": "Confirm Entry ({count} Visitors) · Offline",
     "rejectedExceeded": "Ticket Rejected (Exceeds Quota)",
     "cancel": "Cancel",
     "admittedInfo": "{actual} of {quota} Visitors Admitted"
