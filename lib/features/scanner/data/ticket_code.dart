@@ -11,6 +11,12 @@ final RegExp _codeMarker = RegExp(r'code=([^|&\s]+)', caseSensitive: false);
 
 final RegExp _whitespace = RegExp(r'\s+');
 
+/// Penanda jumlah kuota/tamu di payload QR bila disertakan (mis. `visitors=10`).
+final RegExp _visitorsMarker = RegExp(
+  r'(?:visitors?|total_visitors|pax|quota)=(\d+)',
+  caseSensitive: false,
+);
+
 /// Kode tiket yang siap dikirim ke API.
 ///
 /// QR yang dicetak POS tidak berisi kode tiket polos, melainkan payload
@@ -52,4 +58,13 @@ class TicketCode {
 
   /// True bila [raw] adalah tiket rombongan (`GRP-`).
   static bool isGroup(String raw) => parse(raw).startsWith('GRP');
+
+  /// Ambil estimasi kuota/tamu dari payload QR jika tersedia (mis. `visitors=10`).
+  static int? parseQuota(String raw) {
+    final match = _visitorsMarker.firstMatch(raw);
+    if (match != null) {
+      return int.tryParse(match.group(1) ?? '');
+    }
+    return null;
+  }
 }

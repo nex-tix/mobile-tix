@@ -105,6 +105,7 @@ class OfflineQueueDAO {
     required String ticketCode,
     required String checkpointId,
     String mode = 'checkIn',
+    int? actualVisitorCount,
   }) async {
     try {
       final code = ticketCode.trim();
@@ -127,6 +128,7 @@ class OfflineQueueDAO {
         mode: mode,
         checkpointId: checkpointId,
         queuedAt: stamp,
+        actualVisitorCount: actualVisitorCount,
       );
 
       // Simpan per-item (key = id) — tidak menulis ulang seluruh antrean

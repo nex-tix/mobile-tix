@@ -23,13 +23,14 @@ class QueuedScanAdapter extends TypeAdapter<QueuedScan> {
       checkpointId: fields[3] as String,
       queuedAt: fields[4] as DateTime,
       retryCount: fields[5] as int,
+      actualVisitorCount: fields[6] as int?,
     );
   }
 
   @override
   void write(BinaryWriter writer, QueuedScan obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -41,7 +42,9 @@ class QueuedScanAdapter extends TypeAdapter<QueuedScan> {
       ..writeByte(4)
       ..write(obj.queuedAt)
       ..writeByte(5)
-      ..write(obj.retryCount);
+      ..write(obj.retryCount)
+      ..writeByte(6)
+      ..write(obj.actualVisitorCount);
   }
 
   @override

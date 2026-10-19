@@ -44,6 +44,10 @@ class QueuedScan {
   @HiveField(5)
   int retryCount;
 
+  /// Jumlah riil pengunjung yang hadir (konfirmasi headcount untuk tiket rombongan).
+  @HiveField(6)
+  final int? actualVisitorCount;
+
   /// Constructor
   QueuedScan({
     required this.id,
@@ -52,6 +56,7 @@ class QueuedScan {
     required this.checkpointId,
     required this.queuedAt,
     this.retryCount = 0,
+    this.actualVisitorCount,
   });
 
   /// Umur item antrean sejak di-queue (dipakai untuk cek TTL 24 jam).
@@ -64,10 +69,11 @@ class QueuedScan {
     'checkpointId': checkpointId,
     'mode': mode,
     'scannedAt': queuedAt.toUtc().toIso8601String(),
+    if (actualVisitorCount != null) 'actualVisitorCount': actualVisitorCount,
   };
 
   @override
   String toString() =>
-      'QueuedScan(id: $id, code: $ticketCode, mode: $mode, retry: $retryCount)';
+      'QueuedScan(id: $id, code: $ticketCode, mode: $mode, count: $actualVisitorCount, retry: $retryCount)';
 }
 
