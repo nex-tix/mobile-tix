@@ -21,7 +21,6 @@ import 'core/services/api_service.dart';
 import 'core/services/token_refresh_service.dart';
 import 'core/services/auto_logout_service.dart';
 import 'core/services/auto_logout_observer.dart';
-import 'core/services/mock_api_adapter.dart';
 import 'features/auth/logic/session_state.dart';
 import 'features/auth/presentation/screens/login_screen.dart';
 import 'features/auth/presentation/screens/splash_screen.dart';
@@ -96,11 +95,9 @@ class _MobileTixAppState extends State<MobileTixApp> {
     authTokenRefreshService.onRefreshToken = () async {
       final currentToken = authTokenDao.getToken();
       if (currentToken == null || currentToken.isEmpty) return null;
-      final newToken = MockApiAdapter.generateMockJwt();
-      await authTokenDao.saveToken(newToken);
-      authTokenCubit.saveToken(newToken);
-      authApiService.setToken(newToken);
-      return newToken;
+      // Backend belum memiliki endpoint refresh token tersendiri.
+      // Mengembalikan null agar trigger onRefreshFailed -> forceLogout saat token habis.
+      return null;
     };
 
     authTokenRefreshService.onRefreshFailed = () {

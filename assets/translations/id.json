@@ -18,7 +18,8 @@
     "loading": "Memuat...",
     "error": "Terjadi kesalahan",
     "success": "Berhasil",
-    "copied": "Disalin!"
+    "copied": "Disalin!",
+    "noData": "Data tidak ada"
   },
   "auth": {
     "appTitle": "Gate Validator",
@@ -136,7 +137,8 @@
     "enterGate": "Masuk ke Gate",
     "back": "Kembali",
     "switchTitle": "Ganti Checkpoint",
-    "switchedSuccess": "Checkpoint berhasil diubah ke {gate}"
+    "switchedSuccess": "Checkpoint berhasil diubah ke {gate}",
+    "emptySubtitle": "Data checkpoint belum tersedia atau perangkat sedang offline."
   },
   "connectivity": {
     "offlineTitle": "Mode Offline",

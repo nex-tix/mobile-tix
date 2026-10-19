@@ -11,7 +11,6 @@ import '../../../../core/config/app_config.dart';
 import '../../../../core/ui/widgets/app_snackbar.dart';
 import '../../../../app.dart' show authApiService;
 import '../../../../core/data/dao/checkpoint_dao.dart';
-import '../../../checkpoint/data/dummy_checkpoints.dart';
 import '../../../checkpoint/data/models/checkpoint.dart';
 import '../../logic/session_state.dart';
 
@@ -42,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _gateError;
   // Petugas memilih gate sendiri; layar ini tidak memilihkan apa pun.
   Checkpoint? _selectedGate;
-  List<Checkpoint> _checkpoints = dummyCheckpoints;
+  List<Checkpoint> _checkpoints = const [];
   bool _loadingCheckpoints = false;
 
   @override
@@ -112,7 +111,9 @@ class _LoginScreenState extends State<LoginScreen> {
           ? context.tr('auth.passwordRequired')
           : null;
       _gateError = _selectedGate == null
-          ? context.tr('auth.gateRequired')
+          ? (_checkpoints.isEmpty
+              ? context.trSafe('common.noData', 'Data tidak ada')
+              : context.tr('auth.gateRequired'))
           : null;
     });
     if (_usernameError != null ||
@@ -414,6 +415,15 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildGateDropdown() {
+    final String hintText;
+    if (_loadingCheckpoints) {
+      hintText = context.tr('common.loading');
+    } else if (_checkpoints.isEmpty) {
+      hintText = context.trSafe('common.noData', 'Data tidak ada');
+    } else {
+      hintText = context.tr('auth.selectGate');
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -445,11 +455,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     value: _selectedGate,
                     isExpanded: true,
                     hint: Text(
-                      context.tr('auth.selectGate'),
+                      hintText,
                       style: TextStyle(
                         fontFamily: 'DMSans',
                         fontSize: 15,
-                        color: context.colors.inkMuted,
+                        color: _checkpoints.isEmpty && !_loadingCheckpoints
+                            ? context.colors.inkMuted
+                            : context.colors.inkMuted,
                       ),
                     ),
                     items: _checkpoints.map((checkpoint) {
@@ -469,12 +481,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       );
                     }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedGate = value;
-                        _gateError = null;
-                      });
-                    },
+                    onChanged: _checkpoints.isEmpty
+                        ? null
+                        : (value) {
+                            setState(() {
+                              _selectedGate = value;
+                              _gateError = null;
+                            });
+                          },
                     dropdownColor: context.colors.surface,
                     icon: _loadingCheckpoints
                         ? SizedBox(

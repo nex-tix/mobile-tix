@@ -18,7 +18,8 @@
     "loading": "Loading...",
     "error": "Something went wrong",
     "success": "Success",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "noData": "No data available"
   },
   "auth": {
     "appTitle": "Gate Validator",
@@ -136,7 +137,8 @@
     "enterGate": "Enter Gate",
     "back": "Back",
     "switchTitle": "Switch Checkpoint",
-    "switchedSuccess": "Checkpoint switched to {gate}"
+    "switchedSuccess": "Checkpoint switched to {gate}",
+    "emptySubtitle": "Checkpoint data is not available or device is offline."
   },
   "connectivity": {
     "offlineTitle": "Offline Mode",

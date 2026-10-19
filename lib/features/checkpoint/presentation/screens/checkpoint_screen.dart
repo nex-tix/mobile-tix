@@ -9,7 +9,6 @@ import '../../../../core/ui/widgets/app_snackbar.dart';
 import '../../../../core/utils/i18n_helper.dart';
 import '../../../auth/logic/session_state.dart';
 import '../../../../core/data/dao/checkpoint_dao.dart';
-import '../../data/dummy_checkpoints.dart';
 import '../../data/models/checkpoint.dart';
 import '../widgets/checkpoint_tile.dart';
 
@@ -38,7 +37,7 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
     if (cached != null && cached.isNotEmpty) {
       return cached.map((e) => Checkpoint.fromJson(e)).toList();
     }
-    return dummyCheckpoints;
+    return const [];
   }
 
   @override
@@ -148,19 +147,58 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
 
             // Checkpoint Options List
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                children: [
-                  for (final cp in _allCheckpoints)
-                    CheckpointTile(
-                      checkpoint: cp,
-                      selected: _selected?.id == cp.id,
-                      onTap: () {
-                        setState(() => _selected = cp);
-                      },
+              child: _allCheckpoints.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              AppIcons.door,
+                              size: 48,
+                              color: context.colors.inkMuted,
+                            ),
+                            const SizedBox(height: 14),
+                            Text(
+                              context.trSafe('common.noData', 'Data tidak ada'),
+                              style: TextStyle(
+                                fontFamily: 'DMSans',
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: context.colors.ink,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              context.trSafe(
+                                'checkpoint.emptySubtitle',
+                                'Data checkpoint belum tersedia atau perangkat sedang offline.',
+                              ),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontFamily: 'DMSans',
+                                fontSize: 13,
+                                color: context.colors.inkMuted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      children: [
+                        for (final cp in _allCheckpoints)
+                          CheckpointTile(
+                            checkpoint: cp,
+                            selected: _selected?.id == cp.id,
+                            onTap: () {
+                              setState(() => _selected = cp);
+                            },
+                          ),
+                      ],
                     ),
-                ],
-              ),
             ),
 
             // Bottom Action Section
@@ -174,12 +212,9 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
                     height: 52,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            context.colors.primary,
-                            context.colors.primaryPressed,
-                          ],
-                        ),
+                        color: _selected != null
+                            ? context.colors.primary
+                            : context.colors.outline.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Material(
@@ -197,7 +232,9 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
                                 fontFamily: 'DMSans',
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
-                                color: context.colors.onPrimary,
+                                color: _selected != null
+                                    ? context.colors.onPrimary
+                                    : context.colors.inkMuted,
                                 letterSpacing: 0.3,
                               ),
                             ),

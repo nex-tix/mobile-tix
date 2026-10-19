@@ -15,7 +15,6 @@ import '../../../../shared/widgets/app_sheet.dart';
 import '../../../../shared/widgets/confirm_dialog.dart';
 import '../../../../shared/widgets/inline_status.dart';
 import '../../../../core/data/dao/checkpoint_dao.dart';
-import '../../../checkpoint/data/dummy_checkpoints.dart';
 import '../../../checkpoint/data/models/checkpoint.dart';
 import '../../logic/session_state.dart';
 
@@ -479,7 +478,45 @@ class ProfileScreen extends StatelessWidget {
               final cached = CheckpointDAO().getCheckpoints();
               final checkpoints = cached != null && cached.isNotEmpty
                   ? cached.map((e) => Checkpoint.fromJson(e)).toList()
-                  : dummyCheckpoints;
+                  : const <Checkpoint>[];
+
+              if (checkpoints.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(AppIcons.door, size: 36, color: colors.inkMuted),
+                        const SizedBox(height: 10),
+                        Text(
+                          context.trSafe('common.noData', 'Data tidak ada'),
+                          style: TextStyle(
+                            fontFamily: 'DMSans',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: colors.ink,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          context.trSafe(
+                            'checkpoint.emptySubtitle',
+                            'Data checkpoint belum tersedia atau perangkat sedang offline.',
+                          ),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'DMSans',
+                            fontSize: 12,
+                            color: colors.inkMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
