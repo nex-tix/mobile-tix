@@ -12,6 +12,7 @@ import '../../../auth/logic/session_state.dart';
 import '../../../../shared/widgets/inline_status.dart';
 import '../../bloc/scanner_cubit.dart';
 import '../../bloc/scanner_state.dart';
+import '../../data/models/scan_result.dart';
 import '../../../../routes/shell_controller.dart';
 import '../../data/ticket_code.dart';
 import '../widgets/group_headcount_dialog.dart';
@@ -111,7 +112,29 @@ class _ScannerScreenState extends State<ScannerScreen> {
           _lastActualAdmitted = admitted;
         }
       } catch (_) {
-        // Bila pre-check gagal/offline, biarkan cubit.scanTicket menangani alur error/antrean
+        // Bila pre-check gagal / sedang mode offline, tetap tampilkan konfirmasi
+        // jumlah riil pengunjung hadir agar data masuk ke antrean offline sesuai realita.
+        if (mounted) {
+          final parsedQuota = TicketCode.parseQuota(trimmed);
+          final offlineResult = ScanResult(
+            ticketCode: trimmed,
+            status: TicketStatus.valid,
+            mode: ScanMode.checkIn,
+            scannedAt: DateTime.now(),
+            visitorCount: parsedQuota ?? 0,
+            visitorName: 'Pengunjung Rombongan',
+          );
+          final admitted = await GroupHeadcountDialog.show(
+            context,
+            scanResult: offlineResult,
+            isOffline: true,
+          );
+          if (admitted == null) {
+            // Petugas membatalkan dialog -> jangan masukkan ke antrean
+            return;
+          }
+          _lastActualAdmitted = admitted;
+        }
       } finally {
         if (mounted) {
           setState(() => _isHandlingScan = false);
@@ -161,14 +184,20 @@ class _ScannerScreenState extends State<ScannerScreen> {
           if (!mounted) return;
           cubit.acknowledgeResult();
 
-      case ScannerQueued(ticketCode: final code):
+      case ScannerQueued(
+          ticketCode: final code,
+          actualVisitorCount: final admitted,
+        ):
         AudioFeedbackService.instance.playError();
+        final countText = (admitted != null && admitted > 0)
+            ? ' ($admitted orang)'
+            : '';
         AppSnackbar.warning(
           context,
           context.trSafe(
             'scanner.offlineQueued',
-            'Offline — {code} masuk antrean dan akan dikirim otomatis saat koneksi pulih.',
-            namedArgs: {'code': code},
+            'Offline — {code}{count} masuk antrean dan akan dikirim otomatis saat koneksi pulih.',
+            namedArgs: {'code': code, 'count': countText},
           ),
           duration: const Duration(seconds: 4),
         );

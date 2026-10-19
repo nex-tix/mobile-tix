@@ -81,9 +81,11 @@ final class ScannerQueued extends ScannerState {
     required super.mode,
     required super.pendingSync,
     required this.ticketCode,
+    this.actualVisitorCount,
   });
 
   final String ticketCode;
+  final int? actualVisitorCount;
 }
 
 /// Scan gagal dan **tidak** masuk antrean (timeout, 401, 5xx, atau error lain).

@@ -138,6 +138,7 @@ class ScannerCubit extends Cubit<ScannerState> {
           mode: mode,
           pendingSync: pendingSyncCount,
           ticketCode: code,
+          actualVisitorCount: actualVisitorCount,
         ),
       );
       return;
@@ -161,6 +162,7 @@ class ScannerCubit extends Cubit<ScannerState> {
         ticketCode: code,
         checkpointId: checkpointId,
         mode: mode,
+        actualVisitorCount: actualVisitorCount,
       );
       return;
     }
@@ -187,6 +189,7 @@ class ScannerCubit extends Cubit<ScannerState> {
           ticketCode: code,
           checkpointId: checkpointId,
           mode: mode,
+          actualVisitorCount: actualVisitorCount,
         );
         return;
       }
@@ -252,6 +255,7 @@ class ScannerCubit extends Cubit<ScannerState> {
             mode: mode,
             ticketCode: scan.ticketCode,
             checkpointId: scan.checkpointId,
+            actualVisitorCount: scan.actualVisitorCount,
           );
           await _queueDao.remove(scan.id);
           synced++;
@@ -300,6 +304,7 @@ class ScannerCubit extends Cubit<ScannerState> {
     required String ticketCode,
     required String checkpointId,
     required ScanMode mode,
+    int? actualVisitorCount,
   }) async {
     final pending = pendingSyncCount;
 
@@ -320,6 +325,7 @@ class ScannerCubit extends Cubit<ScannerState> {
         ticketCode: ticketCode,
         checkpointId: checkpointId,
         mode: mode.wireValue,
+        actualVisitorCount: actualVisitorCount,
       );
       if (isClosed) return;
       emit(
@@ -327,6 +333,7 @@ class ScannerCubit extends Cubit<ScannerState> {
           mode: mode,
           pendingSync: pendingSyncCount,
           ticketCode: ticketCode,
+          actualVisitorCount: actualVisitorCount,
         ),
       );
     } catch (error) {
