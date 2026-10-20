@@ -562,8 +562,46 @@ void main() {
       });
     });
 
-    group('auto-sync saat koneksi pulih', () {
-      test('antrean terkirim sendiri begitu koneksi kembali', () async {
+    group('saat koneksi pulih', () {
+      test(
+        'antrean TIDAK otomatis terkirim begitu koneksi kembali (menunggu konfirmasi manual)',
+        () async {
+          final connectivity = _FakeConnectivity(online: false);
+          addTearDown(connectivity.dispose);
+
+          final cubit = ScannerCubit(
+            repository: repository,
+            queueDao: queueDao,
+            connectivity: connectivity,
+          );
+          addTearDown(cubit.close);
+
+          await cubit.scanTicket(
+            ticketCode: 'TKT-OFFLINE',
+            checkpointId: 'cp-05',
+          );
+          expect(cubit.state, isA<ScannerQueued>());
+          expect(queueDao.size, 1);
+
+          connectivity.setOnline(true);
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+
+          // Antrean harus tetap ada di DAO (tidak langsung masuk database)
+          expect(repository.calls, isEmpty);
+          expect(queueDao.size, 1);
+          expect(cubit.pendingSyncCount, 1);
+
+          // Dilakukan konfirmasi manual per-tiket
+          final scan = queueDao.first()!;
+          await cubit.syncSingleQueueItem(scan);
+
+          expect(repository.calls, equals(['checkIn|cp-05|TKT-OFFLINE']));
+          expect(cubit.pendingSyncCount, 0);
+          expect(queueDao.size, 0);
+        },
+      );
+
+      test('dapat membatalkan antrean tiket tertentu', () async {
         final connectivity = _FakeConnectivity(online: false);
         addTearDown(connectivity.dispose);
 
@@ -574,16 +612,18 @@ void main() {
         );
         addTearDown(cubit.close);
 
-        await cubit.scanTicket(ticketCode: 'TKT-OFFLINE', checkpointId: 'cp-05');
-        expect(cubit.state, isA<ScannerQueued>());
+        await cubit.scanTicket(
+          ticketCode: 'TKT-CANCEL',
+          checkpointId: 'cp-01',
+        );
         expect(queueDao.size, 1);
 
-        connectivity.setOnline(true);
+        final scan = queueDao.first()!;
+        await cubit.cancelQueueItem(scan.id);
 
-        await _waitFor(() => !queueDao.hasItems);
-
-        expect(repository.calls, equals(['checkIn|cp-05|TKT-OFFLINE']));
+        expect(queueDao.size, 0);
         expect(cubit.pendingSyncCount, 0);
+        expect(repository.calls, isEmpty);
       });
 
       test('koneksi putus tidak memicu sync', () async {

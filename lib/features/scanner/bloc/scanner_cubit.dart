@@ -9,6 +9,7 @@ import '../../../../core/config/env_config.dart';
 import '../../../../core/connectivity/connectivity_monitor.dart';
 import '../../../../core/data/dao/offline_queue_dao.dart';
 import '../../../../core/error/api_failure.dart';
+import '../data/models/queued_scan.dart';
 import '../data/models/scan_result.dart';
 import '../data/ticket_code.dart';
 import '../data/repositories/ticket_repository.dart';
@@ -31,7 +32,8 @@ class ScannerCubit extends Cubit<ScannerState> {
   }) : _queueDao = queueDao,
        _connectivity = connectivity,
        super(ScannerIdle(mode: ScanMode.checkIn, pendingSync: queueDao.size)) {
-    // Auto-sync: begitu koneksi kembali, antrean langsung dikirim.
+    // Pantau perubahan koneksi (antrean tidak di-auto-sync saat online;
+    // memerlukan konfirmasi manual di dashboard).
     _connectivitySubscription = connectivity?.onlineChanges.listen(
       _onConnectivityChanged,
     );
@@ -281,6 +283,42 @@ class ScannerCubit extends Cubit<ScannerState> {
     return synced;
   }
 
+  /// Sinkronisasi satu tiket tertentu dari antrean offline ke server.
+  Future<ScanResult> syncSingleQueueItem(QueuedScan scan) async {
+    if (_connectivity?.isOnline == false) {
+      throw const ApiFailure(
+        kind: ApiFailureKind.network,
+        message: 'Tidak ada koneksi internet',
+      );
+    }
+    final mode = ScanMode.fromWire(scan.mode);
+    try {
+      final result = await _send(
+        mode: mode,
+        ticketCode: scan.ticketCode,
+        checkpointId: scan.checkpointId,
+        actualVisitorCount: scan.actualVisitorCount,
+      );
+      await _queueDao.remove(scan.id);
+      _refreshPendingSync(synced: 1);
+      return result;
+    } on ApiFailure catch (failure) {
+      if (!failure.isQueueable) {
+        await _queueDao.incrementRetry(scan.id);
+      }
+      rethrow;
+    } catch (e) {
+      await _queueDao.incrementRetry(scan.id);
+      rethrow;
+    }
+  }
+
+  /// Batalkan / hapus satu tiket tertentu dari antrean offline.
+  Future<void> cancelQueueItem(String id) async {
+    await _queueDao.remove(id);
+    _refreshPendingSync();
+  }
+
   Future<ScanResult> _send({
     required ScanMode mode,
     required String ticketCode,
@@ -350,8 +388,9 @@ class ScannerCubit extends Cubit<ScannerState> {
   }
 
   void _onConnectivityChanged(bool online) {
-    if (!online) return;
-    unawaited(processOfflineQueue());
+    // Sesuai alur operasional: saat online kembali, tiket yang menunggu
+    // tidak langsung masuk database secara otomatis, melainkan harus dikonfirmasi
+    // manual melalui tombol konfirmasi per-tiket di dashboard.
   }
 
   /// Segarkan angka antrean pada state yang sedang tampil.
