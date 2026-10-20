@@ -202,7 +202,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
       child: ListView.builder(
         controller: _scrollController,
         physics: manualMode ? const AlwaysScrollableScrollPhysics() : null,
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 110),
+        padding: EdgeInsets.fromLTRB(
+          20,
+          4,
+          20,
+          140.0 + MediaQuery.paddingOf(context).bottom,
+        ),
         itemCount: itemCount,
         itemBuilder: (context, index) {
           if (index >= records.length) {
