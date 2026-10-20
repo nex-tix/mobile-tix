@@ -49,7 +49,12 @@
     "checkpoint": "Checkpoint",
     "connection": "Koneksi",
     "defaultRole": "Petugas Gate",
-    "unknownStaff": "Petugas belum dikenal"
+    "unknownStaff": "Petugas belum dikenal",
+    "scannerFeedback": "Umpan Balik Pindaian",
+    "soundBeep": "Suara Beep",
+    "soundBeepDesc": "Bunyi notifikasi saat tiket discan",
+    "vibrationHaptic": "Getar Haptic",
+    "vibrationDesc": "Sensasi getaran saat hasil scan muncul"
   },
   "scanner": {
     "title": "Pindai Tiket",
@@ -151,6 +156,7 @@
   },
   "connectivity": {
     "offlineTitle": "Mode Offline",
+    "offlineBanner": "Mode Offline Aktif · Scan tiket tetap tersimpan di antrean perangkat",
     "noSignal": "Tidak Ada Sinyal",
     "searchSignal": "Cari Sinyal",
     "searchingSignal": "Mencari sinyal...",

@@ -20,6 +20,8 @@ class AudioFeedbackService {
 
   AudioPlayer? _player;
   bool _initialized = false;
+  bool enableBeep = true;
+  bool enableVibration = true;
 
   /// Inisialisasi audio player (opsional, lazy load saat pertama kali dipakai).
   Future<void> initialize() async {
@@ -37,21 +39,25 @@ class AudioFeedbackService {
     if (!EnvConfig.enableAudioFeedback) return;
 
     // 1. Haptic feedback
-    try {
-      await HapticFeedback.lightImpact();
-      final hasVibrator = await Vibration.hasVibrator();
-      if (hasVibrator == true) {
-        await Vibration.vibrate(duration: 80, amplitude: 128);
+    if (enableVibration) {
+      try {
+        await HapticFeedback.lightImpact();
+        final hasVibrator = await Vibration.hasVibrator();
+        if (hasVibrator == true) {
+          await Vibration.vibrate(duration: 80, amplitude: 128);
+        }
+      } catch (_) {
+        // Abaikan platform tanpa vibrator
       }
-    } catch (_) {
-      // Abaikan platform tanpa vibrator
     }
 
     // 2. Audio click / beep
-    try {
-      await SystemSound.play(SystemSoundType.click);
-    } catch (_) {
-      // Abaikan jika tidak didukung
+    if (enableBeep) {
+      try {
+        await SystemSound.play(SystemSoundType.click);
+      } catch (_) {
+        // Abaikan jika tidak didukung
+      }
     }
   }
 
@@ -61,29 +67,33 @@ class AudioFeedbackService {
     if (!EnvConfig.enableAudioFeedback) return;
 
     // 1. Haptic feedback ganda
-    try {
-      await HapticFeedback.heavyImpact();
-      final hasPattern = await Vibration.hasCustomVibrationsSupport();
-      if (hasPattern == true) {
-        await Vibration.vibrate(
-          pattern: [0, 120, 80, 120],
-          intensities: [0, 255, 0, 255],
-        );
-      } else {
-        final hasVibrator = await Vibration.hasVibrator();
-        if (hasVibrator == true) {
-          await Vibration.vibrate(duration: 250);
+    if (enableVibration) {
+      try {
+        await HapticFeedback.heavyImpact();
+        final hasPattern = await Vibration.hasCustomVibrationsSupport();
+        if (hasPattern == true) {
+          await Vibration.vibrate(
+            pattern: [0, 120, 80, 120],
+            intensities: [0, 255, 0, 255],
+          );
+        } else {
+          final hasVibrator = await Vibration.hasVibrator();
+          if (hasVibrator == true) {
+            await Vibration.vibrate(duration: 250);
+          }
         }
+      } catch (_) {
+        // Abaikan platform tanpa vibrator
       }
-    } catch (_) {
-      // Abaikan platform tanpa vibrator
     }
 
     // 2. Audio alert
-    try {
-      await SystemSound.play(SystemSoundType.alert);
-    } catch (_) {
-      // Fallback
+    if (enableBeep) {
+      try {
+        await SystemSound.play(SystemSoundType.alert);
+      } catch (_) {
+        // Fallback
+      }
     }
   }
 

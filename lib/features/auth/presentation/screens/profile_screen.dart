@@ -9,6 +9,7 @@ import '../../../../core/bloc/auth/auth_bloc.dart';
 import '../../../../core/bloc/auth/auth_event.dart';
 import '../../../../core/bloc/language/language_cubit.dart';
 import '../../../../core/bloc/theme/theme_cubit.dart';
+import '../../../../core/services/audio_feedback_service.dart';
 import '../../../../core/ui/widgets/app_snackbar.dart';
 import '../../../../core/utils/i18n_helper.dart';
 import '../../../../shared/widgets/app_sheet.dart';
@@ -236,6 +237,91 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ],
                 ),
+              ),
+              const SizedBox(height: 20),
+
+              // Scanner Feedback Settings (Beep Sound & Haptic Vibration)
+              StatefulBuilder(
+                builder: (context, setProfileState) {
+                  final audio = AudioFeedbackService.instance;
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: context.colors.surface,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                      border: Border.all(color: context.colors.outline),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(18, 14, 18, 4),
+                          child: Text(
+                            context.trSafe(
+                              'profile.scannerFeedback',
+                              'Umpan Balik Pindaian',
+                            ),
+                            style: TextStyle(
+                              fontFamily: 'DMSans',
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: context.colors.inkMuted,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ),
+                        SwitchListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 18),
+                          secondary: Icon(
+                            audio.enableBeep ? AppIcons.volumeUp : AppIcons.volumeOff,
+                            size: 20,
+                            color: context.colors.inkMuted,
+                          ),
+                          title: Text(
+                            context.trSafe('profile.soundBeep', 'Suara Beep'),
+                            style: TextStyle(fontSize: 14, color: context.colors.ink),
+                          ),
+                          subtitle: Text(
+                            context.trSafe(
+                              'profile.soundBeepDesc',
+                              'Bunyi notifikasi saat tiket discan',
+                            ),
+                            style: TextStyle(fontSize: 12, color: context.colors.inkMuted),
+                          ),
+                          value: audio.enableBeep,
+                          activeTrackColor: context.colors.primary,
+                          onChanged: (val) {
+                            setProfileState(() => audio.enableBeep = val);
+                          },
+                        ),
+                        Divider(height: 1, thickness: 1, color: context.colors.outline),
+                        SwitchListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 18),
+                          secondary: Icon(
+                            AppIcons.vibration,
+                            size: 20,
+                            color: context.colors.inkMuted,
+                          ),
+                          title: Text(
+                            context.trSafe('profile.vibrationHaptic', 'Getar Haptic'),
+                            style: TextStyle(fontSize: 14, color: context.colors.ink),
+                          ),
+                          subtitle: Text(
+                            context.trSafe(
+                              'profile.vibrationDesc',
+                              'Sensasi getaran saat hasil scan muncul',
+                            ),
+                            style: TextStyle(fontSize: 12, color: context.colors.inkMuted),
+                          ),
+                          value: audio.enableVibration,
+                          activeTrackColor: context.colors.primary,
+                          onChanged: (val) {
+                            setProfileState(() => audio.enableVibration = val);
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 20),
 

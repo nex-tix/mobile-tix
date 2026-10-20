@@ -49,7 +49,12 @@
     "checkpoint": "Checkpoint",
     "connection": "Connection",
     "defaultRole": "Gate Staff",
-    "unknownStaff": "Unknown staff"
+    "unknownStaff": "Unknown staff",
+    "scannerFeedback": "Scanner Feedback",
+    "soundBeep": "Beep Sound",
+    "soundBeepDesc": "Notification chime when ticket is scanned",
+    "vibrationHaptic": "Haptic Vibration",
+    "vibrationDesc": "Vibration pulse when scan verdict appears"
   },
   "scanner": {
     "title": "Scan Ticket",
@@ -151,6 +156,7 @@
   },
   "connectivity": {
     "offlineTitle": "Offline Mode",
+    "offlineBanner": "Offline Mode Active · Scanned tickets saved in device queue",
     "noSignal": "No Signal",
     "searchSignal": "Find Signal",
     "searchingSignal": "Searching for signal...",

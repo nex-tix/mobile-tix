@@ -93,4 +93,7 @@ class AppIcons {
   static const IconData sun = Iconsax.sun;
   static const IconData moon = Iconsax.moon;
   static const IconData language = Iconsax.global;
+  static const IconData volumeUp = Iconsax.volume_high;
+  static const IconData volumeOff = Iconsax.volume_cross;
+  static const IconData vibration = Iconsax.mobile;
 }

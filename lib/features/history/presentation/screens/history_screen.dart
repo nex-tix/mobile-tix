@@ -348,14 +348,16 @@ class _Controls extends StatelessWidget {
                 size: 19,
                 color: colors.inkMuted,
               ),
-              suffixIcon: IconButton(
-                icon: Icon(AppIcons.close, size: 18, color: colors.inkMuted),
-                splashRadius: 18,
-                onPressed: () {
-                  searchController.clear();
-                  onQueryChanged('');
-                },
-              ),
+              suffixIcon: searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: Icon(AppIcons.close, size: 18, color: colors.inkMuted),
+                      splashRadius: 18,
+                      onPressed: () {
+                        searchController.clear();
+                        onQueryChanged('');
+                      },
+                    )
+                  : null,
               filled: true,
               fillColor: colors.surface,
               contentPadding: const EdgeInsets.symmetric(
@@ -519,10 +521,10 @@ class _DropdownChip<T> extends StatelessWidget {
           curve: Curves.easeOutCubic,
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8.5),
           decoration: BoxDecoration(
-            color: colors.surface,
+            color: isSelected ? colors.primaryTint : colors.surface,
             borderRadius: BorderRadius.circular(_radius),
             border: Border.all(
-              color: isSelected ? colors.outlineStrong : colors.outline,
+              color: isSelected ? colors.primary : colors.outline,
             ),
           ),
           child: Row(
@@ -537,13 +539,17 @@ class _DropdownChip<T> extends StatelessWidget {
                     fontFamily: 'DMSans',
                     fontSize: 12.5,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                    color: isSelected ? colors.ink : colors.inkMuted,
+                    color: isSelected ? colors.primary : colors.inkMuted,
                   ),
                 ),
               ),
               if (showArrow) ...[
                 const SizedBox(width: 4),
-                Icon(AppIcons.arrowDown, size: 13, color: colors.inkMuted),
+                Icon(
+                  AppIcons.arrowDown,
+                  size: 13,
+                  color: isSelected ? colors.primary : colors.inkMuted,
+                ),
               ],
             ],
           ),
