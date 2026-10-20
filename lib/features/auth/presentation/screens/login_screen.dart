@@ -12,6 +12,7 @@ import '../../../../core/ui/widgets/app_snackbar.dart';
 import '../../../../app.dart' show authApiService;
 import '../../../../core/data/dao/checkpoint_dao.dart';
 import '../../../checkpoint/data/models/checkpoint.dart';
+import '../../../../core/utils/i18n_helper.dart';
 import '../../logic/session_state.dart';
 
 /// Sign-in screen based on `newDesign/1._login/code.html`.
