@@ -64,7 +64,7 @@
     "offlineDisabled": "Scanning is disabled while offline.",
     "scanNext": "Scan Next",
     "pendingSync": "{count} tickets pending sync to server",
-    "offlineQueued": "Offline — {code} has been queued and will sync automatically when back online.",
+    "offlineQueued": "Offline — {code} queued. Confirm ticket on Dashboard when online.",
     "cameraUnavailable": "Camera unavailable or permission denied",
     "toggleFlash": "Flashlight",
     "switchCamera": "Switch Camera"
@@ -115,7 +115,16 @@
     "syncSuccess": "{count} tickets successfully sent to server",
     "syncNoConnection": "No internet connection. Please try again when back online.",
     "pendingItemVisitors": "{count} visitors",
-    "pendingItemQueued": "Scanned {time}"
+    "pendingItemQueued": "Scanned {time}",
+    "cancelTicket": "Cancel",
+    "confirmTicket": "Confirm",
+    "confirmAll": "Confirm All ({count})",
+    "cancelQueueTitle": "Cancel Ticket Queue?",
+    "cancelQueueMessage": "Ticket {code} will be removed from offline queue and will not be sent to server.",
+    "cancelQueueConfirm": "Yes, Cancel",
+    "cancelQueueBack": "Back",
+    "cancelQueueSuccess": "Ticket queue {code} cancelled",
+    "syncSingleSuccess": "Ticket {code} successfully confirmed and sent"
   },
   "history": {
     "title": "History",

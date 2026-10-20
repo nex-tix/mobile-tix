@@ -64,7 +64,7 @@
     "offlineDisabled": "Pindai dinonaktifkan saat offline.",
     "scanNext": "Pindai Berikutnya",
     "pendingSync": "{count} tiket menunggu dikirim ke server",
-    "offlineQueued": "Offline — {code} masuk antrean dan akan dikirim otomatis saat koneksi pulih.",
+    "offlineQueued": "Offline — {code} masuk antrean. Konfirmasi tiket di Dashboard saat online.",
     "cameraUnavailable": "Kamera tidak tersedia atau izin ditolak",
     "toggleFlash": "Lampu Kilat",
     "switchCamera": "Ganti Kamera"
@@ -115,7 +115,16 @@
     "syncSuccess": "{count} tiket berhasil dikirim ke server",
     "syncNoConnection": "Tidak ada koneksi internet. Coba lagi saat sudah online.",
     "pendingItemVisitors": "{count} orang hadir",
-    "pendingItemQueued": "Discan {time}"
+    "pendingItemQueued": "Discan {time}",
+    "cancelTicket": "Batal",
+    "confirmTicket": "Konfirmasi",
+    "confirmAll": "Konfirmasi Semua ({count})",
+    "cancelQueueTitle": "Batalkan Antrean Tiket?",
+    "cancelQueueMessage": "Tiket {code} akan dihapus dari antrean offline dan tidak akan dikirim ke server.",
+    "cancelQueueConfirm": "Ya, Batalkan",
+    "cancelQueueBack": "Kembali",
+    "cancelQueueSuccess": "Antrean tiket {code} berhasil dibatalkan",
+    "syncSingleSuccess": "Tiket {code} berhasil dikonfirmasi dan dikirim"
   },
   "history": {
     "title": "Riwayat",
