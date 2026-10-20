@@ -61,7 +61,7 @@ class _ScanResultSheetState extends State<ScanResultSheet>
       _dwell =
           AnimationController(
               vsync: this,
-              duration: const Duration(milliseconds: 3800),
+              duration: const Duration(milliseconds: 1800),
             )
             ..forward().whenComplete(() {
               if (mounted) Navigator.of(context).maybePop();
@@ -176,10 +176,13 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                 ),
               ),
 
-            // Center: satu sinyal verdict — stamp.
+            // Center: satu sinyal verdict — stamp (tap anywhere to dismiss immediately)
             Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => Navigator.of(context).maybePop(),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   StampMark(
                     status: status,
@@ -278,6 +281,7 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                 ],
               ),
             ),
+          ),
 
             // Bottom action: netral, lebih tenang daripada verdict.
             Padding(

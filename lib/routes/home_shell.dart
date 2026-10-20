@@ -15,7 +15,6 @@ import '../features/history/presentation/screens/history_screen.dart';
 import '../features/scanner/bloc/scanner_cubit.dart';
 import '../features/scanner/bloc/scanner_state.dart';
 import '../features/scanner/presentation/screens/scanner_screen.dart';
-import '../shared/widgets/offline_notice_dialog.dart';
 import 'shell_controller.dart';
 
 /// The working shell with a full-width bottom navigation bar.
@@ -34,7 +33,6 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _lastIndex = 0;
-  bool _isOfflineDialogOpen = false;
   StreamSubscription? _lostSub;
   StreamSubscription? _restoredSub;
 
@@ -45,17 +43,21 @@ class _HomeShellState extends State<HomeShell> {
       if (!mounted) return;
       final connectivity = context.read<DemoConnectivity>();
 
-      // Dengarkan jika sinyal tiba-tiba hilang -> tampilkan notifikasi di tengah layar
+      // Dengarkan jika sinyal tiba-tiba hilang -> beri notifikasi non-intrusif tanpa memblokir kamera
       _lostSub = connectivity.onConnectionLost.listen((_) {
-        _showOfflineDialog(connectivity);
+        if (mounted) {
+          AppSnackbar.warning(
+            context,
+            context.trSafe(
+              'connectivity.offlineBanner',
+              'Mode Offline Aktif · Scan tiket tetap tersimpan di antrean perangkat',
+            ),
+          );
+        }
       });
 
-      // Dengarkan jika sinyal pulih kembali -> tutup dialog jika sedang terbuka & beri feedback
+      // Dengarkan jika sinyal pulih kembali -> beri konfirmasi bahwa sinyal kembali online
       _restoredSub = connectivity.onConnectionRestored.listen((_) {
-        if (_isOfflineDialogOpen && mounted) {
-          Navigator.of(context, rootNavigator: true).pop();
-          _isOfflineDialogOpen = false;
-        }
         if (mounted) {
           AppSnackbar.success(
             context,
@@ -67,28 +69,16 @@ class _HomeShellState extends State<HomeShell> {
         }
       });
 
-      // Jika saat aplikasi dibuka kondisi jaringan offline, langsung beri tahu pengguna
+      // Jika saat aplikasi dibuka kondisi jaringan offline, beritahukan statusnya tanpa menutup scanner
       if (connectivity.offline) {
-        _showOfflineDialog(connectivity);
+        AppSnackbar.warning(
+          context,
+          context.trSafe(
+            'connectivity.offlineBanner',
+            'Mode Offline Aktif · Scan tiket tetap tersimpan di antrean perangkat',
+          ),
+        );
       }
-    });
-  }
-
-  void _showOfflineDialog(DemoConnectivity connectivity) {
-    if (_isOfflineDialogOpen || !mounted) return;
-    _isOfflineDialogOpen = true;
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (ctx) => OfflineNoticeDialog(
-        connectivity: connectivity,
-        onDismiss: () {
-          Navigator.of(ctx).pop();
-          _isOfflineDialogOpen = false;
-        },
-      ),
-    ).then((_) {
-      _isOfflineDialogOpen = false;
     });
   }
 
@@ -381,16 +371,23 @@ class _ScanNavButtonState extends State<_ScanNavButton> {
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 180),
                       curve: Curves.easeOutCubic,
-                      width: 76,
-                      height: 76,
+                      width: 66,
+                      height: 66,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: colors.primary,
+                        boxShadow: [
+                          BoxShadow(
+                            color: colors.primary.withValues(alpha: 0.35),
+                            blurRadius: 14,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
                       ),
                       child: Center(
                         child: Icon(
                           AppIcons.qrScanner,
-                          size: 36,
+                          size: 30,
                           color: colors.onPrimary,
                         ),
                       ),

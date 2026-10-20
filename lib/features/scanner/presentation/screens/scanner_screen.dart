@@ -230,9 +230,12 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
     final screenHeight = MediaQuery.sizeOf(context).height;
     final viewHeight = (screenHeight * 0.44).clamp(240.0, 380.0);
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    final viewInsetsBottom = MediaQuery.viewInsetsOf(context).bottom;
 
     return Scaffold(
       backgroundColor: context.colors.ground,
+      resizeToAvoidBottomInset: true,
       body: BlocListener<ScannerCubit, ScannerState>(
         listenWhen: (previous, current) =>
             current is ScannerSuccess ||
@@ -244,7 +247,13 @@ class _ScannerScreenState extends State<ScannerScreen> {
           child: BlocBuilder<ScannerCubit, ScannerState>(
             builder: (context, state) {
               return SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 110),
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  10,
+                  20,
+                  130.0 + bottomInset + viewInsetsBottom,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -360,6 +369,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
             child: TextField(
               controller: _codeController,
               autofocus: true,
+              scrollPadding: const EdgeInsets.only(bottom: 160),
               style: TextStyle(
                 fontFamily: 'DMSans',
                 fontSize: 14.5,
