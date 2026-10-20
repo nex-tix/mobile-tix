@@ -111,9 +111,13 @@ class DemoConnectivity extends ChangeNotifier implements ConnectivityMonitor {
   Future<bool> _testInternet() async {
     if (kIsWeb) return true;
     try {
-      final res = await InternetAddress.lookup('8.8.8.8')
-          .timeout(const Duration(seconds: 3));
-      if (res.isNotEmpty && res[0].rawAddress.isNotEmpty) return true;
+      final socket = await Socket.connect(
+        '8.8.8.8',
+        53,
+        timeout: const Duration(seconds: 2),
+      );
+      socket.destroy();
+      return true;
     } catch (_) {}
 
     try {

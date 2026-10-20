@@ -83,17 +83,6 @@ ScanResult _result(String code, ScanMode mode) => ScanResult(
   scannedAt: DateTime.now(),
 );
 
-/// Tunggu sampai [condition] benar — menggantikan sleep tetap yang rapuh.
-Future<void> _waitFor(bool Function() condition) async {
-  final deadline = DateTime.now().add(const Duration(seconds: 5));
-  while (!condition()) {
-    if (DateTime.now().isAfter(deadline)) {
-      fail('Kondisi tidak terpenuhi dalam 5 detik');
-    }
-    await Future<void>.delayed(const Duration(milliseconds: 10));
-  }
-}
-
 void main() {
   group('ScannerCubit', () {
     late OfflineQueueDAO queueDao;

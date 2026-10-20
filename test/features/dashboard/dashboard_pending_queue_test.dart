@@ -105,6 +105,7 @@ class _TestConnectivity with ChangeNotifier implements DemoConnectivity {
   @override
   Stream<void> get onConnectionRestored => _restoredStream.stream;
 
+  @override
   void setOnline(bool value) {
     _online = value;
     _changes.add(value);
