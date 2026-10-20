@@ -57,7 +57,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               backgroundColor: context.colors.surface,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(24, 12, 24, 110),
+                padding: EdgeInsets.fromLTRB(
+                  24,
+                  12,
+                  24,
+                  140.0 + MediaQuery.paddingOf(context).bottom,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -562,14 +567,23 @@ class _PendingQueueWrapper extends StatelessWidget {
     return BlocBuilder<ScannerCubit, ScannerState>(
       bloc: cubit,
       buildWhen: (prev, curr) => prev.pendingSync != curr.pendingSync,
-      builder: (context, scannerState) {
+      builder: (wrapperContext, scannerState) {
         if (!scannerState.hasPendingSync) return const SizedBox.shrink();
         return Padding(
           padding: const EdgeInsets.only(top: 18),
           child: _PendingQueueSection(
             scannerCubit: cubit,
             onSyncDone: () {
-              context.read<DashboardCubit>().refresh();
+              wrapperContext.read<DashboardCubit>().refresh();
+            },
+            onMessage: (message, isError) {
+              if (wrapperContext.mounted) {
+                if (isError) {
+                  AppSnackbar.danger(wrapperContext, message);
+                } else {
+                  AppSnackbar.info(wrapperContext, message);
+                }
+              }
             },
           ),
         );
@@ -584,20 +598,26 @@ class _PendingQueueWrapper extends StatelessWidget {
 /// offline. Setiap item menampilkan kode tiket, mode, jumlah pengunjung riil,
 /// dan waktu scan. Tombol "Kirim ke Server" memicu sync manual.
 class _PendingQueueSection extends StatefulWidget {
-  const _PendingQueueSection({this.scannerCubit, this.onSyncDone});
+  const _PendingQueueSection({
+    this.scannerCubit,
+    this.onSyncDone,
+    this.onMessage,
+  });
 
   final ScannerCubit? scannerCubit;
   final VoidCallback? onSyncDone;
+  final void Function(String message, bool isError)? onMessage;
 
   @override
   State<_PendingQueueSection> createState() => _PendingQueueSectionState();
 }
 
 class _PendingQueueSectionState extends State<_PendingQueueSection> {
-  bool _syncing = false;
+  bool _syncingAll = false;
+  String? _syncingItemId;
 
-  Future<void> _syncQueue() async {
-    if (_syncing) return;
+  Future<void> _syncSingle(QueuedScan item) async {
+    if (_syncingAll || _syncingItemId != null) return;
 
     final connectivity = context.read<DemoConnectivity>();
     if (!connectivity.online) {
@@ -611,7 +631,145 @@ class _PendingQueueSectionState extends State<_PendingQueueSection> {
       return;
     }
 
-    setState(() => _syncing = true);
+    setState(() => _syncingItemId = item.id);
+    try {
+      final cubit = widget.scannerCubit ?? context.read<ScannerCubit>();
+      final successMsg = context.trSafe(
+        'dashboard.syncSingleSuccess',
+        'Tiket {code} berhasil dikonfirmasi dan dikirim',
+        namedArgs: {'code': item.ticketCode},
+      );
+      await cubit.syncSingleQueueItem(item);
+
+      if (widget.onMessage != null) {
+        widget.onMessage!(successMsg, false);
+      } else if (mounted) {
+        AppSnackbar.success(context, successMsg);
+      }
+      widget.onSyncDone?.call();
+      if (mounted) setState(() {});
+    } catch (e) {
+      if (widget.onMessage != null) {
+        widget.onMessage!('Gagal mengirim tiket ${item.ticketCode}: $e', true);
+      } else if (mounted) {
+        AppSnackbar.danger(
+          context,
+          'Gagal mengirim tiket ${item.ticketCode}: $e',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _syncingItemId = null);
+      }
+    }
+  }
+
+  Future<void> _cancelItem(QueuedScan item) async {
+    if (_syncingAll || _syncingItemId != null) return;
+
+    final cubit = widget.scannerCubit ?? context.read<ScannerCubit>();
+    final successMessage = context.trSafe(
+      'dashboard.cancelQueueSuccess',
+      'Antrean tiket {code} berhasil dibatalkan',
+      namedArgs: {'code': item.ticketCode},
+    );
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: context.colors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Text(
+          context.trSafe(
+            'dashboard.cancelQueueTitle',
+            'Batalkan Antrean Tiket?',
+          ),
+          style: TextStyle(
+            fontFamily: 'DMSans',
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: context.colors.ink,
+          ),
+        ),
+        content: Text(
+          context.trSafe(
+            'dashboard.cancelQueueMessage',
+            'Tiket {code} akan dihapus dari antrean offline dan tidak akan dikirim ke server.',
+            namedArgs: {'code': item.ticketCode},
+          ),
+          style: TextStyle(
+            fontFamily: 'DMSans',
+            fontSize: 13.5,
+            color: context.colors.inkMuted,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(
+              context.trSafe('dashboard.cancelQueueBack', 'Kembali'),
+              style: TextStyle(
+                fontFamily: 'DMSans',
+                fontWeight: FontWeight.w600,
+                color: context.colors.inkMuted,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: context.colors.primary,
+              foregroundColor: context.colors.onPrimary,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: Text(
+              context.trSafe('dashboard.cancelQueueConfirm', 'Ya, Batalkan'),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      await cubit.cancelQueueItem(item.id);
+
+      if (widget.onMessage != null) {
+        widget.onMessage!(successMessage, false);
+      } else if (mounted) {
+        AppSnackbar.info(context, successMessage);
+      }
+      widget.onSyncDone?.call();
+      if (mounted) setState(() {});
+    } catch (e) {
+      if (widget.onMessage != null) {
+        widget.onMessage!('Gagal membatalkan antrean: $e', true);
+      } else if (mounted) {
+        AppSnackbar.danger(context, 'Gagal membatalkan antrean: $e');
+      }
+    }
+  }
+
+  Future<void> _syncQueue() async {
+    if (_syncingAll || _syncingItemId != null) return;
+
+    final connectivity = context.read<DemoConnectivity>();
+    if (!connectivity.online) {
+      AppSnackbar.warning(
+        context,
+        context.trSafe(
+          'dashboard.syncNoConnection',
+          'Tidak ada koneksi internet. Coba lagi saat sudah online.',
+        ),
+      );
+      return;
+    }
+
+    setState(() => _syncingAll = true);
     try {
       final cubit = widget.scannerCubit ?? context.read<ScannerCubit>();
       final synced = await cubit.processOfflineQueue();
@@ -627,6 +785,7 @@ class _PendingQueueSectionState extends State<_PendingQueueSection> {
           ),
         );
         widget.onSyncDone?.call();
+        setState(() {});
       }
     } catch (e) {
       if (mounted) {
@@ -634,7 +793,7 @@ class _PendingQueueSectionState extends State<_PendingQueueSection> {
       }
     } finally {
       if (mounted) {
-        setState(() => _syncing = false);
+        setState(() => _syncingAll = false);
       }
     }
   }
@@ -646,6 +805,182 @@ class _PendingQueueSectionState extends State<_PendingQueueSection> {
     return '$h:$m WITA';
   }
 
+  Widget _buildTicketCard(QueuedScan item, AppColors c) {
+    final isCheckIn = item.mode == 'checkIn' || item.mode == 'check_in';
+    final timeStr = _formatTime(item.queuedAt);
+    final visitors = item.actualVisitorCount;
+    final isThisItemSyncing = _syncingItemId == item.id;
+    final isBusy = _syncingAll || _syncingItemId != null;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: c.surfaceAlt,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: c.outline.withValues(alpha: 0.7)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: isCheckIn
+                      ? c.valid.withValues(alpha: 0.12)
+                      : c.surface,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  isCheckIn ? AppIcons.checkCircle : AppIcons.qrScanner,
+                  size: 18,
+                  color: isCheckIn ? c.valid : c.inkMuted,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.ticketCode,
+                      style: TextStyle(
+                        fontFamily: 'DMSans',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: c.ink,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Text(
+                          isCheckIn ? 'Check-In' : 'Periksa',
+                          style: TextStyle(
+                            fontFamily: 'DMSans',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: isCheckIn ? c.valid : c.inkMuted,
+                          ),
+                        ),
+                        if (visitors != null && visitors > 0) ...[
+                          Text(
+                            ' · ',
+                            style: TextStyle(fontSize: 12, color: c.inkMuted),
+                          ),
+                          Text(
+                            context.trSafe(
+                              'dashboard.pendingItemVisitors',
+                              '{count} orang hadir',
+                              namedArgs: {'count': '$visitors'},
+                            ),
+                            style: TextStyle(
+                              fontFamily: 'DMSans',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: c.primary,
+                            ),
+                          ),
+                        ],
+                        Text(
+                          ' · $timeStr',
+                          style: TextStyle(
+                            fontFamily: 'DMSans',
+                            fontSize: 12,
+                            color: c.inkMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Divider(color: c.outline.withValues(alpha: 0.5), height: 1),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              // Tombol Batal Per-Tiket
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: isBusy ? null : () => _cancelItem(item),
+                  icon: Icon(Icons.close_rounded, size: 15, color: c.inkMuted),
+                  label: Text(
+                    context.trSafe('dashboard.cancelTicket', 'Batal'),
+                    style: TextStyle(
+                      fontFamily: 'DMSans',
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      color: c.inkMuted,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: c.outline),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    minimumSize: const Size(0, 38),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Tombol Konfirmasi Per-Tiket
+              Expanded(
+                flex: 2,
+                child: ElevatedButton.icon(
+                  onPressed: isBusy ? null : () => _syncSingle(item),
+                  icon: isThisItemSyncing
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        )
+                      : const Icon(Icons.cloud_upload_outlined, size: 16),
+                  label: Text(
+                    isThisItemSyncing
+                        ? context.trSafe(
+                            'dashboard.sendingToServer',
+                            'Mengirim...',
+                          )
+                        : context.trSafe(
+                            'dashboard.confirmTicket',
+                            'Konfirmasi',
+                          ),
+                    style: const TextStyle(
+                      fontFamily: 'DMSans',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: c.primary,
+                    foregroundColor: c.onPrimary,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    minimumSize: const Size(0, 38),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -653,9 +988,6 @@ class _PendingQueueSectionState extends State<_PendingQueueSection> {
     final totalCount = items.length;
 
     if (totalCount == 0) return const SizedBox.shrink();
-
-    // Tampilkan hingga 5 tiket pertama
-    final displayItems = items.take(5).toList();
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -731,183 +1063,61 @@ class _PendingQueueSectionState extends State<_PendingQueueSection> {
           ),
           const SizedBox(height: 14),
 
-          // List item pending
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: displayItems.length,
-            separatorBuilder: (_, __) => Divider(
-              color: c.outline.withValues(alpha: 0.5),
-              height: 14,
-            ),
-            itemBuilder: (context, index) {
-              final item = displayItems[index];
-              final isCheckIn =
-                  item.mode == 'checkIn' || item.mode == 'check_in';
-              final timeStr = _formatTime(item.queuedAt);
-              final visitors = item.actualVisitorCount;
+          // List item pending dengan tombol aksi terpisah per-tiket
+          for (int i = 0; i < items.length; i++) ...[
+            if (i > 0) const SizedBox(height: 12),
+            _buildTicketCard(items[i], c),
+          ],
 
-              return Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: isCheckIn
-                          ? c.valid.withValues(alpha: 0.1)
-                          : c.surfaceAlt,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      isCheckIn ? AppIcons.checkCircle : AppIcons.qrScanner,
-                      size: 18,
-                      color: isCheckIn ? c.valid : c.inkMuted,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.ticketCode,
-                          style: TextStyle(
-                            fontFamily: 'DMSans',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: c.ink,
-                          ),
+          if (totalCount > 1) ...[
+            const SizedBox(height: 14),
+            SizedBox(
+              height: 44,
+              child: OutlinedButton.icon(
+                onPressed: (_syncingAll || _syncingItemId != null)
+                    ? null
+                    : _syncQueue,
+                icon: _syncingAll
+                    ? SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(c.primary),
                         ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Text(
-                              isCheckIn ? 'Check-In' : 'Periksa',
-                              style: TextStyle(
-                                fontFamily: 'DMSans',
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: isCheckIn ? c.valid : c.inkMuted,
-                              ),
-                            ),
-                            if (visitors != null && visitors > 0) ...[
-                              Text(
-                                ' · ',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: c.inkMuted,
-                                ),
-                              ),
-                              Text(
-                                context.trSafe(
-                                  'dashboard.pendingItemVisitors',
-                                  '{count} orang hadir',
-                                  namedArgs: {'count': '$visitors'},
-                                ),
-                                style: TextStyle(
-                                  fontFamily: 'DMSans',
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: c.primary,
-                                ),
-                              ),
-                            ],
-                            Text(
-                              ' · $timeStr',
-                              style: TextStyle(
-                                fontFamily: 'DMSans',
-                                fontSize: 12,
-                                color: c.inkMuted,
-                              ),
-                            ),
-                          ],
+                      )
+                    : Icon(
+                        Icons.cloud_upload_outlined,
+                        size: 18,
+                        color: c.primary,
+                      ),
+                label: Text(
+                  _syncingAll
+                      ? context.trSafe(
+                          'dashboard.sendingToServer',
+                          'Mengirim...',
+                        )
+                      : context.trSafe(
+                          'dashboard.confirmAll',
+                          'Konfirmasi Semua ({count})',
+                          namedArgs: {'count': '$totalCount'},
                         ),
-                      ],
-                    ),
+                  style: TextStyle(
+                    fontFamily: 'DMSans',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: c.primary,
                   ),
-                ],
-              );
-            },
-          ),
-
-          if (totalCount > displayItems.length) ...[
-            const SizedBox(height: 8),
-            Center(
-              child: Text(
-                '+ ${totalCount - displayItems.length} tiket lainnya',
-                style: TextStyle(
-                  fontFamily: 'DMSans',
-                  fontSize: 12,
-                  color: c.inkMuted,
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: c.primary.withValues(alpha: 0.35)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),
           ],
-          const SizedBox(height: 16),
-
-          // Tombol "Kirim ke Server"
-          SizedBox(
-            height: 48,
-            child: ElevatedButton(
-              onPressed: _syncing ? null : _syncQueue,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: c.primary,
-                foregroundColor: c.onPrimary,
-                disabledBackgroundColor: c.primary.withValues(alpha: 0.6),
-                disabledForegroundColor: Colors.white70,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              child: _syncing
-                  ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          context.trSafe(
-                            'dashboard.sendingToServer',
-                            'Mengirim...',
-                          ),
-                          style: const TextStyle(
-                            fontFamily: 'DMSans',
-                            fontSize: 14.5,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.cloud_upload_outlined, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          context.trSafe(
-                            'dashboard.sendToServer',
-                            'Kirim ke Server',
-                          ),
-                          style: const TextStyle(
-                            fontFamily: 'DMSans',
-                            fontSize: 14.5,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
-          ),
         ],
       ),
     );

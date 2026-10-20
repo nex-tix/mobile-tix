@@ -165,7 +165,6 @@ void main() {
 
   tearDown(() async {
     AppSnackbar.dismiss();
-    await queueDao.clear();
     await dashboardCubit.close();
     await scannerCubit.close();
   });
@@ -189,11 +188,12 @@ void main() {
     await settle(tester);
 
     expect(find.text('Menunggu Dikirim'), findsNothing);
-    expect(find.text('Kirim ke Server'), findsNothing);
+    expect(find.text('Konfirmasi'), findsNothing);
+    expect(find.text('Batal'), findsNothing);
   });
 
   testWidgets(
-    'menampilkan antrean pending dan data tiket dengan riil pengunjung ketika ada item',
+    'menampilkan antrean pending dan data tiket dengan tombol konfirmasi dan batal per-tiket',
     (tester) async {
       await tester.runAsync(() async {
         await queueDao.enqueue(
@@ -213,14 +213,15 @@ void main() {
       expect(find.text('Menunggu Dikirim'), findsOneWidget);
       expect(find.text('TKT-GRP-888'), findsOneWidget);
       expect(find.textContaining('8 orang hadir'), findsOneWidget);
-      expect(find.text('Kirim ke Server'), findsOneWidget);
+      expect(find.text('Konfirmasi'), findsOneWidget);
+      expect(find.text('Batal'), findsOneWidget);
 
       await flushSnackbar(tester);
     },
   );
 
   testWidgets(
-    'tombol kirim ke server menampilkan snackbar peringatan saat offline',
+    'tombol konfirmasi menampilkan snackbar peringatan saat offline',
     (tester) async {
       await tester.runAsync(() async {
         await queueDao.enqueue(
@@ -237,10 +238,10 @@ void main() {
       await tester.pumpWidget(wrap());
       await settle(tester);
 
-      final sendBtn = find.text('Kirim ke Server');
-      expect(sendBtn, findsOneWidget);
-      await tester.ensureVisible(sendBtn);
-      await tester.tap(sendBtn);
+      final confirmBtn = find.text('Konfirmasi');
+      expect(confirmBtn, findsOneWidget);
+      await tester.ensureVisible(confirmBtn);
+      await tester.tap(confirmBtn);
       await tester.pump();
 
       expect(
@@ -253,7 +254,7 @@ void main() {
   );
 
   testWidgets(
-    'tombol kirim ke server memproses sinkronisasi saat online dan memicu reload metrik',
+    'tombol konfirmasi memproses sinkronisasi saat online dan memicu reload metrik',
     (tester) async {
       await tester.runAsync(() async {
         await queueDao.enqueue(
@@ -272,12 +273,12 @@ void main() {
 
       final initialRefreshCount = dashboardRepository.refreshCallCount;
 
-      final sendBtn = find.text('Kirim ke Server');
-      expect(sendBtn, findsOneWidget);
-      await tester.ensureVisible(sendBtn);
+      final confirmBtn = find.text('Konfirmasi');
+      expect(confirmBtn, findsOneWidget);
+      await tester.ensureVisible(confirmBtn);
 
       await tester.runAsync(() async {
-        await tester.tap(sendBtn);
+        await tester.tap(confirmBtn);
         await Future.delayed(const Duration(milliseconds: 300));
       });
 
@@ -289,6 +290,52 @@ void main() {
         dashboardRepository.refreshCallCount,
         greaterThan(initialRefreshCount),
       );
+
+      await flushSnackbar(tester);
+    },
+  );
+
+  testWidgets(
+    'tombol batal menampilkan dialog konfirmasi dan membatalkan antrean tiket',
+    (tester) async {
+      await tester.runAsync(() async {
+        await queueDao.enqueue(
+          ticketCode: 'TKT-CANCEL-01',
+          checkpointId: 'cp-01',
+          mode: 'checkIn',
+          actualVisitorCount: 2,
+        );
+      });
+
+      scannerCubit.setMode(ScanMode.check);
+
+      await tester.pumpWidget(wrap());
+      await settle(tester);
+
+      final cancelBtn = find.text('Batal');
+      expect(cancelBtn, findsOneWidget);
+      await tester.ensureVisible(cancelBtn);
+      await tester.tap(cancelBtn);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.text('Batalkan Antrean Tiket?'), findsOneWidget);
+      final confirmCancel = find.widgetWithText(ElevatedButton, 'Ya, Batalkan');
+      expect(confirmCancel, findsOneWidget);
+      await tester.ensureVisible(confirmCancel);
+      await tester.tap(confirmCancel);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      await tester.runAsync(() async {
+        await Future.delayed(const Duration(milliseconds: 300));
+      });
+
+      await tester.pump();
+      await settle(tester);
+
+      expect(queueDao.size, 0);
+      expect(find.text('TKT-CANCEL-01'), findsNothing);
 
       await flushSnackbar(tester);
     },
