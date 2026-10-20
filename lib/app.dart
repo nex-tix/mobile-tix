@@ -42,6 +42,12 @@ final AutoLogoutService authAutoLogoutService = AutoLogoutService();
 final AutoLogoutObserver authAutoLogoutObserver =
     AutoLogoutObserver(logoutService: authAutoLogoutService);
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+final AuthBloc authBloc = AuthBloc(
+  authRepository: authRepository,
+  tokenCubit: authTokenCubit,
+  apiService: authApiService,
+);
+final SessionState appSessionState = SessionState();
 
 // ==================== FEATURE SINGLETONS (FASE 6) ====================
 // Satu instance per proses, sama seperti singleton auth di atas: cubit fitur
@@ -172,6 +178,8 @@ class _MobileTixAppState extends State<MobileTixApp> {
     authTokenCubit.clearToken();
     authApiService.clearToken();
     authTokenRefreshService.cancel();
+    appSessionState.signOut();
+    authBloc.add(const LogoutRequested());
   }
 
   @override
@@ -184,12 +192,8 @@ class _MobileTixAppState extends State<MobileTixApp> {
         // Auth & Security dependencies
         BlocProvider<TokenJwtCubit>.value(value: authTokenCubit),
         Provider<AuthRepository>.value(value: authRepository),
-        BlocProvider<AuthBloc>(
-          create: (_) => AuthBloc(
-            authRepository: authRepository,
-            tokenCubit: authTokenCubit,
-            apiService: authApiService,
-          )..add(const AuthCheckRequested()),
+        BlocProvider<AuthBloc>.value(
+          value: authBloc..add(const AuthCheckRequested()),
         ),
         // Feature cubits (Fase 6)
         ChangeNotifierProvider<DemoConnectivity>.value(value: appConnectivity),
@@ -206,8 +210,8 @@ class _MobileTixAppState extends State<MobileTixApp> {
         BlocProvider<HistoryCubit>(
           create: (_) => HistoryCubit(repository: appDashboardRepository),
         ),
-        // Sesi & navigasi masih memakai ChangeNotifier; dibersihkan di 6.5.
-        ChangeNotifierProvider(create: (_) => SessionState()),
+        // Sesi & navigasi
+        ChangeNotifierProvider<SessionState>.value(value: appSessionState),
         ChangeNotifierProvider(create: (_) => ShellController()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(

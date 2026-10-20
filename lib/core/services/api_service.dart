@@ -48,8 +48,8 @@ class ApiService {
       ),
     );
 
-    // Bypass SSL handshake / certificate issues pada versi Android lama (seperti Let's Encrypt ISRG Root X2)
-    if (!kIsWeb) {
+    // Bypass SSL handshake / certificate issues hanya pada mode debug (pengujian lokal/proxy)
+    if (!kIsWeb && kDebugMode) {
       _dio.httpClientAdapter = IOHttpClientAdapter(
         createHttpClient: () {
           final client = HttpClient();

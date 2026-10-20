@@ -51,19 +51,15 @@ class _CheckpointScreenState extends State<CheckpointScreen> {
   void _confirm() {
     if (_selected == null) return;
     context.read<SessionState>().selectCheckpoint(_selected!);
-    if (widget.isSwitch) {
-      AppSnackbar.success(
-        context,
-        context.trSafe(
-          'checkpoint.switchedSuccess',
-          'Checkpoint berhasil diubah ke {gate}',
-          namedArgs: {'gate': _selected!.gate},
-        ),
-      );
-      Navigator.of(context).maybePop();
-    } else {
-      Navigator.of(context).pushReplacementNamed('/home');
-    }
+    AppSnackbar.success(
+      context,
+      context.trSafe(
+        'checkpoint.switchedSuccess',
+        'Checkpoint berhasil diubah ke {gate}',
+        namedArgs: {'gate': _selected!.gate},
+      ),
+    );
+    Navigator.of(context).maybePop();
   }
 
   void _signOut() {
