@@ -46,7 +46,9 @@ class SnackbarTop {
 
     // rootOverlay: true → menempel di overlay paling atas aplikasi, jadi
     // notifikasi tetap di atas bottom sheet / dialog.
-    final overlay = Overlay.of(context, rootOverlay: true);
+    final overlay = Overlay.maybeOf(context, rootOverlay: true) ??
+        Overlay.maybeOf(context);
+    if (overlay == null) return;
 
     // Entry dideklarasikan lebih dulu supaya closure-nya bisa merujuk dirinya
     // sendiri saat memutuskan apakah dia masih entry yang aktif.
