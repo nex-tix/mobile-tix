@@ -92,8 +92,8 @@ void main() {
     expect(find.text('128'), findsOneWidget);
     expect(find.text('Valid'), findsOneWidget);
     expect(find.text('121'), findsOneWidget);
-    expect(find.text('Rejected'), findsOneWidget);
-    expect(find.text('7'), findsOneWidget);
+    expect(find.text('Rejected'), findsNothing);
+    expect(find.text('7'), findsNothing);
   });
 
   testWidgets('menukar periode memuat dan menampilkan angka bulan ini', (
@@ -108,7 +108,7 @@ void main() {
     expect(repository.requested, [StatsPeriod.today, StatsPeriod.month]);
     expect(find.text('3412'), findsOneWidget);
     expect(find.text('3204'), findsOneWidget);
-    expect(find.text('208'), findsOneWidget);
+    expect(find.text('208'), findsNothing);
     // Angka periode sebelumnya sudah tidak ditampilkan.
     expect(find.text('128'), findsNothing);
   });

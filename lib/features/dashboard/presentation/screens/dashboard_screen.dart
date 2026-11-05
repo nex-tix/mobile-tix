@@ -147,26 +147,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       _VisitorsCard(value: stats.totalVisitors),
       const SizedBox(height: 14),
-      Row(
-        children: [
-          Expanded(
-            child: _MetricCard(
-              label: context.trSafe('dashboard.valid', 'Valid'),
-              value: stats.validTickets,
-              icon: AppIcons.check,
-              accent: context.colors.valid,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _MetricCard(
-              label: context.trSafe('dashboard.rejected', 'Rejected'),
-              value: stats.rejectedTickets,
-              icon: AppIcons.close,
-              accent: context.colors.primary,
-            ),
-          ),
-        ],
+      _MetricCard(
+        label: context.trSafe('dashboard.valid', 'Valid'),
+        value: stats.validTickets,
+        icon: AppIcons.check,
+        accent: context.colors.valid,
       ),
       // Pending offline queue section — tampil hanya bila ada item dan ScannerCubit tersedia.
       const _PendingQueueWrapper(),

@@ -52,14 +52,8 @@ class DashboardSkeleton extends StatelessWidget {
           ),
           const SizedBox(height: 14),
 
-          // Valid & Rejected Cards Skeleton
-          Row(
-            children: [
-              Expanded(child: _metricSkeleton(context)),
-              const SizedBox(width: 12),
-              Expanded(child: _metricSkeleton(context)),
-            ],
-          ),
+          // Valid Card Skeleton
+          _metricSkeleton(context),
         ],
       ),
     );
