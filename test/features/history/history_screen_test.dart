@@ -37,20 +37,30 @@ class _FakeHistoryRepository implements DashboardRepository {
     final error = failure;
     if (error != null) throw error;
 
+    var list = dataset;
+    if (status != null && status.isNotEmpty) {
+      list = status == 'valid'
+          ? list.where((item) => item.isValid).toList()
+          : list.where((item) => item.isRejected).toList();
+    }
+    if (checkpoint != null && checkpoint.isNotEmpty && checkpoint != 'all') {
+      list = list.where((item) => item.checkpoint == checkpoint).toList();
+    }
+
     final start = (page - 1) * pageSize;
-    final end = (start + pageSize).clamp(0, dataset.length);
-    final items = start >= dataset.length
+    final end = (start + pageSize).clamp(0, list.length);
+    final items = start >= list.length
         ? const <ScanRecord>[]
-        : dataset.sublist(start, end);
-    final totalPages = dataset.isEmpty
+        : list.sublist(start, end);
+    final totalPages = list.isEmpty
         ? 0
-        : (dataset.length + pageSize - 1) ~/ pageSize;
+        : (list.length + pageSize - 1) ~/ pageSize;
 
     return ScanRecordPage(
       items: items,
       page: page,
       pageSize: pageSize,
-      totalItems: dataset.length,
+      totalItems: list.length,
       totalPages: totalPages,
     );
   }
@@ -102,7 +112,7 @@ void main() {
 
   tearDown(() => cubit.close());
 
-  testWidgets('memuat daftar dan menampilkan tiap baris beserta jumlahnya', (
+  testWidgets('memuat daftar hanya tiket valid dan menyembunyikan yang ditolak', (
     tester,
   ) async {
     repository.dataset = [
@@ -114,9 +124,10 @@ void main() {
     await settle(tester);
 
     expect(repository.calls.single.page, 1);
+    expect(repository.calls.single.status, 'valid');
     expect(find.text('TKT-2026-001245'), findsOneWidget);
-    expect(find.text('TKT-2026-001244'), findsOneWidget);
-    expect(find.text('2 scans'), findsOneWidget);
+    expect(find.text('TKT-2026-001244'), findsNothing);
+    expect(find.text('1 scans'), findsOneWidget);
   });
 
   testWidgets('riwayat kosong menampilkan pesan, bukan daftar kosong', (
@@ -129,7 +140,7 @@ void main() {
     expect(find.text('0 scans'), findsOneWidget);
   });
 
-  testWidgets('dropdown Rejected memakai nilai kelompok ke API', (
+  testWidgets('tidak ada filter status ditolak di UI dan meminta tiket valid', (
     tester,
   ) async {
     repository.dataset = [record('TKT-1')];
@@ -137,45 +148,32 @@ void main() {
     await tester.pumpWidget(wrap(const HistoryScreen()));
     await settle(tester);
 
-    await tester.tap(find.byKey(const Key('history-status-filter')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Rejected').last);
-    await settle(tester);
-
-    expect(repository.calls.last.status, 'rejected');
-    expect(repository.calls.last.page, 1);
+    expect(find.byKey(const Key('history-status-filter')), findsNothing);
+    expect(repository.calls.first.status, 'valid');
   });
 
-  testWidgets('dropdown Valid menyaring dengan verdict pasti', (tester) async {
-    repository.dataset = [record('TKT-1')];
+  testWidgets('filter Gate tetap mempertahankan status valid', (tester) async {
+    repository.dataset = [
+      record('TKT-1'),
+      ScanRecord(
+        ticketCode: 'TKT-2',
+        status: TicketStatus.valid,
+        scannedAt: DateTime(2026, 10, 8, 9, 30),
+        checkpoint: 'Gate B',
+        visitorCount: 1,
+      ),
+    ];
 
     await tester.pumpWidget(wrap(const HistoryScreen()));
     await settle(tester);
 
-    await tester.tap(find.byKey(const Key('history-status-filter')));
+    await tester.tap(find.byKey(const Key('history-gate-filter')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Valid').last);
+    await tester.tap(find.text('Gate: Gate B').last);
     await settle(tester);
 
     expect(repository.calls.last.status, 'valid');
-  });
-
-  testWidgets('kembali ke All melepas penyaring', (tester) async {
-    repository.dataset = [record('TKT-1')];
-
-    await tester.pumpWidget(wrap(const HistoryScreen()));
-    await settle(tester);
-
-    await tester.tap(find.byKey(const Key('history-status-filter')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Valid').last);
-    await settle(tester);
-    await tester.tap(find.byKey(const Key('history-status-filter')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('All').last);
-    await settle(tester);
-
-    expect(repository.calls.last.status, isNull);
+    expect(repository.calls.last.checkpoint, 'Gate B');
   });
 
   testWidgets('search bar menyaring riwayat dari kode tiket', (tester) async {

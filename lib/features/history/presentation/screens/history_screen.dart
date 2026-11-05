@@ -12,10 +12,10 @@ import '../../data/models/scan_record.dart';
 import '../widgets/history_row.dart';
 import '../widgets/history_skeleton.dart';
 
-/// Screen 13: History All.
+/// Screen 13: History (Valid Scans Only).
 ///
 /// Fitur:
-/// - Dropdown status: All / Valid / Rejected
+/// - Hanya menampilkan tiket yang berhasil (Valid)
 /// - Dropdown urutan: Terbaru / Tamu terbanyak / Tanggal/jam terlama
 /// - Dropdown gate (dinamis dari data yang sudah dimuat)
 /// - Search bar untuk filter lokal (API riwayat tidak punya parameter `q`)
@@ -27,9 +27,6 @@ class HistoryScreen extends StatefulWidget {
   State<HistoryScreen> createState() => _HistoryScreenState();
 }
 
-/// Pilihan status di dropdown filter riwayat.
-enum _HistoryStatus { all, valid, rejected }
-
 /// Opsi urutan daftar riwayat.
 ///
 /// [newest] adalah urutan bawaan server (terbaru di atas). Dua opsi lainnya
@@ -40,7 +37,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
 
-  _HistoryStatus _status = _HistoryStatus.all;
   _HistorySort _sort = _HistorySort.newest;
 
   /// Hasil pencarian lokal — API riwayat tidak punya parameter `q`.
@@ -51,7 +47,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
     super.initState();
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.read<HistoryCubit>().load();
+      if (mounted) {
+        context.read<HistoryCubit>().applyFilter(
+              const HistoryFilter(status: TicketStatus.valid),
+            );
+      }
     });
   }
 
@@ -71,18 +71,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
   }
 
-  static HistoryFilter _filterFor(_HistoryStatus status) => switch (status) {
-    _HistoryStatus.all => HistoryFilter.none,
-    _HistoryStatus.valid => const HistoryFilter(status: TicketStatus.valid),
-    _HistoryStatus.rejected => HistoryFilter.rejected,
-  };
-
-  void _selectStatus(_HistoryStatus status) {
-    if (_status == status) return;
-    setState(() => _status = status);
-    context.read<HistoryCubit>().applyFilter(_filterFor(status));
-  }
-
   void _selectSort(_HistorySort sort) {
     if (_sort == sort) return;
     setState(() => _sort = sort);
@@ -94,15 +82,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   /// Terapkan pencarian lalu urutan di atas baris yang sudah dimuat.
   ///
-  /// Filter status/gate/tanggal tetap berlaku di server; dua langkah ini
-  /// murni sisi klien sehingga tidak memicu request baru.
+  /// Hanya scan valid yang ditampilkan ke pengguna. Filter status/gate/tanggal
+  /// tetap berlaku di server; dua langkah ini murni sisi klien sehingga tidak
+  /// memicu request baru.
   List<ScanRecord> _apply(List<ScanRecord> records) {
+    final validRecords = records.where((record) => record.isValid).toList();
     final query = _query.trim().toLowerCase();
     final List<ScanRecord> filtered;
     if (query.isEmpty) {
-      filtered = List<ScanRecord>.of(records);
+      filtered = List<ScanRecord>.of(validRecords);
     } else {
-      filtered = records.where((record) {
+      filtered = validRecords.where((record) {
         return record.ticketCode.toLowerCase().contains(query) ||
             (record.visitorName?.toLowerCase().contains(query) ?? false) ||
             (record.checkpoint?.toLowerCase().contains(query) ?? false);
@@ -132,17 +122,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
         child: BlocBuilder<HistoryCubit, HistoryState>(
           builder: (context, state) {
             final records = _apply(state.records);
-            final count = state.totalItems > 0
+            final searching = _query.trim().isNotEmpty;
+            final count = !searching &&
+                    state.filter.status == TicketStatus.valid &&
+                    state.records.length == records.length &&
+                    state.totalItems > 0
                 ? state.totalItems
-                : state.records.length;
+                : records.length;
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _Header(count: count),
                 _Controls(
-                  selectedStatus: _status,
-                  onSelectStatus: _selectStatus,
                   selectedSort: _sort,
                   onSelectSort: _selectSort,
                   searchController: _searchController,
@@ -272,11 +264,9 @@ class _Header extends StatelessWidget {
   }
 }
 
-/// Baris kontrol: search bar penuh lebar + tiga dropdown dalam satu baris.
+/// Baris kontrol: search bar penuh lebar + dropdown urutan dan gate.
 class _Controls extends StatelessWidget {
   const _Controls({
-    required this.selectedStatus,
-    required this.onSelectStatus,
     required this.selectedSort,
     required this.onSelectSort,
     required this.searchController,
@@ -284,23 +274,11 @@ class _Controls extends StatelessWidget {
     required this.state,
   });
 
-  final _HistoryStatus selectedStatus;
-  final ValueChanged<_HistoryStatus> onSelectStatus;
   final _HistorySort selectedSort;
   final ValueChanged<_HistorySort> onSelectSort;
   final TextEditingController searchController;
   final ValueChanged<String> onQueryChanged;
   final HistoryState state;
-
-  String _statusLabel(BuildContext context, _HistoryStatus status) =>
-      switch (status) {
-        _HistoryStatus.all => context.trSafe('history.all', 'All'),
-        _HistoryStatus.valid => context.trSafe('history.valid', 'Valid'),
-        _HistoryStatus.rejected => context.trSafe(
-          'history.rejected',
-          'Rejected',
-        ),
-      };
 
   String _sortLabel(BuildContext context, _HistorySort sort) => switch (sort) {
     _HistorySort.newest => context.trSafe('history.sortNewest', 'Terbaru'),
@@ -381,19 +359,6 @@ class _Controls extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              // Dropdown status: All / Valid / Rejected.
-              Expanded(
-                child: _DropdownChip<_HistoryStatus>(
-                  key: const Key('history-status-filter'),
-                  value: selectedStatus,
-                  items: _HistoryStatus.values,
-                  labelOf: (value) => _statusLabel(context, value),
-                  onSelect: onSelectStatus,
-                  isSelected: selectedStatus != _HistoryStatus.all,
-                  showArrow: false,
-                ),
-              ),
-              const SizedBox(width: 8),
               // Dropdown urutan: terbaru / tamu terbanyak / terlama.
               Expanded(
                 child: _DropdownChip<_HistorySort>(
@@ -413,7 +378,7 @@ class _Controls extends StatelessWidget {
                   builder: (context) {
                     final gates = <String>{
                       for (final record in state.records)
-                        if (record.checkpoint != null) record.checkpoint!,
+                        if (record.checkpoint != null && record.isValid) record.checkpoint!,
                     }.toList()..sort();
                     final selected = state.filter.checkpoint ?? 'all';
                     return _DropdownChip<String>(
@@ -429,8 +394,10 @@ class _Controls extends StatelessWidget {
                             ),
                       onSelect: (value) =>
                           context.read<HistoryCubit>().applyFilter(
-                            state.filter.withCheckpoint(
-                              value == 'all' ? null : value,
+                            HistoryFilter(
+                              status: TicketStatus.valid,
+                              checkpoint: value == 'all' ? null : value,
+                              date: state.filter.date,
                             ),
                           ),
                       isSelected: selected != 'all',
