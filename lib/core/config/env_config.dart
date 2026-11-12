@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Environment configuration loader
 /// 
 /// Loads dari .env file atau environment variables.
@@ -27,10 +29,15 @@ class EnvConfig {
     defaultValue: false,
   );
 
-  static const String secretKey = String.fromEnvironment(
-    'SECRET_KEY',
-    defaultValue: '1234567891011121314151617181920212223242526272829303132',
-  );
+  static String get secretKey {
+    const fromEnv = String.fromEnvironment('SECRET_KEY');
+    if (fromEnv.isNotEmpty) return fromEnv;
+    assert(
+      !kReleaseMode,
+      'SECRET_KEY wajib disediakan saat rilis via --dart-define atau --dart-define-from-file',
+    );
+    return '1234567891011121314151617181920212223242526272829303132';
+  }
 
   static const String iv = String.fromEnvironment(
     'IV',
@@ -44,10 +51,15 @@ class EnvConfig {
   );
 
   // Request Signature
-  static const String signatureSecret = String.fromEnvironment(
-    'SIGNATURE_SECRET',
-    defaultValue: 'rayaaldywisma123',
-  );
+  static String get signatureSecret {
+    const fromEnv = String.fromEnvironment('SIGNATURE_SECRET');
+    if (fromEnv.isNotEmpty) return fromEnv;
+    assert(
+      !kReleaseMode,
+      'SIGNATURE_SECRET wajib disediakan saat rilis via --dart-define atau --dart-define-from-file',
+    );
+    return 'rayaaldywisma123';
+  }
 
   // App Config
   static const String channelCd = String.fromEnvironment(

@@ -40,6 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _usernameError;
   String? _passwordError;
   String? _gateError;
+  String? _checkpointError;
   // Petugas memilih gate sendiri; layar ini tidak memilihkan apa pun.
   Checkpoint? _selectedGate;
   List<Checkpoint> _checkpoints = const [];
@@ -61,7 +62,12 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     try {
-      if (mounted) setState(() => _loadingCheckpoints = true);
+      if (mounted) {
+        setState(() {
+          _loadingCheckpoints = true;
+          _checkpointError = null;
+        });
+      }
       final response = await authApiService.dio.get('/checkpoints');
       if (response.data is Map && response.data['data'] is List) {
         final rawList = response.data['data'] as List;
@@ -71,6 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (list.isNotEmpty && mounted) {
           setState(() {
             _checkpoints = list;
+            _checkpointError = null;
             // Pilihan petugas dipertahankan bila gate itu masih ada; kalau
             // belum memilih, tetap kosong.
             final match = list.where((cp) => cp.id == _selectedGate?.id);
@@ -87,6 +94,9 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       debugPrint('[LoginScreen] Error fetching checkpoints: $e');
+      if (mounted && _checkpoints.isEmpty) {
+        setState(() => _checkpointError = 'Gagal memuat gate. Periksa koneksi/server.');
+      }
     } finally {
       if (mounted) setState(() => _loadingCheckpoints = false);
     }
@@ -522,6 +532,37 @@ class _LoginScreenState extends State<LoginScreen> {
                 color: context.colors.primary,
                 fontWeight: FontWeight.w500,
               ),
+            ),
+          ),
+        ] else if (_checkpointError != null && _checkpoints.isEmpty) ...[
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _checkpointError!,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: context.colors.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: _loadingCheckpoints ? null : _loadCheckpoints,
+                  child: Text(
+                    context.trSafe('common.retry', 'Coba lagi'),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: context.colors.primary,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

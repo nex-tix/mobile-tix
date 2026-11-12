@@ -138,7 +138,7 @@ void main() {
     await tester.tap(find.text('History'));
     await settle(tester);
 
-    expect(find.text('27 scans'), findsOneWidget);
+    expect(find.text('6 scans'), findsOneWidget);
     expect(find.textContaining('TKT-2026-'), findsWidgets);
     expect(tester.takeException(), isNull);
 

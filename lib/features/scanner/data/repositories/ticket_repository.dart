@@ -88,7 +88,9 @@ class TicketRepositoryImpl implements TicketRepository {
     try {
       final payload = <String, dynamic>{
         'ticketCode': code,
+        'ticket_code': code,
         'checkpointId': checkpoint,
+        'checkpoint_id': checkpoint,
         if (actualVisitorCount != null) ...{
           'actual_visitor_count': actualVisitorCount,
           'actualVisitorCount': actualVisitorCount,
