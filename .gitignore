@@ -65,8 +65,12 @@ key.properties
 .hermes/
 
 # IDE & Tools
+.idea/
+.vscode/
 .impeccable/
-.vscode/launch.json
+.agents/
+.cursor/
+
 
 # Coverage & Test
 coverage/
