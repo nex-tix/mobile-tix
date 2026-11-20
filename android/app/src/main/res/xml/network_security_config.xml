@@ -1,16 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
+    <!-- Base Config: Izinkan koneksi standar -->
     <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates src="system" />
-            <certificates src="user" />
         </trust-anchors>
     </base-config>
-    <domain-config cleartextTrafficPermitted="true">
+
+    <!-- Domain API Produksi: Wajib HTTPS dan hanya percaya Certificate Authority resmi Sistem -->
+    <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">secureapi.pandemenulis.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!-- Debug Override: Izinkan sertifikat pengguna (user CA) hanya saat pengujian / development -->
+    <debug-overrides>
         <trust-anchors>
             <certificates src="system" />
             <certificates src="user" />
         </trust-anchors>
-    </domain-config>
+    </debug-overrides>
 </network-security-config>
