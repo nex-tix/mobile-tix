@@ -99,15 +99,15 @@ class _MobileTixAppState extends State<MobileTixApp> {
   void _setupSecurityServices() {
     // 1. Proactive Token Refresh
     authTokenRefreshService.onRefreshToken = () async {
-      final currentToken = authTokenDao.getToken();
-      if (currentToken == null || currentToken.isEmpty) return null;
-      // Backend belum memiliki endpoint refresh token tersendiri.
-      // Mengembalikan null agar trigger onRefreshFailed -> forceLogout saat token habis.
+      // Backend tidak memiliki endpoint refresh token tersendiri.
+      // Kembalikan null tanpa memicu force-logout prematur.
       return null;
     };
 
     authTokenRefreshService.onRefreshFailed = () {
-      authAutoLogoutService.forceLogout();
+      // Jangan force logout prematur di detik ke-45 saat petugas sedang aktif memindai.
+      // Biarkan sesi berjalan wajar hingga server mengembalikan 401 atau dialog idle logout muncul.
+      authTokenRefreshService.cancel();
     };
 
     // 2. ApiService 401 Hooks
@@ -247,7 +247,7 @@ class _MobileTixAppState extends State<MobileTixApp> {
                     child: MaterialApp(
                       navigatorKey: rootNavigatorKey,
                       navigatorObservers: [authAutoLogoutObserver],
-                      title: 'Mobile Ticket Validator',
+                      title: 'Nextix',
                       debugShowCheckedModeBanner: false,
                       theme: AppTheme.light(),
                       darkTheme: AppTheme.dark(),
