@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:math';
+import 'package:crypto/crypto.dart';
 import 'package:encrypt/encrypt.dart' as encrypt_lib;
 import '../config/env_config.dart';
 
@@ -18,10 +19,7 @@ class EncryptionService {
     try {
       final keyString = EnvConfig.secretKey;
       final keyBytes = utf8.encode(keyString);
-      final validKeyBytes = Uint8List(32);
-      for (int i = 0; i < 32; i++) {
-        validKeyBytes[i] = i < keyBytes.length ? keyBytes[i] : 0;
-      }
+      final validKeyBytes = Uint8List.fromList(sha256.convert(keyBytes).bytes);
       _key = encrypt_lib.Key(validKeyBytes);
       _encrypter = encrypt_lib.Encrypter(
         encrypt_lib.AES(_key!, mode: encrypt_lib.AESMode.cbc),

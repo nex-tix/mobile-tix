@@ -32,10 +32,11 @@ class EnvConfig {
   static String get secretKey {
     const fromEnv = String.fromEnvironment('SECRET_KEY');
     if (fromEnv.isNotEmpty) return fromEnv;
-    assert(
-      !kReleaseMode,
-      'SECRET_KEY wajib disediakan saat rilis via --dart-define atau --dart-define-from-file',
-    );
+    if (kReleaseMode) {
+      throw StateError(
+        'SECRET_KEY wajib disediakan saat rilis via --dart-define atau --dart-define-from-file',
+      );
+    }
     return '1234567891011121314151617181920212223242526272829303132';
   }
 
@@ -54,10 +55,11 @@ class EnvConfig {
   static String get signatureSecret {
     const fromEnv = String.fromEnvironment('SIGNATURE_SECRET');
     if (fromEnv.isNotEmpty) return fromEnv;
-    assert(
-      !kReleaseMode,
-      'SIGNATURE_SECRET wajib disediakan saat rilis via --dart-define atau --dart-define-from-file',
-    );
+    if (kReleaseMode) {
+      throw StateError(
+        'SIGNATURE_SECRET wajib disediakan saat rilis via --dart-define atau --dart-define-from-file',
+      );
+    }
     return 'rayaaldywisma123';
   }
 
