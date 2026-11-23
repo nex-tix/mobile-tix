@@ -70,6 +70,8 @@ key.properties
 .impeccable/
 .agents/
 .cursor/
+skills-lock.json
+devtools_options.yaml
 
 
 # Coverage & Test
