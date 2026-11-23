@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- Base Config: Izinkan koneksi standar -->
-    <base-config cleartextTrafficPermitted="true">
+    <!-- Base Config: Izinkan koneksi standar (wajib HTTPS) -->
+    <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
             <certificates src="system" />
         </trust-anchors>
