@@ -1,6 +1,28 @@
+import 'dart:typed_data';
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_tix/core/services/api_service.dart';
 import 'package:mobile_tix/core/services/encryption_service.dart';
+
+class _Mock401Adapter implements HttpClientAdapter {
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    return ResponseBody.fromString(
+      '{"success":false,"message":"Unauthorized"}',
+      401,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
 
 void main() {
   group('ApiService Tests', () {
@@ -46,6 +68,51 @@ void main() {
       final data = response.data as Map<String, dynamic>;
       expect(data['success'], isTrue);
       expect(data['data'], isA<List>());
+    });
+
+    test('401 pada endpoint publik atau tanpa token tidak memicu refresh atau session expired', () async {
+      final apiService = ApiService(useMockApi: false);
+      apiService.dio.httpClientAdapter = _Mock401Adapter();
+      bool refreshCalled = false;
+      bool sessionExpiredCalled = false;
+
+      apiService.onRefreshToken = () async {
+        refreshCalled = true;
+        return null;
+      };
+      apiService.onSessionExpired = () {
+        sessionExpiredCalled = true;
+      };
+
+      try {
+        await apiService.get('/checkpoints');
+      } catch (_) {}
+
+      expect(refreshCalled, isFalse);
+      expect(sessionExpiredCalled, isFalse);
+    });
+
+    test('401 pada endpoint terproteksi saat memiliki token memicu refresh dan session expired jika refresh gagal', () async {
+      final apiService = ApiService(useMockApi: false);
+      apiService.dio.httpClientAdapter = _Mock401Adapter();
+      apiService.setToken('existing-valid-token');
+      bool refreshCalled = false;
+      bool sessionExpiredCalled = false;
+
+      apiService.onRefreshToken = () async {
+        refreshCalled = true;
+        return null;
+      };
+      apiService.onSessionExpired = () {
+        sessionExpiredCalled = true;
+      };
+
+      try {
+        await apiService.get('/ticket/history');
+      } catch (_) {}
+
+      expect(refreshCalled, isTrue);
+      expect(sessionExpiredCalled, isTrue);
     });
   });
 }

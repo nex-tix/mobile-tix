@@ -339,9 +339,18 @@ class ApiService {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    // Tangkap 401 Unauthorized → coba 1x auto-refresh token (lewati endpoint login)
-    final isLogin = err.requestOptions.path.endsWith('/login');
-    if (!isLogin && err.response?.statusCode == 401 && onRefreshToken != null && !_isRefreshing) {
+    // Tangkap 401 Unauthorized → coba 1x auto-refresh token jika memiliki sesi aktif.
+    // Lewati endpoint publik (login, checkpoints) dan jangan trigger refresh jika
+    // belum ada token tersimpan (belum pernah login).
+    final path = err.requestOptions.path;
+    final isPublicEndpoint = path.endsWith('/login') || path.endsWith('/checkpoints');
+    final hasActiveSession = _token != null && _token!.isNotEmpty;
+
+    if (!isPublicEndpoint &&
+        hasActiveSession &&
+        err.response?.statusCode == 401 &&
+        onRefreshToken != null &&
+        !_isRefreshing) {
       _isRefreshing = true;
       try {
         debugPrint('[ApiService] 401 Unauthorized terdeteksi. Mencoba auto-refresh token...');
