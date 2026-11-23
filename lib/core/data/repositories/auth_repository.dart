@@ -7,6 +7,7 @@ import '../../error/api_failure.dart';
 import '../../services/api_service.dart';
 import '../dao/staff_dao.dart';
 import '../dao/token_jwt_dao.dart';
+import '../dao/offline_queue_dao.dart';
 import '../../config/api_endpoints.dart';
 import '../../../features/auth/data/models/gate_staff.dart';
 
@@ -141,13 +142,22 @@ class AuthRepository {
   // dibuka ulang, tanpa perlu memanggil /me lagi.
   final StaffDAO _staffDao;
 
+  // DAO antrean offline — dibersihkan saat logout agar tidak terekspos lintas petugas
+  final OfflineQueueDAO _queueDao;
+
   /// Constructor dengan dependency injection
   /// 
   /// [_apiService]: Dio client dengan interceptor
   /// [_tokenDAO]: Hive token storage
   /// [_staffDao]: Hive penyimpanan petugas yang login (opsional untuk test)
-  AuthRepository(this._apiService, this._tokenDAO, {StaffDAO? staffDao})
-      : _staffDao = staffDao ?? StaffDAO();
+  /// [_queueDao]: Hive antrean offline scan (opsional untuk test)
+  AuthRepository(
+    this._apiService,
+    this._tokenDAO, {
+    StaffDAO? staffDao,
+    OfflineQueueDAO? queueDao,
+  })  : _staffDao = staffDao ?? StaffDAO(),
+        _queueDao = queueDao ?? OfflineQueueDAO();
 
   // ==================== LOGIN ENDPOINT ====================
 
@@ -294,6 +304,9 @@ class AuthRepository {
       // Hapus identitas petugas — sesi berikutnya harus login ulang.
       await _staffDao.clearStaff();
 
+      // Bersihkan antrean offline agar scan lama tidak terekspos ke petugas berikutnya
+      await _queueDao.clear();
+
       // Clear token dari ApiService interceptor
       // Future requests tidak akan include Authorization header
       _apiService.clearToken();
@@ -304,6 +317,8 @@ class AuthRepository {
       
       // Ensure local cleanup
       await _tokenDAO.deleteToken();
+      await _staffDao.clearStaff();
+      await _queueDao.clear();
       _apiService.clearToken();
       
       // Re-throw untuk BLoC tahu ada error

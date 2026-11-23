@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:mobile_tix/core/data/dao/staff_dao.dart';
 import 'package:mobile_tix/core/data/dao/token_jwt_dao.dart';
+import 'package:mobile_tix/core/data/dao/offline_queue_dao.dart';
 import 'package:mobile_tix/core/data/repositories/auth_repository.dart';
 import 'package:mobile_tix/core/services/api_service.dart';
 import 'package:mobile_tix/core/services/encryption_service.dart';
@@ -21,6 +22,7 @@ void main() {
 
     setUpAll(() {
       EncryptionService.initialize();
+      OfflineQueueDAO.registerAdapters();
       Hive.init(Directory.systemTemp.createTempSync('auth_repo_test').path);
     });
 
@@ -76,6 +78,25 @@ void main() {
 
       await repository.logout();
       expect(staffDao.getStaff(), isNull);
+    });
+
+    test('logout membersihkan antrean offline untuk mencegah kebocoran tiket antar petugas', () async {
+      final queueDao = OfflineQueueDAO();
+      await queueDao.initialize();
+      await queueDao.enqueue(
+        ticketCode: 'TICKET-TEST-123',
+        checkpointId: 'gate-1',
+      );
+      expect(queueDao.size, equals(1));
+
+      final customRepo = AuthRepository(
+        apiService,
+        tokenDAO,
+        queueDao: queueDao,
+      );
+
+      await customRepo.logout();
+      expect(queueDao.size, equals(0));
     });
 
     test('login gagal melempar Exception jika credentials salah', () async {
