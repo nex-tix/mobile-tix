@@ -119,6 +119,21 @@ void main() {
       expect(result.visitorCount, 1); // default
       expect(result.hasHolder, isFalse);
     });
+
+    test('membaca show_time dan meneruskannya ke ScanOutcome', () {
+      final result = ScanResult.fromJson(
+        {
+          'status': 'valid',
+          'ticket_code': 'TKT-100',
+          'show_time': '17:00 - 18:00',
+        },
+        mode: ScanMode.checkIn,
+      );
+
+      expect(result.showTime, '17:00 - 18:00');
+      final outcome = result.toOutcome();
+      expect(outcome.showTime, '17:00 - 18:00');
+    });
   });
 
   group('ScanResult turunan', () {
