@@ -222,6 +222,28 @@ class _ScanResultSheetState extends State<ScanResultSheet>
                       );
                     },
                   ),
+                  if (outcome.showTime != null && outcome.showTime!.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: context.colors.outlineStrong.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'Sesi: ${outcome.showTime!} WITA',
+                        style: TextStyle(
+                          fontFamily: 'DMSans',
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: context.colors.ink,
+                        ),
+                      ),
+                    ),
+                  ],
 
                   // Kode yang benar-benar dibaca: hanya ditampilkan saat TIDAK
                   // DITEMUKAN, supaya operator bisa membedakan kode salah baca
