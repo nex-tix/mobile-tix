@@ -30,6 +30,7 @@ class ScanResult {
     this.usedAtCheckpoint,
     this.expiryDate,
     this.message,
+    this.showTime,
   });
 
   /// One of the six verdicts the gate must handle.
@@ -67,6 +68,9 @@ class ScanResult {
 
   /// Operator-facing note from the server, when it sends one.
   final String? message;
+
+  /// Sesi pertunjukan dari POS / transactions, misal "17:00 - 18:00".
+  final String? showTime;
 
   /// The ticket admits its holder: the only verdict that may open the gate.
   bool get isValid => status == TicketStatus.valid;
@@ -117,6 +121,7 @@ class ScanResult {
         json['expiry_date'] ?? json['expiryDate'] ?? json['event_date'],
       ),
       message: _string(json['message']),
+      showTime: _string(json['show_time'] ?? json['showTime']),
     );
   }
 
@@ -140,6 +145,7 @@ class ScanResult {
           ? usedAtCheckpoint
           : null,
       message: message,
+      showTime: showTime,
       simulated: false,
     );
   }

@@ -25,6 +25,7 @@ class ScanOutcome {
     this.previousUseAt,
     this.previousUseGate,
     this.message,
+    this.showTime,
     this.simulated = true,
   });
 
@@ -45,6 +46,9 @@ class ScanOutcome {
 
   /// Operator-facing note from the server for non-valid tickets.
   final String? message;
+
+  /// Sesi pertunjukan dari tiket (misal "17:00 - 18:00").
+  final String? showTime;
 
   /// Marks the record as prototype data on screen.
   final bool simulated;
