@@ -18,8 +18,10 @@ class EncryptionService {
   static void initialize() {
     try {
       final keyString = EnvConfig.secretKey;
-      final keyBytes = utf8.encode(keyString);
-      final validKeyBytes = Uint8List.fromList(sha256.convert(keyBytes).bytes);
+      final rawBytes = utf8.encode(keyString);
+      final validKeyBytes = Uint8List(32);
+      final copyLen = rawBytes.length < 32 ? rawBytes.length : 32;
+      validKeyBytes.setRange(0, copyLen, rawBytes);
       _key = encrypt_lib.Key(validKeyBytes);
       _encrypter = encrypt_lib.Encrypter(
         encrypt_lib.AES(_key!, mode: encrypt_lib.AESMode.cbc),
