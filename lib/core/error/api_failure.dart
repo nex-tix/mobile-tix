@@ -101,7 +101,12 @@ class ApiFailure implements Exception {
         statusCode == null
             ? 'Permintaan gagal diproses server'
             : 'Server menolak permintaan ($statusCode)',
-      ApiFailureKind.unknown => 'Terjadi kesalahan yang tidak dikenali',
+      ApiFailureKind.unknown => () {
+        final detail = error.error?.toString() ?? error.message;
+        return (detail != null && detail.trim().isNotEmpty)
+            ? 'Terjadi kesalahan yang tidak dikenali: ${detail.trim()}'
+            : 'Terjadi kesalahan yang tidak dikenali';
+      }(),
     };
   }
 
